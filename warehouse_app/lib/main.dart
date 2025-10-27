@@ -5,6 +5,7 @@ import 'theme/app_theme.dart';
 import 'screens/login_screen.dart';
 import 'screens/pin_entry_screen.dart';
 import 'services/storage_service.dart';
+import 'services/sound_service.dart';
 
 void main() async {
   // Важливо ініціалізувати Flutter перед використанням SharedPreferences
@@ -41,6 +42,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   final StorageService _storageService = StorageService();
+  final SoundService _soundService = SoundService();
   bool _isLoading = true;
   String _debugInfo = '';
   
@@ -48,6 +50,23 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     _checkAuthStatus();
+    _testSound();
+  }
+  
+  Future<void> _testSound() async {
+    try {
+      print('Testing sound playback...');
+      await Future.delayed(const Duration(seconds: 2));
+      await _soundService.playScanSuccessSound();
+      setState(() {
+        _debugInfo += '\nТест звуку: Запущено';
+      });
+    } catch (e) {
+      print('Error testing sound: $e');
+      setState(() {
+        _debugInfo += '\nПомилка тесту звуку: $e';
+      });
+    }
   }
 
   Future<void> _checkAuthStatus() async {

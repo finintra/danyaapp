@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../services/sound_service.dart';
 import 'confirm_order_screen.dart';
 
 class OrderCompletedScreen extends StatefulWidget {
@@ -10,6 +11,25 @@ class OrderCompletedScreen extends StatefulWidget {
 }
 
 class _OrderCompletedScreenState extends State<OrderCompletedScreen> {
+  final SoundService _soundService = SoundService();
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    // Відтворюємо звук успішного завершення
+    _playSuccessSound();
+  }
+  
+  Future<void> _playSuccessSound() async {
+    try {
+      await _soundService.playSuccessSound();
+      print('Success sound played on OrderCompletedScreen');
+    } catch (e) {
+      print('Error playing success sound on OrderCompletedScreen: $e');
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(

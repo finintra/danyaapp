@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../services/sound_service.dart';
 
 class ErrorExtraScreen extends StatefulWidget {
   const ErrorExtraScreen({super.key});
@@ -9,15 +10,30 @@ class ErrorExtraScreen extends StatefulWidget {
 }
 
 class _ErrorExtraScreenState extends State<ErrorExtraScreen> {
+  final SoundService _soundService = SoundService();
+  
   @override
   void initState() {
     super.initState();
+    
+    // Відтворюємо звук помилки
+    _playErrorSound();
+    
     // Автоматически возвращаемся на предыдущий экран через 800 мс
     Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) {
         Navigator.of(context).pop();
       }
     });
+  }
+  
+  Future<void> _playErrorSound() async {
+    try {
+      await _soundService.playErrorSound();
+      print('Error sound played on ErrorExtraScreen');
+    } catch (e) {
+      print('Error playing error sound on ErrorExtraScreen: $e');
+    }
   }
 
   @override

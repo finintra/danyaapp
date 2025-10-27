@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../services/sound_service.dart';
 import '../models/picking_model.dart';
 import 'cancel_picking_screen.dart';
 import 'success_scan_screen.dart';
@@ -37,6 +38,7 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
   bool _isLoading = false;
   String? _errorMessage;
   late PickingLine _currentLine;
+  final SoundService _soundService = SoundService();
   
   @override
   void initState() {
@@ -123,12 +125,16 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
       if (!response.success) {
         // Обрабатываем ошибки
         if (response.error == 'NOT_IN_ORDER') {
+          // Відтворюємо звук помилки
+          _soundService.playErrorSound();
           if (mounted) {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const ErrorNotInOrderScreen()),
             );
           }
         } else if (response.error == 'OVERPICK') {
+          // Відтворюємо звук помилки
+          _soundService.playErrorSound();
           if (mounted) {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const ErrorExtraScreen()),
@@ -142,6 +148,9 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
       } else {
         // Успешное сканирование
         final lineData = response.data['line'];
+        
+        // Відтворюємо звук успішного сканування
+        _soundService.playScanSuccessSound();
         
         // Дебаг информация
         print('Line data: $lineData');
@@ -198,6 +207,9 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
         
         // Если товар полностью отсканирован
         if (rowCompleted) {
+          // Відтворюємо звук успішного завершення
+          _soundService.playSuccessSound();
+          
           // Показываем экран завершения рядка
           await Future.delayed(const Duration(milliseconds: 800));
           if (mounted) {
@@ -209,6 +221,9 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
           // Проверяем завершение заказа
           await Future.delayed(const Duration(milliseconds: 800));
           if (orderCompleted) {
+            // Відтворюємо звук успішного завершення
+            _soundService.playSuccessSound();
+            
             // Заказ завершен
             if (mounted) {
               Navigator.of(context).pushReplacement(

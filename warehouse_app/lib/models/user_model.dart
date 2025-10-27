@@ -5,6 +5,7 @@ class User {
   final bool active;
   final int? employeeId;
   final String? pin; // PIN-код користувача з Odoo
+  final String? lang; // Мова користувача з Odoo
 
   User({
     required this.id,
@@ -13,6 +14,7 @@ class User {
     required this.active,
     this.employeeId,
     this.pin,
+    this.lang,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -55,6 +57,30 @@ class User {
       print('Using PIN code from API: $pinCode');
     }
     
+    // Отримуємо мову користувача
+    String? userLang;
+    
+    // Перевіряємо наявність поля lang в об'єкті користувача
+    if (json.containsKey('lang') && json['lang'] != null) {
+      userLang = json['lang'].toString();
+      print('Found language in user.lang: $userLang');
+    }
+    
+    // Якщо не знайшли в корені, перевіряємо в об'єкті employee
+    if (userLang == null && json.containsKey('employee') && json['employee'] is Map) {
+      final employee = json['employee'] as Map<String, dynamic>;
+      if (employee.containsKey('lang') && employee['lang'] != null) {
+        userLang = employee['lang'].toString();
+        print('Found language in employee.lang: $userLang');
+      }
+    }
+    
+    // Якщо мову не знайдено, використовуємо значення за замовчуванням
+    if (userLang == null) {
+      print('WARNING: No language found in user data, using default');
+      userLang = 'uk_UA'; // Українська мова за замовчуванням
+    }
+    
     print('=== END OF USER PARSING ===\n\n');
     
     return User(
@@ -64,6 +90,7 @@ class User {
       active: json['active'],
       employeeId: json['employee_id'],
       pin: pinCode,
+      lang: userLang,
     );
   }
 
@@ -75,6 +102,7 @@ class User {
       'active': active,
       'employee_id': employeeId,
       'pin': pin,
+      'lang': lang,
     };
   }
 }

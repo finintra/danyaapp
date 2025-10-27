@@ -16,7 +16,8 @@ class AuthService {
       { 
         id: user.id, 
         name: user.name,
-        deviceId 
+        deviceId,
+        lang: user.lang || 'uk_UA' // Add user language to token
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }

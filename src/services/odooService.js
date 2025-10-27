@@ -138,10 +138,10 @@ class OdooService {
         throw new ApiError(401, 'INVALID_CREDENTIALS');
       }
 
-      // Get user details with employee_id
+      // Get user details with employee_id and language
       const users = await this.execute('res.users', 'read', [
         [result.uid]
-      ], { fields: ['id', 'name', 'login', 'active', 'employee_id'] });
+      ], { fields: ['id', 'name', 'login', 'active', 'employee_id', 'lang'] });
 
       if (!users || users.length === 0) {
         throw new ApiError(401, 'INVALID_CREDENTIALS');
@@ -158,7 +158,8 @@ class OdooService {
         id: user.id,
         name: user.name,
         login: user.login,
-        active: user.active
+        active: user.active,
+        lang: user.lang || 'uk_UA' // Default to Ukrainian if not set
       };
       
       // If user has an employee_id, get the employee details including PIN
@@ -168,7 +169,7 @@ class OdooService {
         try {
           const employees = await this.execute('hr.employee', 'read', [
             [user.employee_id[0]]
-          ], { fields: ['id', 'name', 'pin', 'active'] });
+          ], { fields: ['id', 'name', 'pin', 'active', 'lang'] });
           
           if (employees && employees.length > 0) {
             const employee = employees[0];
@@ -180,8 +181,14 @@ class OdooService {
               id: employee.id,
               name: employee.name,
               pin: employee.pin,
-              active: employee.active
+              active: employee.active,
+              lang: employee.lang || userObject.lang // Use employee language if available
             };
+            
+            // Update user language if employee has a language set
+            if (employee.lang) {
+              userObject.lang = employee.lang;
+            }
             
             console.log(`Added employee data with PIN: ${employee.pin} to user object`);
           }
@@ -213,7 +220,7 @@ class OdooService {
       // Find employee by badge barcode
       const employees = await this.execute('hr.employee', 'search_read', [
         [['barcode', '=', badgeBarcode]]
-      ], { fields: ['id', 'name', 'user_id', 'active', 'pin'] });
+      ], { fields: ['id', 'name', 'user_id', 'active', 'pin', 'lang'] });
 
       if (!employees || employees.length === 0) {
         throw new ApiError(401, 'BADGE_OR_PIN');
@@ -237,20 +244,37 @@ class OdooService {
 
       const userId = employee.user_id[0];
       
-      // Get user info to check if user is active
+      // Get user info to check if user is active and get language
       const users = await this.execute('res.users', 'read', [
         [userId]
-      ], { fields: ['active'] });
+      ], { fields: ['active', 'lang'] });
       
       if (!users || users.length === 0 || !users[0].active) {
         throw new ApiError(403, 'ARCHIVED');
       }
 
+      // Determine language - prefer employee language, fallback to user language, then default
+      let userLang = employee.lang;
+      if (!userLang && users[0].lang) {
+        userLang = users[0].lang;
+      }
+      if (!userLang) {
+        userLang = 'uk_UA'; // Default to Ukrainian
+      }
+      
       return {
         id: userId,
         name: employee.name,
         active: true,
-        employee_id: employee.id
+        employee_id: employee.id,
+        lang: userLang,
+        employee: {
+          id: employee.id,
+          name: employee.name,
+          pin: employee.pin,
+          active: employee.active,
+          lang: employee.lang
+        }
       };
     } catch (error) {
       if (error instanceof ApiError) {
@@ -264,9 +288,10 @@ class OdooService {
   /**
    * Get picking by barcode and reset progress
    * @param {string} pickingBarcode - Picking barcode
+   * @param {string} [userLang='uk_UA'] - User language code
    * @returns {Promise<Object>} - Picking info
    */
-  async getPickingByBarcode(pickingBarcode) {
+  async getPickingByBarcode(pickingBarcode, userLang = 'uk_UA') {
     try {
       // Find picking by barcode
       const pickings = await this.execute('stock.picking', 'search_read', [
@@ -303,12 +328,18 @@ class OdooService {
       
       console.log('Reset progress for picking:', pickingBarcode);
 
-      // Get product info for each move line
+      // Get product info for each move line with translations based on user language
       const productIds = moveLines.map(line => line.product_id[0]);
+      
+      // Set the language context for product names
+      const context = { lang: userLang };
+      console.log(`Using language context for products: ${userLang}`);
+      
       const products = await this.execute('product.product', 'search_read', [
         [['id', 'in', productIds]]
       ], { 
-        fields: ['id', 'name', 'barcode', 'default_code', 'list_price', 'uom_id'] 
+        fields: ['id', 'name', 'barcode', 'default_code', 'list_price', 'uom_id'],
+        context: context // Pass the language context
       });
 
       // Create a map of product info
@@ -393,14 +424,21 @@ class OdooService {
    * Validate item scan
    * @param {number} pickingId - Picking ID
    * @param {string} code - Scanned code (default_code or barcode)
+   * @param {string} [userLang='uk_UA'] - User language code
    * @returns {Promise<Object>} - Scan result
    */
-  async validateItemScan(pickingId, code) {
+  async validateItemScan(pickingId, code, userLang = 'uk_UA') {
     try {
-      // Find product by default_code or barcode
+      // Find product by default_code or barcode with user language
+      const context = { lang: userLang };
+      console.log(`Using language context for product scan: ${userLang}`);
+      
       const products = await this.execute('product.product', 'search_read', [
         ['|', ['default_code', '=', code], ['barcode', '=', code]]
-      ], { fields: ['id', 'name', 'default_code'] });
+      ], { 
+        fields: ['id', 'name', 'default_code'],
+        context: context // Pass the language context
+      });
 
       if (!products || products.length === 0) {
         throw new ApiError(404, 'NOT_IN_ORDER');

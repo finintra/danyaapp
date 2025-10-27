@@ -21,9 +21,13 @@ const attachToPicking = async (req, res, next) => {
     }
 
     const { picking_barcode } = req.body;
+    
+    // Get user language from request user object
+    const userLang = req.user?.lang || 'uk_UA';
+    console.log(`Using user language: ${userLang}`);
 
-    // Get picking by barcode
-    const result = await odooService.getPickingByBarcode(picking_barcode);
+    // Get picking by barcode with user language
+    const result = await odooService.getPickingByBarcode(picking_barcode, userLang);
 
     // Return success response
     res.status(200).json({
@@ -63,9 +67,13 @@ const scanItem = async (req, res, next) => {
     }
 
     const { picking_id, barcode } = req.body;
+    
+    // Get user language from request user object
+    const userLang = req.user?.lang || 'uk_UA';
+    console.log(`Using user language for item scan: ${userLang}`);
 
-    // Validate item scan
-    const result = await odooService.validateItemScan(picking_id, barcode);
+    // Validate item scan with user language
+    const result = await odooService.validateItemScan(picking_id, barcode, userLang);
 
     // Return success response
     res.status(200).json({
@@ -203,12 +211,20 @@ const getAvailableTasks = async (req, res, next) => {
 const getTaskDetails = async (req, res, next) => {
   try {
     const pickingId = parseInt(req.params.pickingId);
+    
+    // Get user language from request user object
+    const userLang = req.user?.lang || 'uk_UA';
+    console.log(`Using user language for task details: ${userLang}`);
+    
+    // Set context with user language
+    const context = { lang: userLang };
 
     // Get picking details
     const pickings = await odooService.execute('stock.picking', 'search_read', [
       [['id', '=', pickingId]]
     ], { 
-      fields: ['id', 'name', 'date', 'partner_id', 'move_line_ids'] 
+      fields: ['id', 'name', 'date', 'partner_id', 'move_line_ids'],
+      context: context // Pass the language context
     });
 
     if (!pickings || pickings.length === 0) {
@@ -227,12 +243,13 @@ const getTaskDetails = async (req, res, next) => {
       ] 
     });
 
-    // Get product info for each move line
+    // Get product info for each move line with user language
     const productIds = moveLines.map(line => line.product_id[0]);
     const products = await odooService.execute('product.product', 'search_read', [
       [['id', 'in', productIds]]
     ], { 
-      fields: ['id', 'name', 'barcode', 'default_code', 'list_price', 'uom_id'] 
+      fields: ['id', 'name', 'barcode', 'default_code', 'list_price', 'uom_id'],
+      context: context // Pass the language context
     });
 
     // Create a map of product info

@@ -27,7 +27,8 @@ const protect = async (req, res, next) => {
       req.user = {
         id: decoded.id,
         name: decoded.name,
-        deviceId: decoded.deviceId
+        deviceId: decoded.deviceId,
+        lang: decoded.lang || 'uk_UA' // Add language with default fallback
       };
 
       next();

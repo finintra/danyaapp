@@ -43,6 +43,11 @@ class StorageService {
     if (user.pin != null && user.pin!.isNotEmpty) {
       await savePin(user.pin!);
     }
+    
+    // Якщо у користувача є мова, зберігаємо її
+    if (user.lang != null && user.lang!.isNotEmpty) {
+      await saveLanguage(user.lang!);
+    }
   }
   
   // Получение данных пользователя
@@ -171,6 +176,21 @@ class StorageService {
     return isValid;
   }
   
+  // Збереження мови користувача
+  Future<void> saveLanguage(String lang) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_lang', lang);
+    print('Language saved: $lang');
+  }
+  
+  // Отримання мови користувача
+  Future<String?> getLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lang = prefs.getString('user_lang');
+    print('Language retrieved: $lang');
+    return lang;
+  }
+  
   // Очистка данных сессии
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
@@ -179,7 +199,7 @@ class StorageService {
     await prefs.remove('token_expiry');
     await prefs.remove('user_pin');
     await prefs.remove('is_logged_in');
-    // Не удаляем deviceId, чтобы сохранить его для следующего входа
+    // Не видаляємо deviceId та user_lang, щоб зберегти їх для наступного входу
     print('All auth data cleared');
   }
 }

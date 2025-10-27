@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Підтвердження замовлення | Складський сканер</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="center-content" style="gap: 40px;">
+            <button class="button button-primary" style="height: 120px; width: 90%; max-width: 600px; padding: 20px; border-radius: 12px;">
+                <div style="font-size: clamp(40px, 6vw, 60px); font-weight: 600;">ЗАТВЕРДИТИ ЦЕ ЗАМОВЛЕННЯ</div>
+                <div style="font-size: clamp(35px, 5vw, 50px); font-weight: 500; margin-top: 10px;">(OUT/00123)</div>
+            </button>
+            
+            <button class="button button-outline-warning" style="height: 80px; width: 90%; max-width: 600px; font-size: clamp(32px, 5vw, 48px); font-weight: 600; border-radius: 12px;">
+                ВІДМІНИ ЗАМОВЛЕННЯ
+            </button>
+            
+            <p style="font-size: clamp(25px, 3.5vw, 35px); color: #757575; opacity: 0.5;">
+                Натисніть для підтвердження
+            </p>
+        </div>
+    </div>
+
+    <!-- Навігаційні кнопки -->
+    <a href="index.html" class="nav-button back">← Всі екрани</a>
+    <a href="screen-11-cancel-picking.html" class="nav-button next">Наступний екран →</a>
+
+    <!-- Overlay пароля -->
+    <div id="passwordOverlay" class="password-overlay">
+        <form id="passwordForm" class="password-form">
+            <h2 class="password-title">🔒 Захищено паролем</h2>
+            <p class="password-subtitle">Введіть пароль для доступу</p>
+            <input type="password" id="passwordInput" class="input-field" placeholder="Пароль" autofocus>
+            <p id="passwordError" class="password-error">Невірний пароль</p>
+            <button type="submit" class="button button-primary">Увійти</button>
+        </form>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

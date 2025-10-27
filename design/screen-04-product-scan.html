@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сканування товарів | Складський сканер</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="scan-header">
+        OUT/00123
+    </div>
+    
+    <div class="scan-main">
+        <h2 class="scan-instruction">СКАНУЙ: SKU-12345</h2>
+        <p class="scan-product-name">Назва товару приклад</p>
+        
+        <div class="counter-container">
+            <div class="counter counter-remain">
+                <div class="counter-title">ЗАЛИШОК</div>
+                <div id="remainCount" class="counter-value">3</div>
+            </div>
+            <div class="counter counter-done">
+                <div class="counter-title">ВЖЕ</div>
+                <div id="doneCount" class="counter-value">2</div>
+            </div>
+        </div>
+        
+        <div class="scan-input-group">
+            <div class="scan-input-row">
+                <input type="text" id="productScanInput" class="scan-input" placeholder="Скануйте товар" autofocus>
+                <button class="scan-camera-button">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                </button>
+            </div>
+            <p class="scan-hint">Або натисніть камеру</p>
+        </div>
+        
+        <p class="scan-hint">Тільки скан товару або ВІДМІНА ЗБІРКИ</p>
+    </div>
+    
+    <div class="scan-footer">
+        <button id="cancelPickingBtn" class="button button-warning" style="height: 55px; font-size: clamp(22px, 4vw, 32px);">ВІДМІНИТИ ЗБІРКУ</button>
+    </div>
+
+    <!-- Навігаційні кнопки -->
+    <a href="index.html" class="nav-button back">← Всі екрани</a>
+    <a href="screen-05-success.html" class="nav-button next">Наступний екран →</a>
+
+    <!-- Overlay пароля -->
+    <div id="passwordOverlay" class="password-overlay">
+        <form id="passwordForm" class="password-form">
+            <h2 class="password-title">🔒 Захищено паролем</h2>
+            <p class="password-subtitle">Введіть пароль для доступу</p>
+            <input type="password" id="passwordInput" class="input-field" placeholder="Пароль" autofocus>
+            <p id="passwordError" class="password-error">Невірний пароль</p>
+            <button type="submit" class="button button-primary">Увійти</button>
+        </form>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

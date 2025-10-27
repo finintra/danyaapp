@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Складський сканер | Всі екрани</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .screens-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .screen-link {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #000;
+            font-size: 18px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .screen-link:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .screen-number {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            margin-right: 15px;
+            font-weight: 600;
+        }
+        
+        .error .screen-number {
+            background-color: #F44336;
+        }
+        
+        .success .screen-number {
+            background-color: #4CAF50;
+        }
+        
+        .warning .screen-number {
+            background-color: #FF9800;
+        }
+    </style>
+</head>
+<body>
+    <h1>Складський сканер - Всі екрани</h1>
+    
+    <div class="screens-list">
+        <a href="screen-01-badge-scan.html" class="screen-link">
+            <div class="screen-number">01</div>
+            <div>Вхід (Логін-Пароль)</div>
+        </a>
+        
+        <a href="screen-01b-badge-error.html" class="screen-link error">
+            <div class="screen-number">01b</div>
+            <div>Помилка логіна</div>
+        </a>
+        
+        <a href="screen-02-pin-entry.html" class="screen-link">
+            <div class="screen-number">02</div>
+            <div>Введення PIN</div>
+        </a>
+        
+        <a href="screen-02b-pin-error.html" class="screen-link error">
+            <div class="screen-number">02b</div>
+            <div>Помилка PIN</div>
+        </a>
+        
+        <a href="screen-03-invoice-scan.html" class="screen-link">
+            <div class="screen-number">03</div>
+            <div>Сканування накладної</div>
+        </a>
+        
+        <a href="screen-04-product-scan.html" class="screen-link">
+            <div class="screen-number">04</div>
+            <div>Сканування товарів (ГОЛОВНИЙ)</div>
+        </a>
+        
+        <a href="screen-05-success.html" class="screen-link success">
+            <div class="screen-number">05</div>
+            <div>Успішний скан</div>
+        </a>
+        
+        <a href="screen-06-error-extra.html" class="screen-link error">
+            <div class="screen-number">06</div>
+            <div>Помилка - Лишній товар</div>
+        </a>
+        
+        <a href="screen-07-error-not-in-order.html" class="screen-link error">
+            <div class="screen-number">07</div>
+            <div>Помилка - Немає в замовленні</div>
+        </a>
+        
+        <a href="screen-08-line-completed.html" class="screen-link success">
+            <div class="screen-number">08</div>
+            <div>Рядок закрито</div>
+        </a>
+        
+        <a href="screen-09-order-completed.html" class="screen-link success">
+            <div class="screen-number">09</div>
+            <div>Замовлення зібрано</div>
+        </a>
+        
+        <a href="screen-10-confirm-order.html" class="screen-link">
+            <div class="screen-number">10</div>
+            <div>Підтвердження замовлення</div>
+        </a>
+        
+        <a href="screen-11-cancel-picking.html" class="screen-link warning">
+            <div class="screen-number">11</div>
+            <div>Відміна збірки</div>
+        </a>
+        
+        <a href="screen-12-account-locked.html" class="screen-link error">
+            <div class="screen-number">12</div>
+            <div>Акаунт заблоковано</div>
+        </a>
+    </div>
+
+    <script>
+        // Відключаємо перевірку пароля для головної сторінки
+        sessionStorage.setItem('authenticated', 'true');
+    </script>
+</body>
+</html>

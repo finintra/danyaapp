@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Відміна збірки | Складський сканер</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="center-content" style="gap: 30px;">
+            <div style="font-size: clamp(80px, 15vw, 120px); color: #F44336;">⚠️</div>
+            
+            <h1 style="font-size: clamp(80px, 15vw, 120px); font-weight: 700; color: #F44336; text-align: center;">
+                ВІДМІНИТИ ЗБІРКУ?
+            </h1>
+            
+            <p style="font-size: clamp(25px, 4vw, 35px); color: #757575; text-align: center;">
+                Прогрес буде втрачено
+            </p>
+            
+            <button onclick="window.location.href='screen-03-invoice-scan.html'" class="button button-danger" style="height: 75px; width: 90%; max-width: 500px; font-size: clamp(32px, 6vw, 48px); font-weight: 700; margin-top: 15px;">
+                ТАК, ВІДМІНИТИ
+            </button>
+            
+            <button onclick="window.location.href='screen-04-product-scan.html'" class="button" style="height: 75px; width: 90%; max-width: 500px; font-size: clamp(32px, 6vw, 48px); font-weight: 700; background-color: #757575; color: white;">
+                НІ, ПРОДОВЖИТИ
+            </button>
+        </div>
+    </div>
+
+    <!-- Навігаційні кнопки -->
+    <a href="index.html" class="nav-button back">← Всі екрани</a>
+    <a href="screen-12-account-locked.html" class="nav-button next">Наступний екран →</a>
+
+    <!-- Overlay пароля -->
+    <div id="passwordOverlay" class="password-overlay">
+        <form id="passwordForm" class="password-form">
+            <h2 class="password-title">🔒 Захищено паролем</h2>
+            <p class="password-subtitle">Введіть пароль для доступу</p>
+            <input type="password" id="passwordInput" class="input-field" placeholder="Пароль" autofocus>
+            <p id="passwordError" class="password-error">Невірний пароль</p>
+            <button type="submit" class="button button-primary">Увійти</button>
+        </form>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

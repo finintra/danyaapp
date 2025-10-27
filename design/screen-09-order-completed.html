@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Замовлення зібрано | Складський сканер</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="screen-success">
+        <div class="center-content" style="padding: 20px;">
+            <h1 style="font-size: clamp(45px, 9vw, 75px); font-weight: 700; color: white; margin-bottom: 20px;">
+                ЗАМОВЛЕННЯ<br>ЗІБРАНО
+            </h1>
+            
+            <div style="font-size: clamp(60px, 12vw, 90px); font-weight: 700; color: white; margin-bottom: 30px;">
+                5 ШТУК
+            </div>
+            
+            <div style="font-size: clamp(32px, 6vw, 55px); font-weight: 600; color: white; margin-bottom: 30px;">
+                НАКЛЕЙТЕ ТТН<br>ТА НАТИСНІТЬ
+            </div>
+            
+            <button onclick="window.location.href='screen-10-confirm-order.html'" class="button" style="background-color: white; color: #4CAF50; font-size: clamp(32px, 6vw, 50px); font-weight: 700; height: 70px; border-radius: 12px;">
+                ПІДТВЕРДИТИ
+            </button>
+        </div>
+    </div>
+
+    <!-- Навігаційні кнопки -->
+    <a href="index.html" class="nav-button back">← Всі екрани</a>
+    <a href="screen-10-confirm-order.html" class="nav-button next">Наступний екран →</a>
+
+    <!-- Overlay пароля -->
+    <div id="passwordOverlay" class="password-overlay">
+        <form id="passwordForm" class="password-form">
+            <h2 class="password-title">🔒 Захищено паролем</h2>
+            <p class="password-subtitle">Введіть пароль для доступу</p>
+            <input type="password" id="passwordInput" class="input-field" placeholder="Пароль" autofocus>
+            <p id="passwordError" class="password-error">Невірний пароль</p>
+            <button type="submit" class="button button-primary">Увійти</button>
+        </form>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

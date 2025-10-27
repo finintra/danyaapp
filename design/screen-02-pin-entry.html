@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Введення PIN | Складський сканер</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="center-content">
+            <h1 class="title" style="font-size: clamp(80px, 15vw, 150px); margin-bottom: 30px;">ВВЕДІТЬ PIN</h1>
+            
+            <div class="pin-container">
+                <div class="pin-dots">
+                    <div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
+                </div>
+                
+                <div class="pin-keyboard">
+                    <div class="pin-key" data-value="1">1</div>
+                    <div class="pin-key" data-value="2">2</div>
+                    <div class="pin-key" data-value="3">3</div>
+                    <div class="pin-key" data-value="4">4</div>
+                    <div class="pin-key" data-value="5">5</div>
+                    <div class="pin-key" data-value="6">6</div>
+                    <div class="pin-key" data-value="7">7</div>
+                    <div class="pin-key" data-value="8">8</div>
+                    <div class="pin-key" data-value="9">9</div>
+                    <div class="pin-key key-0" data-value="0">0</div>
+                    <div class="pin-key key-delete" data-value="delete">Видалити</div>
+                    <div class="pin-key key-exit" data-value="exit">ВИХІД</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Навігаційні кнопки -->
+    <a href="index.html" class="nav-button back">← Всі екрани</a>
+    <a href="screen-02b-pin-error.html" class="nav-button next">Наступний екран →</a>
+
+    <!-- Overlay пароля -->
+    <div id="passwordOverlay" class="password-overlay">
+        <form id="passwordForm" class="password-form">
+            <h2 class="password-title">🔒 Захищено паролем</h2>
+            <p class="password-subtitle">Введіть пароль для доступу</p>
+            <input type="password" id="passwordInput" class="input-field" placeholder="Пароль" autofocus>
+            <p id="passwordError" class="password-error">Невірний пароль</p>
+            <button type="submit" class="button button-primary">Увійти</button>
+        </form>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

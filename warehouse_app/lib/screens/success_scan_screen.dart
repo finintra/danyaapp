@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../theme/app_theme.dart';
 import '../services/sound_service.dart';
 
@@ -29,10 +30,20 @@ class _SuccessScanScreenState extends State<SuccessScanScreen> {
   
   Future<void> _playSuccessSound() async {
     try {
+      print('Playing success sound on SuccessScanScreen');
       await _soundService.playScanSuccessSound();
       print('Success sound played on SuccessScanScreen');
     } catch (e) {
       print('Error playing success sound on SuccessScanScreen: $e');
+      
+      // Спробуємо відтворити звук напряму з файлу
+      try {
+        final player = AudioPlayer();
+        await player.play(DeviceFileSource('C:/Users/finbe/Downloads/MOBILE APP/warehouse_app/sounds/mp3.mp3'));
+        print('Sound played directly from SuccessScanScreen');
+      } catch (e) {
+        print('Error playing sound directly from SuccessScanScreen: $e');
+      }
     }
   }
 

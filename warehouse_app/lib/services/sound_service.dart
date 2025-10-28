@@ -39,36 +39,47 @@ class SoundService {
       print('Playing scan success sound: mp3.mp3');
       print('AudioPlayer initialized: $_isInitialized');
       
-      // Спосіб 1: Використання AssetSource
+      // Спробуємо відтворити звук з різних місць
+      bool soundPlayed = false;
+      
+      // Спосіб 1: Використання звуку з assets/sounds
       try {
         await _audioPlayer.play(AssetSource('sounds/mp3.mp3'));
-        print('Sound played using AssetSource');
+        print('Sound played using AssetSource from assets/sounds');
+        soundPlayed = true;
       } catch (e) {
-        print('Error playing with AssetSource: $e');
+        print('Error playing with AssetSource from assets/sounds: $e');
       }
       
-      // Спосіб 2: Використання BytesSource
-      try {
-        await Future.delayed(Duration(milliseconds: 1000));
-        final bytes = await _loadSoundBytes('sounds/mp3.mp3');
-        if (bytes != null) {
-          await _audioPlayer.play(BytesSource(bytes));
-          print('Sound played using BytesSource');
+      // Якщо не вдалося, спробуємо використати звук з папки sounds
+      if (!soundPlayed) {
+        try {
+          // Використовуємо прямий шлях до файлу
+          final soundPath = 'C:/Users/finbe/Downloads/MOBILE APP/warehouse_app/sounds/mp3.mp3';
+          await _audioPlayer.play(DeviceFileSource(soundPath));
+          print('Sound played using DeviceFileSource from direct path: $soundPath');
+          soundPlayed = true;
+        } catch (e) {
+          print('Error playing with DeviceFileSource from direct path: $e');
         }
-      } catch (e) {
-        print('Error playing with BytesSource: $e');
       }
       
-      // Спосіб 3: Використання DeviceFileSource
-      try {
-        await Future.delayed(Duration(milliseconds: 1000));
-        final file = await _loadSoundFile('sounds/mp3.mp3');
-        if (file != null) {
-          await _audioPlayer.play(DeviceFileSource(file.path));
-          print('Sound played using DeviceFileSource: ${file.path}');
+      // Якщо все ще не вдалося, спробуємо завантажити файл в тимчасову папку
+      if (!soundPlayed) {
+        try {
+          final file = await _loadSoundFile('sounds/mp3.mp3');
+          if (file != null) {
+            await _audioPlayer.play(DeviceFileSource(file.path));
+            print('Sound played using DeviceFileSource from temp file: ${file.path}');
+            soundPlayed = true;
+          }
+        } catch (e) {
+          print('Error playing with DeviceFileSource from temp file: $e');
         }
-      } catch (e) {
-        print('Error playing with DeviceFileSource: $e');
+      }
+      
+      if (!soundPlayed) {
+        print('FAILED TO PLAY SOUND: All methods failed');
       }
     } catch (e) {
       print('Error playing scan success sound: $e');
@@ -107,7 +118,23 @@ class SoundService {
     
     try {
       print('Playing error sound: mp3.mp3');
-      await _audioPlayer.play(AssetSource('sounds/mp3.mp3'));
+      
+      try {
+        // Спробуємо відтворити звук з прямого шляху
+        final soundPath = 'C:/Users/finbe/Downloads/MOBILE APP/warehouse_app/sounds/mp3.mp3';
+        await _audioPlayer.play(DeviceFileSource(soundPath));
+        print('Error sound played using DeviceFileSource from direct path');
+      } catch (e) {
+        print('Error playing with DeviceFileSource: $e');
+        
+        // Якщо не вдалося, спробуємо з AssetSource
+        try {
+          await _audioPlayer.play(AssetSource('sounds/mp3.mp3'));
+          print('Error sound played using AssetSource');
+        } catch (e) {
+          print('Error playing with AssetSource: $e');
+        }
+      }
     } catch (e) {
       print('Error playing error sound: $e');
     }
@@ -119,7 +146,23 @@ class SoundService {
     
     try {
       print('Playing success sound: mp3.mp3');
-      await _audioPlayer.play(AssetSource('sounds/mp3.mp3'));
+      
+      try {
+        // Спробуємо відтворити звук з прямого шляху
+        final soundPath = 'C:/Users/finbe/Downloads/MOBILE APP/warehouse_app/sounds/mp3.mp3';
+        await _audioPlayer.play(DeviceFileSource(soundPath));
+        print('Success sound played using DeviceFileSource from direct path');
+      } catch (e) {
+        print('Error playing with DeviceFileSource: $e');
+        
+        // Якщо не вдалося, спробуємо з AssetSource
+        try {
+          await _audioPlayer.play(AssetSource('sounds/mp3.mp3'));
+          print('Success sound played using AssetSource');
+        } catch (e) {
+          print('Error playing with AssetSource: $e');
+        }
+      }
     } catch (e) {
       print('Error playing success sound: $e');
     }

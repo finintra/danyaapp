@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
-import '../services/sound_service.dart';
 import '../models/picking_model.dart';
+import '../services/sound_service.dart';
 import 'cancel_picking_screen.dart';
 import 'success_scan_screen.dart';
 import 'error_extra_screen.dart';
 import 'error_not_in_order_screen.dart';
+import 'error_wrong_order_screen.dart';
 import 'line_completed_screen.dart';
 import 'order_completed_screen.dart';
 
@@ -120,7 +121,8 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
     try {
       // Отправляем запрос к API для сканирования товара
       final apiService = ApiService();
-      final response = await apiService.scanItem(widget.pickingId, code);
+      // Передаємо ID поточного товару
+      final response = await apiService.scanItem(widget.pickingId, code, _currentLine.productId);
       
       if (!response.success) {
         // Обрабатываем ошибки
@@ -138,6 +140,14 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
           if (mounted) {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const ErrorExtraScreen()),
+            );
+          }
+        } else if (response.error == 'WRONG_ORDER') {
+          // Відтворюємо звук помилки
+          _soundService.playErrorSound();
+          if (mounted) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const ErrorWrongOrderScreen()),
             );
           }
         } else {

@@ -14,7 +14,11 @@ const scanItemValidator = [
     .withMessage('Picking ID must be a number'),
   body('barcode')
     .notEmpty()
-    .withMessage('Barcode is required')
+    .withMessage('Barcode is required'),
+  body('expected_product_id')
+    .optional()
+    .isNumeric()
+    .withMessage('Expected product ID must be a number')
 ];
 
 const validatePickingValidator = [

@@ -421,6 +421,34 @@ class OdooService {
   }
 
   /**
+   * Find product by barcode or default_code
+   * @param {string} code - Scanned code (default_code or barcode)
+   * @param {string} [userLang='uk_UA'] - User language code
+   * @returns {Promise<Array>} - Array of products
+   */
+  async findProductByBarcode(code, userLang = 'uk_UA') {
+    try {
+      console.log(`Finding product with code: ${code}, userLang=${userLang}`);
+      
+      // Find product by default_code or barcode with user language
+      const context = { lang: userLang };
+      
+      const products = await this.execute('product.product', 'search_read', [
+        ['|', ['default_code', '=', code], ['barcode', '=', code]]
+      ], { 
+        fields: ['id', 'name', 'default_code', 'barcode'],
+        context: context // Pass the language context
+      });
+      
+      console.log(`Found ${products.length} products with code ${code}`);
+      return products;
+    } catch (error) {
+      console.error(`Error finding product by barcode: ${error.message}`);
+      throw error;
+    }
+  }
+  
+  /**
    * Validate item scan
    * @param {number} pickingId - Picking ID
    * @param {string} code - Scanned code (default_code or barcode)
@@ -429,6 +457,8 @@ class OdooService {
    */
   async validateItemScan(pickingId, code, userLang = 'uk_UA') {
     try {
+      console.log(`Validating item scan: pickingId=${pickingId}, code=${code}, userLang=${userLang}`);
+      
       // Find product by default_code or barcode with user language
       const context = { lang: userLang };
       console.log(`Using language context for product scan: ${userLang}`);
@@ -441,10 +471,12 @@ class OdooService {
       });
 
       if (!products || products.length === 0) {
+        console.log(`No product found with code: ${code}`);
         throw new ApiError(404, 'NOT_IN_ORDER');
       }
 
       const productId = products[0].id;
+      console.log(`Found product: ${products[0].name} (ID: ${productId})`);
 
       // Find move line for this product in the picking
       const moveLines = await this.execute('stock.move.line', 'search_read', [
@@ -457,7 +489,69 @@ class OdooService {
       });
 
       if (!moveLines || moveLines.length === 0) {
+        console.log(`Product ${productId} is not in picking ${pickingId}`);
         throw new ApiError(404, 'NOT_IN_ORDER');
+      }
+      
+      // Get all move lines for this picking to check order
+      const allMoveLines = await this.execute('stock.move.line', 'search_read', [
+        [['picking_id', '=', pickingId]]
+      ], { 
+        fields: ['id', 'product_id', 'product_uom_qty', 'qty_done'] 
+      });
+      
+      console.log(`All move lines for picking ${pickingId}: ${JSON.stringify(allMoveLines)}`);
+      
+      // Сортуємо рядки за ID, щоб забезпечити послідовність
+      allMoveLines.sort((a, b) => a.id - b.id);
+      
+      // Логуємо всі рядки для аналізу
+      console.log('All move lines details (sorted by ID):');
+      allMoveLines.forEach((ml, index) => {
+        console.log(`Line ${index}: id=${ml.id}, product_id=${ml.product_id[0]}, qty_done=${ml.qty_done}, product_uom_qty=${ml.product_uom_qty}, remaining=${ml.product_uom_qty - ml.qty_done}`);
+      });
+      
+      // Знаходимо перший незавершений рядок
+      const incompleteLines = allMoveLines.filter(ml => ml.product_uom_qty > ml.qty_done && ml.product_uom_qty > 0);
+      
+      // Якщо немає незавершених рядків, дозволяємо сканувати будь-який товар
+      if (incompleteLines.length === 0) {
+        console.log('No incomplete lines found, allowing any product to be scanned');
+        return;
+      }
+      
+      // Сортуємо незавершені рядки за ID
+      incompleteLines.sort((a, b) => a.id - b.id);
+      
+      // Перший незавершений рядок - це той, який повинен бути відсканований наступним
+      const firstIncompleteLine = incompleteLines[0];
+      
+      console.log('First incomplete line:', firstIncompleteLine ? 
+        `id=${firstIncompleteLine.id}, product_id=${firstIncompleteLine.product_id[0]}, qty_done=${firstIncompleteLine.qty_done}, product_uom_qty=${firstIncompleteLine.product_uom_qty}` : 
+        'No incomplete lines found');
+      console.log(`Scanned product ID: ${productId}`);
+      
+      // Перетворюємо ID товарів на числа для коректного порівняння
+      const expectedProductId = firstIncompleteLine ? Number(firstIncompleteLine.product_id[0]) : null;
+      const scannedProductId = Number(productId);
+      
+      console.log(`Comparing product IDs: expected=${expectedProductId}, scanned=${scannedProductId}, equal=${expectedProductId === scannedProductId}`);
+      
+      // Якщо відсканований товар не відповідає очікуваному, повертаємо помилку
+      if (expectedProductId !== scannedProductId) {
+        // Get product info for better logging
+        const firstIncompleteProduct = await this.execute('product.product', 'search_read', [
+          [['id', '=', firstIncompleteLine.product_id[0]]]
+        ], { 
+          fields: ['id', 'name', 'default_code'],
+          context: context
+        });
+        
+        const expectedProductName = firstIncompleteProduct.length > 0 ? firstIncompleteProduct[0].name : 'Unknown';
+        const scannedProductName = products[0].name;
+        
+        console.log(`Wrong order: Expected product ${expectedProductName} (ID: ${expectedProductId}) but scanned ${scannedProductName} (ID: ${scannedProductId})`);
+        throw new ApiError(409, 'WRONG_ORDER');
       }
 
       const line = moveLines[0];

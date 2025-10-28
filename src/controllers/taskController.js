@@ -59,29 +59,63 @@ const attachToPicking = async (req, res, next) => {
  * @access  Private
  */
 const scanItem = async (req, res, next) => {
+  console.log('=== SCAN ITEM CONTROLLER DEBUG ===');
   try {
     // Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return next(new ApiError(400, 'Validation error', false, { errors: errors.array() }));
     }
 
-    const { picking_id, barcode } = req.body;
+    const { picking_id, barcode, expected_product_id } = req.body;
+    console.log(`Received scan request: picking_id=${picking_id}, barcode="${barcode}", expected_product_id=${expected_product_id}`);
     
     // Get user language from request user object
     const userLang = req.user?.lang || 'uk_UA';
     console.log(`Using user language for item scan: ${userLang}`);
 
-    // Validate item scan with user language
+    // Перш ніж валідувати сканування, знайдемо товар за штрих-кодом
+    const products = await odooService.findProductByBarcode(barcode, userLang);
+    
+    if (!products || products.length === 0) {
+      console.log(`No product found with barcode: ${barcode}`);
+      return res.status(404).json({
+        ok: false,
+        error: 'NOT_IN_ORDER'
+      });
+    }
+    
+    const scannedProductId = products[0].id;
+    console.log(`Found product: ${products[0].name} (ID: ${scannedProductId})`);
+    
+    // Перевіряємо, чи відсканований товар відповідає очікуваному
+    if (expected_product_id && Number(scannedProductId) !== Number(expected_product_id)) {
+      console.log(`Wrong product scanned: expected ${expected_product_id}, got ${scannedProductId}`);
+      return res.status(409).json({
+        ok: false,
+        error: 'WRONG_ORDER'
+      });
+    }
+    
+    // Якщо товар відповідає очікуваному, валідуємо сканування
+    console.log(`Calling odooService.validateItemScan with picking_id=${picking_id}, barcode="${barcode}", userLang=${userLang}`);
     const result = await odooService.validateItemScan(picking_id, barcode, userLang);
+    console.log(`validateItemScan successful, result:`, result);
 
     // Return success response
+    console.log('Sending success response');
     res.status(200).json({
       ok: true,
       ...result
     });
+    console.log('Success response sent');
   } catch (error) {
+    console.log(`Error in scanItem: ${error.message}`);
+    console.log(error.stack);
+    
     if (error.message === 'NOT_IN_ORDER') {
+      console.log('Sending NOT_IN_ORDER error response');
       return res.status(404).json({
         ok: false,
         error: 'NOT_IN_ORDER'
@@ -89,9 +123,18 @@ const scanItem = async (req, res, next) => {
     }
 
     if (error.message === 'OVERPICK') {
+      console.log('Sending OVERPICK error response');
       return res.status(409).json({
         ok: false,
         error: 'OVERPICK'
+      });
+    }
+    
+    if (error.message === 'WRONG_ORDER') {
+      console.log('Sending WRONG_ORDER error response');
+      return res.status(409).json({
+        ok: false,
+        error: 'WRONG_ORDER'
       });
     }
 

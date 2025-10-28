@@ -301,15 +301,16 @@ class ApiService {
   }
   
   // Сканирование товара
-  Future<ApiResponse> scanItem(int pickingId, String barcode) async {
+  Future<ApiResponse> scanItem(int pickingId, String barcode, int expectedProductId) async {
     try {
-      print('Scanning item: $barcode for picking: $pickingId');
+      print('Scanning item: $barcode for picking: $pickingId, expected product ID: $expectedProductId');
       final response = await http.post(
         Uri.parse(AppConstants.baseUrl + AppConstants.scanItemEndpoint),
         headers: await _getHeaders(withAuth: true),
         body: json.encode({
           'picking_id': pickingId,
           'barcode': barcode,
+          'expected_product_id': expectedProductId,
         }),
       );
       

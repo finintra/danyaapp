@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../services/api_service.dart';
 import 'invoice_scan_screen.dart';
 import 'cancel_picking_screen.dart';
 
@@ -28,15 +29,24 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
     });
 
     try {
-      // В реальном приложении здесь будет запрос к API
-      // Симулируем задержку
-      await Future.delayed(const Duration(seconds: 1));
+      // Відправляємо запит до API для підтвердження замовлення
+      final apiService = ApiService();
+      print('Sending validatePicking request for picking_id: ${widget.pickingId}');
+      final response = await apiService.validatePicking(widget.pickingId);
+      
+      if (!response.success) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = response.error ?? 'Помилка при підтвердженні замовлення';
+        });
+        return;
+      }
 
       if (mounted) {
         // Після успішного підтвердження повертаємося на екран сканування накладної
-        Navigator.of(context).pushAndRemoveUntil(
+        print('Navigating to InvoiceScanScreen after order confirmation');
+        Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const InvoiceScanScreen()),
-          (route) => false,
         );
       }
     } catch (e) {

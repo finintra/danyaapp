@@ -376,4 +376,31 @@ class ApiService {
       );
     }
   }
+  
+  // Підтвердження замовлення
+  Future<ApiResponse> validatePicking(int pickingId) async {
+    try {
+      print('Validating picking: $pickingId');
+      final response = await http.post(
+        Uri.parse(AppConstants.baseUrl + AppConstants.validateEndpoint),
+        headers: await _getHeaders(withAuth: true),
+        body: json.encode({
+          'picking_id': pickingId,
+          'payload': [] // Порожній масив, оскільки всі дані вже відправлені при скануванні
+        }),
+      );
+      
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      
+      return _handleResponse(response);
+    } catch (e) {
+      print('Exception during validatePicking: ${e.toString()}');
+      return ApiResponse(
+        success: false,
+        error: 'CONNECTION_ERROR',
+        message: e.toString(),
+      );
+    }
+  }
 }

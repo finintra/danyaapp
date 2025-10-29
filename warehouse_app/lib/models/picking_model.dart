@@ -60,74 +60,115 @@ class PickingLine {
     try {
       print('Parsing PickingLine from: $json');
       
-      // Parse lineId safely
-      final lineId = json['line_id'] is String ? int.parse(json['line_id']) : json['line_id'] as int;
+      // Спрощена обробка полів
+      // Перетворюємо всі поля на безпечні типи
       
-      // Parse productId safely
-      final productId = json['product_id'] is String ? int.parse(json['product_id']) : json['product_id'] as int;
-      
-      // Parse productName safely
-      final productName = json['product_name'] as String;
-      
-      // Parse price safely
-      double price;
-      if (json['price'] is int) {
-        price = json['price'].toDouble();
-      } else if (json['price'] is double) {
-        price = json['price'];
-      } else if (json['price'] is String) {
-        price = double.parse(json['price']);
-      } else {
-        price = 0.0;
+      // Функція для безпечного отримання цілого числа
+      int safeInt(dynamic value, String fieldName, {int defaultValue = 0}) {
+        if (value == null) {
+          print('Warning: $fieldName is null, using default: $defaultValue');
+          return defaultValue;
+        } else if (value is int) {
+          return value;
+        } else if (value is String) {
+          try {
+            return int.parse(value);
+          } catch (e) {
+            print('Warning: $fieldName is not a valid int string: $value');
+            return defaultValue;
+          }
+        } else if (value is bool) {
+          final result = value ? 1 : 0;
+          print('Warning: $fieldName is boolean, converted to int: $result');
+          return result;
+        } else if (value is double) {
+          return value.toInt();
+        } else {
+          print('Warning: $fieldName is not a valid int type: $value (${value.runtimeType})');
+          return defaultValue;
+        }
       }
       
-      // Parse required, done, remain safely
-      double required;
-      if (json['required'] is int) {
-        required = json['required'].toDouble();
-      } else if (json['required'] is double) {
-        required = json['required'];
-      } else if (json['required'] is String) {
-        required = double.parse(json['required']);
-      } else {
-        required = 0.0;
+      // Функція для безпечного отримання дійсного числа
+      double safeDouble(dynamic value, String fieldName, {double defaultValue = 0.0}) {
+        if (value == null) {
+          print('Warning: $fieldName is null, using default: $defaultValue');
+          return defaultValue;
+        } else if (value is double) {
+          return value;
+        } else if (value is int) {
+          return value.toDouble();
+        } else if (value is String) {
+          try {
+            return double.parse(value);
+          } catch (e) {
+            print('Warning: $fieldName is not a valid double string: $value');
+            return defaultValue;
+          }
+        } else if (value is bool) {
+          final result = value ? 1.0 : 0.0;
+          print('Warning: $fieldName is boolean, converted to double: $result');
+          return result;
+        } else {
+          print('Warning: $fieldName is not a valid double type: $value (${value.runtimeType})');
+          return defaultValue;
+        }
       }
       
-      double done;
-      if (json['done'] is int) {
-        done = json['done'].toDouble();
-      } else if (json['done'] is double) {
-        done = json['done'];
-      } else if (json['done'] is String) {
-        done = double.parse(json['done']);
-      } else {
-        done = 0.0;
+      // Функція для безпечного отримання рядка
+      String safeString(dynamic value, String fieldName, {String defaultValue = ''}) {
+        if (value == null) {
+          print('Warning: $fieldName is null, using default: $defaultValue');
+          return defaultValue;
+        } else if (value is String) {
+          return value;
+        } else {
+          final result = value.toString();
+          print('Warning: $fieldName is not a string, converted to string: $result');
+          return result;
+        }
       }
       
-      double remain;
-      if (json['remain'] is int) {
-        remain = json['remain'].toDouble();
-      } else if (json['remain'] is double) {
-        remain = json['remain'];
-      } else if (json['remain'] is String) {
-        remain = double.parse(json['remain']);
-      } else {
-        remain = 0.0;
+      // Функція для безпечного отримання нульового рядка
+      String? safeNullableString(dynamic value, String fieldName) {
+        if (value == null) {
+          return null;
+        } else if (value is String) {
+          return value;
+        } else {
+          final result = value.toString();
+          print('Warning: $fieldName is not a string, converted to string: $result');
+          return result;
+        }
       }
+      
+      // Використовуємо функції для отримання всіх полів
+      final lineId = safeInt(json['line_id'], 'line_id');
+      final productId = safeInt(json['product_id'], 'product_id');
+      final productName = safeString(json['product_name'], 'product_name', defaultValue: 'Unknown Product');
+      final productCode = safeNullableString(json['product_code'], 'product_code');
+      final price = safeDouble(json['price'], 'price');
+      final uom = safeString(json['uom'], 'uom', defaultValue: 'Units');
+      final required = safeDouble(json['required'], 'required');
+      final done = safeDouble(json['done'], 'done');
+      final remain = safeDouble(json['remain'], 'remain');
+      final barcode = safeNullableString(json['barcode'], 'barcode');
+      final location = safeNullableString(json['location'], 'location');
+      final locationComplete = safeNullableString(json['location_complete'], 'location_complete');
       
       return PickingLine(
         lineId: lineId,
         productId: productId,
         productName: productName,
-        productCode: json['product_code'] as String?,
+        productCode: productCode,
         price: price,
-        uom: json['uom'] as String? ?? 'Units',
+        uom: uom,
         required: required,
         done: done,
         remain: remain,
-        barcode: json['barcode'] as String?,
-        location: json['location'] as String?,
-        locationComplete: json['location_complete'] as String?,
+        barcode: barcode,
+        location: location,
+        locationComplete: locationComplete,
       );
     } catch (e) {
       print('Error parsing PickingLine: $e');
@@ -156,20 +197,119 @@ class PickingAttachResponse {
     try {
       print('Parsing PickingAttachResponse from: $json');
       
-      final pickingData = json['picking'] as Map<String, dynamic>;
-      final lineData = json['line'] as Map<String, dynamic>;
-      final orderSummary = json['order_summary'] as Map<String, dynamic>;
+      // Детальне логування типів даних
+      print('picking type: ${json['picking']?.runtimeType}');
+      print('line type: ${json['line']?.runtimeType}');
+      print('order_summary type: ${json['order_summary']?.runtimeType}');
       
-      final pickingId = pickingData['id'] is String ? int.parse(pickingData['id']) : pickingData['id'] as int;
-      final pickingName = pickingData['name'] as String;
+      // Функція для безпечного отримання об'єкта Map
+      Map<String, dynamic> safeMap(dynamic value, String fieldName) {
+        if (value == null) {
+          print('Warning: $fieldName is null, using empty map');
+          return {};
+        } else if (value is Map) {
+          // Перетворюємо на Map<String, dynamic>
+          Map<String, dynamic> result = {};
+          value.forEach((key, val) {
+            // Перетворюємо ключ на рядок
+            String strKey = key.toString();
+            // Додаємо значення в новий об'єкт
+            result[strKey] = val;
+          });
+          return result;
+        } else {
+          print('Warning: $fieldName is not a Map: $value (${value.runtimeType})');
+          return {};
+        }
+      }
       
-      final line = PickingLine.fromJson(lineData);
+      // Функція для безпечного отримання цілого числа
+      int safeInt(dynamic value, String fieldName, {int defaultValue = 0}) {
+        if (value == null) {
+          print('Warning: $fieldName is null, using default: $defaultValue');
+          return defaultValue;
+        } else if (value is int) {
+          return value;
+        } else if (value is String) {
+          try {
+            return int.parse(value);
+          } catch (e) {
+            print('Warning: $fieldName is not a valid int string: $value');
+            return defaultValue;
+          }
+        } else if (value is bool) {
+          final result = value ? 1 : 0;
+          print('Warning: $fieldName is boolean, converted to int: $result');
+          return result;
+        } else if (value is double) {
+          return value.toInt();
+        } else {
+          print('Warning: $fieldName is not a valid int type: $value (${value.runtimeType})');
+          return defaultValue;
+        }
+      }
       
-      final totalLines = orderSummary['total_lines'] is String ? 
-          int.parse(orderSummary['total_lines']) : orderSummary['total_lines'] as int;
+      // Функція для безпечного отримання рядка
+      String safeString(dynamic value, String fieldName, {String defaultValue = ''}) {
+        if (value == null) {
+          print('Warning: $fieldName is null, using default: $defaultValue');
+          return defaultValue;
+        } else if (value is String) {
+          return value;
+        } else {
+          final result = value.toString();
+          print('Warning: $fieldName is not a string, converted to string: $result');
+          return result;
+        }
+      }
       
-      final completedLines = orderSummary['completed_lines'] is String ? 
-          int.parse(orderSummary['completed_lines']) : orderSummary['completed_lines'] as int;
+      // Безпечне отримання об'єктів
+      final pickingData = safeMap(json['picking'], 'picking');
+      final lineData = safeMap(json['line'], 'line');
+      final orderSummary = safeMap(json['order_summary'], 'order_summary');
+      
+      // Логування полів
+      print('pickingData fields:');
+      pickingData.forEach((key, value) {
+        print('  $key: $value (${value?.runtimeType})');
+      });
+      
+      print('lineData fields:');
+      lineData.forEach((key, value) {
+        print('  $key: $value (${value?.runtimeType})');
+      });
+      
+      print('orderSummary fields:');
+      orderSummary.forEach((key, value) {
+        print('  $key: $value (${value?.runtimeType})');
+      });
+      
+      // Використовуємо функції для отримання всіх полів
+      final pickingId = safeInt(pickingData['id'], 'pickingId');
+      final pickingName = safeString(pickingData['name'], 'pickingName', defaultValue: 'Unknown');
+      
+      // Створюємо об'єкт PickingLine
+      PickingLine line;
+      try {
+        line = PickingLine.fromJson(lineData);
+      } catch (e) {
+        print('Error creating PickingLine: $e');
+        // Створюємо замісний об'єкт
+        line = PickingLine(
+          lineId: 0,
+          productId: 0,
+          productName: 'Unknown Product',
+          price: 0.0,
+          uom: 'Units',
+          required: 1.0,
+          done: 0.0,
+          remain: 1.0,
+        );
+      }
+      
+      // Отримуємо значення totalLines та completedLines
+      final totalLines = safeInt(orderSummary['total_lines'], 'totalLines');
+      final completedLines = safeInt(orderSummary['completed_lines'], 'completedLines');
       
       return PickingAttachResponse(
         pickingId: pickingId,

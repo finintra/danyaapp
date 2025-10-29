@@ -236,8 +236,20 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
             
             // Заказ завершен
             if (mounted) {
+              // Отримуємо загальну кількість товарів
+              int totalItems = 0;
+              if (response.data['order_summary'] != null && response.data['order_summary']['total_items'] != null) {
+                totalItems = response.data['order_summary']['total_items'];
+              }
+              
               Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const OrderCompletedScreen()),
+                MaterialPageRoute(
+                  builder: (context) => OrderCompletedScreen(
+                    invoiceNumber: widget.invoiceNumber,
+                    pickingId: widget.pickingId,
+                    totalItems: totalItems,
+                  ),
+                ),
               );
             }
             return;

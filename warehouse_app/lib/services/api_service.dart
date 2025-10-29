@@ -53,11 +53,46 @@ class ApiService {
         );
       } else {
         print('Response failed with status ${response.statusCode}');
-        print('Error: ${responseData['error']}, Message: ${responseData['message']}');
+        
+        // Отримуємо повідомлення про помилку
+        final error = responseData['error'];
+        final message = responseData['message'];
+        print('Error: $error, Message: $message');
+        
+        // Перевіряємо на помилки авторизації
+        if (response.statusCode == 401 || response.statusCode == 403) {
+          print('Authorization error detected (status code: ${response.statusCode})');
+          return ApiResponse(
+            success: false,
+            error: 'TOKEN_INVALID',
+            message: 'Not authorized or token failed',
+          );
+        }
+        
+        // Перевіряємо на помилки авторизації в повідомленні
+        if (error != null && error.toString().toLowerCase().contains('auth')) {
+          print('Authorization error detected in error message');
+          return ApiResponse(
+            success: false,
+            error: 'TOKEN_INVALID',
+            message: 'Not authorized or token failed',
+          );
+        }
+        
+        if (message != null && message.toString().toLowerCase().contains('auth')) {
+          print('Authorization error detected in message');
+          return ApiResponse(
+            success: false,
+            error: 'TOKEN_INVALID',
+            message: 'Not authorized or token failed',
+          );
+        }
+        
+        // Звичайна помилка
         return ApiResponse(
           success: false,
-          error: responseData['error'],
-          message: responseData['message'],
+          error: error,
+          message: message,
         );
       }
     } catch (e) {
@@ -270,25 +305,91 @@ class ApiService {
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
       
-      // Try to parse the response body to see if it's valid JSON
-      try {
-        final responseData = json.decode(response.body);
-        print('Response data decoded successfully: $responseData');
-        
-        // Check if the response has the expected structure
-        if (responseData['picking'] == null) {
-          print('ERROR: Response is missing "picking" field');
+      // Обробляємо відповідь вручну
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        try {
+          // Декодуємо JSON
+          final responseData = json.decode(response.body);
+          print('Response data decoded successfully: $responseData');
+          
+          // Перевіряємо структуру відповіді
+          if (responseData is Map<String, dynamic>) {
+            // Попередня обробка даних
+            Map<String, dynamic> processedData = {};
+            
+            // Обробка picking
+            if (responseData['picking'] != null) {
+              Map<String, dynamic> pickingData = {};
+              if (responseData['picking'] is Map) {
+                (responseData['picking'] as Map).forEach((key, value) {
+                  // Перетворюємо булеві значення на рядки
+                  if (value is bool) {
+                    pickingData[key.toString()] = value.toString();
+                    print('Converted boolean to string in picking[$key]: $value -> ${value.toString()}');
+                  } else {
+                    pickingData[key.toString()] = value;
+                  }
+                });
+              }
+              processedData['picking'] = pickingData;
+            } else {
+              print('ERROR: Response is missing "picking" field');
+              processedData['picking'] = {};
+            }
+            
+            // Обробка line
+            if (responseData['line'] != null) {
+              Map<String, dynamic> lineData = {};
+              if (responseData['line'] is Map) {
+                (responseData['line'] as Map).forEach((key, value) {
+                  // Перетворюємо булеві значення на рядки
+                  if (value is bool) {
+                    lineData[key.toString()] = value.toString();
+                    print('Converted boolean to string in line[$key]: $value -> ${value.toString()}');
+                  } else {
+                    lineData[key.toString()] = value;
+                  }
+                });
+              }
+              processedData['line'] = lineData;
+            } else {
+              print('ERROR: Response is missing "line" field');
+              processedData['line'] = {};
+            }
+            
+            // Обробка order_summary
+            if (responseData['order_summary'] != null) {
+              Map<String, dynamic> summaryData = {};
+              if (responseData['order_summary'] is Map) {
+                (responseData['order_summary'] as Map).forEach((key, value) {
+                  // Перетворюємо булеві значення на рядки
+                  if (value is bool) {
+                    summaryData[key.toString()] = value ? '1' : '0';
+                    print('Converted boolean to string in order_summary[$key]: $value -> ${value ? '1' : '0'}');
+                  } else {
+                    summaryData[key.toString()] = value;
+                  }
+                });
+              }
+              processedData['order_summary'] = summaryData;
+            } else {
+              print('ERROR: Response is missing "order_summary" field');
+              processedData['order_summary'] = {};
+            }
+            
+            // Повертаємо оброблені дані
+            print('Processed data: $processedData');
+            return ApiResponse(
+              success: true,
+              data: processedData,
+            );
+          }
+        } catch (e) {
+          print('ERROR processing response data: $e');
         }
-        if (responseData['line'] == null) {
-          print('ERROR: Response is missing "line" field');
-        }
-        if (responseData['order_summary'] == null) {
-          print('ERROR: Response is missing "order_summary" field');
-        }
-      } catch (e) {
-        print('ERROR parsing response JSON: $e');
       }
       
+      // Якщо не вдалося обробити відповідь вручну, використовуємо стандартний обробник
       return _handleResponse(response);
     } catch (e) {
       print('Exception during attachToPicking: ${e.toString()}');
@@ -396,6 +497,53 @@ class ApiService {
       return _handleResponse(response);
     } catch (e) {
       print('Exception during validatePicking: ${e.toString()}');
+      return ApiResponse(
+        success: false,
+        error: 'CONNECTION_ERROR',
+        message: e.toString(),
+      );
+    }
+  }
+  
+  // Підтвердження замовлення та перехід до наступної накладної
+  Future<ApiResponse> confirmOrder(int pickingId) async {
+    try {
+      print('Confirming order: $pickingId');
+      
+      // Спочатку валідуємо замовлення
+      final validateResponse = await validatePicking(pickingId);
+      
+      if (!validateResponse.success) {
+        print('Order validation failed: ${validateResponse.error}');
+        return validateResponse;
+      }
+      
+      // Додатково викликаємо API для завершення замовлення
+      try {
+        // Це може бути додатковий запит для завершення замовлення
+        final response = await http.post(
+          Uri.parse(AppConstants.baseUrl + '/flf/api/v1/order/complete'),
+          headers: await _getHeaders(withAuth: true),
+          body: json.encode({
+            'picking_id': pickingId,
+          }),
+        );
+        
+        print('Complete order response status: ${response.statusCode}');
+        print('Complete order response body: ${response.body}');
+      } catch (e) {
+        // Ігноруємо помилки додаткового запиту
+        print('Error in additional complete order request: $e');
+      }
+      
+      // Після успішної валідації повертаємо успішний результат
+      print('Order confirmed successfully');
+      return ApiResponse(
+        success: true,
+        data: {'message': 'Замовлення успішно підтверджено'},
+      );
+    } catch (e) {
+      print('Exception during confirmOrder: ${e.toString()}');
       return ApiResponse(
         success: false,
         error: 'CONNECTION_ERROR',

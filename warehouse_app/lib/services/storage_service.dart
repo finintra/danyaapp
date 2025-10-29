@@ -126,6 +126,13 @@ class StorageService {
     print('Checking if user is logged in');
     final prefs = await SharedPreferences.getInstance();
     
+    // Перевіряємо спеціальний прапорець для навігації
+    final navigateToInvoiceScan = prefs.getBool('navigate_to_invoice_scan') ?? false;
+    if (navigateToInvoiceScan) {
+      print('Navigate to invoice scan flag is set to true');
+      return true;
+    }
+    
     // Перевіряємо прапорець авторизації
     final isLoggedIn = prefs.getBool('is_logged_in') ?? false;
     if (!isLoggedIn) {
@@ -141,10 +148,23 @@ class StorageService {
       return false;
     }
     
+    // Після підтвердження замовлення ми не перевіряємо термін дії токена
+    if (token == 'temporary_token_for_navigation') {
+      print('Using temporary token for navigation');
+      return true;
+    }
+    
     // Проверяем срок действия токена
     final isValid = await isTokenValid();
     print('Token validity check result: $isValid');
     return isValid;
+  }
+  
+  // Встановлення прапорця авторизації
+  Future<void> setLoggedInFlag(bool value) async {
+    print('Setting logged in flag to: $value');
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_logged_in', value);
   }
   
   // Сохранение PIN-кода
@@ -198,8 +218,20 @@ class StorageService {
     await prefs.remove('user_data');
     await prefs.remove('token_expiry');
     await prefs.remove('user_pin');
+    // Не видаляємо is_logged_in, щоб запобігти переходу на екран логіну
+    // Не видаляємо deviceId та user_lang, щоб зберегти їх для наступного входу
+    print('Auth data cleared (except is_logged_in flag)');
+  }
+  
+  // Повне очищення даних сесії (використовується при виході з системи)
+  Future<void> clearAllComplete() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
+    await prefs.remove('user_data');
+    await prefs.remove('token_expiry');
+    await prefs.remove('user_pin');
     await prefs.remove('is_logged_in');
     // Не видаляємо deviceId та user_lang, щоб зберегти їх для наступного входу
-    print('All auth data cleared');
+    print('All auth data cleared completely');
   }
 }

@@ -186,7 +186,8 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       // Игнорируем ошибки при выходе
     } finally {
-      await _storageService.clearAll();
+      // Використовуємо метод повного очищення даних
+      await _storageService.clearAllComplete();
       _user = null;
       _status = AuthStatus.unauthenticated;
       notifyListeners();

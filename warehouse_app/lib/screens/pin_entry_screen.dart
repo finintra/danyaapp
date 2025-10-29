@@ -151,7 +151,8 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
     });
     
     try {
-      await _storageService.clearAll();
+      // Використовуємо метод повного очищення даних
+      await _storageService.clearAllComplete();
       
       if (mounted) {
         Navigator.of(context).pushReplacement(

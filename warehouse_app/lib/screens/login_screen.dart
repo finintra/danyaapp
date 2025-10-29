@@ -142,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 20),
                     TextButton(
                       onPressed: () async {
-                        await _storageService.clearAll();
+                        await _storageService.clearAllComplete();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Дані авторизації очищено'),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../services/storage_service.dart';
 import 'invoice_scan_screen.dart';
 import 'cancel_picking_screen.dart';
 
@@ -22,12 +24,58 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
-  void _confirmOrder() {
-    // Просто переходимо на екран сканування накладної
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const InvoiceScanScreen()),
-      (route) => false, // Видаляємо всі попередні екрани зі стеку
-    );
+  Future<void> _confirmOrder() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    
+    try {
+      // Викликаємо API для підтвердження замовлення
+      final apiService = ApiService();
+      final response = await apiService.confirmOrder(widget.pickingId);
+      
+      if (!response.success) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = response.error ?? 'Помилка при підтвердженні замовлення';
+        });
+        return;
+      }
+      
+      // Зберігаємо дані для навігації в SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Встановлюємо прапорець авторизації та спеціальний прапорець для навігації
+      await prefs.setBool('is_logged_in', true);
+      await prefs.setBool('navigate_to_invoice_scan', true);
+      
+      // Зберігаємо тимчасовий токен
+      await prefs.setString('auth_token', 'temporary_token_for_navigation');
+      
+      print('Set navigation flags and temporary token');
+      
+      // Додаємо затримку перед переходом
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Створюємо новий екземпляр InvoiceScanScreen замість використання const
+      if (mounted) {
+        print('Navigating to InvoiceScanScreen with pushReplacement');
+        
+        // Використовуємо pushReplacement замість pushAndRemoveUntil
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => InvoiceScanScreen()),
+        );
+      }
+    } catch (e) {
+      print('Error in _confirmOrder: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Помилка: $e';
+        });
+      }
+    }
   }
 
   void _cancelOrder() {
@@ -63,11 +111,12 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
                   child: Column(
                     children: [
                       Text(
-                        'ЗАТВЕРДИТИ ЦЕ ЗАМОВЛЕННЯ',
+                        'ЗАТВЕРДИТИ\nЦЕ ЗАМОВЛЕННЯ',
                         style: TextStyle(
-                          fontSize: 40,
+                          fontSize: 32,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
+                          height: 1.2,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -75,7 +124,7 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
                       Text(
                         '(${widget.invoiceNumber})',
                         style: TextStyle(
-                          fontSize: 35,
+                          fontSize: 28,
                           fontWeight: FontWeight.w500,
                           color: Colors.white,
                         ),

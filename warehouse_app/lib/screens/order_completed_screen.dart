@@ -4,7 +4,16 @@ import '../services/sound_service.dart';
 import 'confirm_order_screen.dart';
 
 class OrderCompletedScreen extends StatefulWidget {
-  const OrderCompletedScreen({super.key});
+  final String invoiceNumber;
+  final int pickingId;
+  final int totalItems;
+  
+  const OrderCompletedScreen({
+    super.key,
+    required this.invoiceNumber,
+    required this.pickingId,
+    this.totalItems = 0,
+  });
 
   @override
   State<OrderCompletedScreen> createState() => _OrderCompletedScreenState();
@@ -53,7 +62,7 @@ class _OrderCompletedScreenState extends State<OrderCompletedScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  '5 ШТУК',
+                  '${widget.totalItems} ШТУК',
                   style: TextStyle(
                     fontSize: 60,
                     fontWeight: FontWeight.bold,
@@ -80,9 +89,9 @@ class _OrderCompletedScreenState extends State<OrderCompletedScreen> {
                     onPressed: () {
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
-                          builder: (context) => const ConfirmOrderScreen(
-                            invoiceNumber: 'OUT/00123',
-                            pickingId: 1, // Тимчасове значення, в реальному додатку має передаватися з попереднього екрану
+                          builder: (context) => ConfirmOrderScreen(
+                            invoiceNumber: widget.invoiceNumber,
+                            pickingId: widget.pickingId,
                           ),
                         ),
                       );

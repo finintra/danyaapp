@@ -22,41 +22,12 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
-  Future<void> _confirmOrder() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      // Відправляємо запит до API для підтвердження замовлення
-      final apiService = ApiService();
-      print('Sending validatePicking request for picking_id: ${widget.pickingId}');
-      final response = await apiService.validatePicking(widget.pickingId);
-      
-      if (!response.success) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = response.error ?? 'Помилка при підтвердженні замовлення';
-        });
-        return;
-      }
-
-      if (mounted) {
-        // Після успішного підтвердження повертаємося на екран сканування накладної
-        print('Navigating to InvoiceScanScreen after order confirmation');
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const InvoiceScanScreen()),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = 'Ошибка: $e';
-        });
-      }
-    }
+  void _confirmOrder() {
+    // Просто переходимо на екран сканування накладної
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const InvoiceScanScreen()),
+      (route) => false, // Видаляємо всі попередні екрани зі стеку
+    );
   }
 
   void _cancelOrder() {

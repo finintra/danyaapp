@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import 'login_screen.dart';
+import 'invoice_scan_screen.dart';
 import 'cancel_picking_screen.dart';
 
 class ConfirmOrderScreen extends StatefulWidget {
@@ -33,9 +33,9 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
       await Future.delayed(const Duration(seconds: 1));
 
       if (mounted) {
-        // После успешного подтверждения возвращаемся на экран входа
+        // Після успішного підтвердження повертаємося на екран сканування накладної
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          MaterialPageRoute(builder: (context) => const InvoiceScanScreen()),
           (route) => false,
         );
       }

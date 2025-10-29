@@ -1,0 +1,409 @@
+From c788d04cb9e40bc2ffb912c3b3f0aaa13da4f6e7 Mon Sep 17 00:00:00 2001
+From: unknown <finbergdanya@gmail.com>
+Date: Tue, 28 Oct 2025 21:33:41 +0200
+Subject: [PATCH] Add order validation for product scanning
+
+---
+ src/controllers/taskController.js             | 47 +++++++++-
+ src/services/odooService.js                   | 94 +++++++++++++++++++
+ src/validators/taskValidators.js              |  6 +-
+ .../lib/screens/error_wrong_order_screen.dart | 78 +++++++++++++++
+ .../lib/screens/product_scan_screen.dart      | 14 ++-
+ warehouse_app/lib/services/api_service.dart   |  5 +-
+ 6 files changed, 237 insertions(+), 7 deletions(-)
+ create mode 100644 warehouse_app/lib/screens/error_wrong_order_screen.dart
+
+diff --git a/src/controllers/taskController.js b/src/controllers/taskController.js
+index f0ebde9..d44b70f 100644
+--- a/src/controllers/taskController.js
++++ b/src/controllers/taskController.js
+@@ -59,29 +59,63 @@ const attachToPicking = async (req, res, next) => {
+  * @access  Private
+  */
+ const scanItem = async (req, res, next) => {
++  console.log('=== SCAN ITEM CONTROLLER DEBUG ===');
+   try {
+     // Check validation errors
+     const errors = validationResult(req);
+     if (!errors.isEmpty()) {
++      console.log('Validation errors:', errors.array());
+       return next(new ApiError(400, 'Validation error', false, { errors: errors.array() }));
+     }
+ 
+-    const { picking_id, barcode } = req.body;
++    const { picking_id, barcode, expected_product_id } = req.body;
++    console.log(`Received scan request: picking_id=${picking_id}, barcode="${barcode}", expected_product_id=${expected_product_id}`);
+     
+     // Get user language from request user object
+     const userLang = req.user?.lang || 'uk_UA';
+     console.log(`Using user language for item scan: ${userLang}`);
+ 
+-    // Validate item scan with user language
++    // Перш ніж валідувати сканування, знайдемо товар за штрих-кодом
++    const products = await odooService.findProductByBarcode(barcode, userLang);
++    
++    if (!products || products.length === 0) {
++      console.log(`No product found with barcode: ${barcode}`);
++      return res.status(404).json({
++        ok: false,
++        error: 'NOT_IN_ORDER'
++      });
++    }
++    
++    const scannedProductId = products[0].id;
++    console.log(`Found product: ${products[0].name} (ID: ${scannedProductId})`);
++    
++    // Перевіряємо, чи відсканований товар відповідає очікуваному
++    if (expected_product_id && Number(scannedProductId) !== Number(expected_product_id)) {
++      console.log(`Wrong product scanned: expected ${expected_product_id}, got ${scannedProductId}`);
++      return res.status(409).json({
++        ok: false,
++        error: 'WRONG_ORDER'
++      });
++    }
++    
++    // Якщо товар відповідає очікуваному, валідуємо сканування
++    console.log(`Calling odooService.validateItemScan with picking_id=${picking_id}, barcode="${barcode}", userLang=${userLang}`);
+     const result = await odooService.validateItemScan(picking_id, barcode, userLang);
++    console.log(`validateItemScan successful, result:`, result);
+ 
+     // Return success response
++    console.log('Sending success response');
+     res.status(200).json({
+       ok: true,
+       ...result
+     });
++    console.log('Success response sent');
+   } catch (error) {
++    console.log(`Error in scanItem: ${error.message}`);
++    console.log(error.stack);
++    
+     if (error.message === 'NOT_IN_ORDER') {
++      console.log('Sending NOT_IN_ORDER error response');
+       return res.status(404).json({
+         ok: false,
+         error: 'NOT_IN_ORDER'
+@@ -89,11 +123,20 @@ const scanItem = async (req, res, next) => {
+     }
+ 
+     if (error.message === 'OVERPICK') {
++      console.log('Sending OVERPICK error response');
+       return res.status(409).json({
+         ok: false,
+         error: 'OVERPICK'
+       });
+     }
++    
++    if (error.message === 'WRONG_ORDER') {
++      console.log('Sending WRONG_ORDER error response');
++      return res.status(409).json({
++        ok: false,
++        error: 'WRONG_ORDER'
++      });
++    }
+ 
+     next(error);
+   }
+diff --git a/src/services/odooService.js b/src/services/odooService.js
+index 33754cb..f9a45bd 100644
+--- a/src/services/odooService.js
++++ b/src/services/odooService.js
+@@ -420,6 +420,34 @@ class OdooService {
+     }
+   }
+ 
++  /**
++   * Find product by barcode or default_code
++   * @param {string} code - Scanned code (default_code or barcode)
++   * @param {string} [userLang='uk_UA'] - User language code
++   * @returns {Promise<Array>} - Array of products
++   */
++  async findProductByBarcode(code, userLang = 'uk_UA') {
++    try {
++      console.log(`Finding product with code: ${code}, userLang=${userLang}`);
++      
++      // Find product by default_code or barcode with user language
++      const context = { lang: userLang };
++      
++      const products = await this.execute('product.product', 'search_read', [
++        ['|', ['default_code', '=', code], ['barcode', '=', code]]
++      ], { 
++        fields: ['id', 'name', 'default_code', 'barcode'],
++        context: context // Pass the language context
++      });
++      
++      console.log(`Found ${products.length} products with code ${code}`);
++      return products;
++    } catch (error) {
++      console.error(`Error finding product by barcode: ${error.message}`);
++      throw error;
++    }
++  }
++  
+   /**
+    * Validate item scan
+    * @param {number} pickingId - Picking ID
+@@ -429,6 +457,8 @@ class OdooService {
+    */
+   async validateItemScan(pickingId, code, userLang = 'uk_UA') {
+     try {
++      console.log(`Validating item scan: pickingId=${pickingId}, code=${code}, userLang=${userLang}`);
++      
+       // Find product by default_code or barcode with user language
+       const context = { lang: userLang };
+       console.log(`Using language context for product scan: ${userLang}`);
+@@ -441,10 +471,12 @@ class OdooService {
+       });
+ 
+       if (!products || products.length === 0) {
++        console.log(`No product found with code: ${code}`);
+         throw new ApiError(404, 'NOT_IN_ORDER');
+       }
+ 
+       const productId = products[0].id;
++      console.log(`Found product: ${products[0].name} (ID: ${productId})`);
+ 
+       // Find move line for this product in the picking
+       const moveLines = await this.execute('stock.move.line', 'search_read', [
+@@ -457,8 +489,70 @@ class OdooService {
+       });
+ 
+       if (!moveLines || moveLines.length === 0) {
++        console.log(`Product ${productId} is not in picking ${pickingId}`);
+         throw new ApiError(404, 'NOT_IN_ORDER');
+       }
++      
++      // Get all move lines for this picking to check order
++      const allMoveLines = await this.execute('stock.move.line', 'search_read', [
++        [['picking_id', '=', pickingId]]
++      ], { 
++        fields: ['id', 'product_id', 'product_uom_qty', 'qty_done'] 
++      });
++      
++      console.log(`All move lines for picking ${pickingId}: ${JSON.stringify(allMoveLines)}`);
++      
++      // Сортуємо рядки за ID, щоб забезпечити послідовність
++      allMoveLines.sort((a, b) => a.id - b.id);
++      
++      // Логуємо всі рядки для аналізу
++      console.log('All move lines details (sorted by ID):');
++      allMoveLines.forEach((ml, index) => {
++        console.log(`Line ${index}: id=${ml.id}, product_id=${ml.product_id[0]}, qty_done=${ml.qty_done}, product_uom_qty=${ml.product_uom_qty}, remaining=${ml.product_uom_qty - ml.qty_done}`);
++      });
++      
++      // Знаходимо перший незавершений рядок
++      const incompleteLines = allMoveLines.filter(ml => ml.product_uom_qty > ml.qty_done && ml.product_uom_qty > 0);
++      
++      // Якщо немає незавершених рядків, дозволяємо сканувати будь-який товар
++      if (incompleteLines.length === 0) {
++        console.log('No incomplete lines found, allowing any product to be scanned');
++        return;
++      }
++      
++      // Сортуємо незавершені рядки за ID
++      incompleteLines.sort((a, b) => a.id - b.id);
++      
++      // Перший незавершений рядок - це той, який повинен бути відсканований наступним
++      const firstIncompleteLine = incompleteLines[0];
++      
++      console.log('First incomplete line:', firstIncompleteLine ? 
++        `id=${firstIncompleteLine.id}, product_id=${firstIncompleteLine.product_id[0]}, qty_done=${firstIncompleteLine.qty_done}, product_uom_qty=${firstIncompleteLine.product_uom_qty}` : 
++        'No incomplete lines found');
++      console.log(`Scanned product ID: ${productId}`);
++      
++      // Перетворюємо ID товарів на числа для коректного порівняння
++      const expectedProductId = firstIncompleteLine ? Number(firstIncompleteLine.product_id[0]) : null;
++      const scannedProductId = Number(productId);
++      
++      console.log(`Comparing product IDs: expected=${expectedProductId}, scanned=${scannedProductId}, equal=${expectedProductId === scannedProductId}`);
++      
++      // Якщо відсканований товар не відповідає очікуваному, повертаємо помилку
++      if (expectedProductId !== scannedProductId) {
++        // Get product info for better logging
++        const firstIncompleteProduct = await this.execute('product.product', 'search_read', [
++          [['id', '=', firstIncompleteLine.product_id[0]]]
++        ], { 
++          fields: ['id', 'name', 'default_code'],
++          context: context
++        });
++        
++        const expectedProductName = firstIncompleteProduct.length > 0 ? firstIncompleteProduct[0].name : 'Unknown';
++        const scannedProductName = products[0].name;
++        
++        console.log(`Wrong order: Expected product ${expectedProductName} (ID: ${expectedProductId}) but scanned ${scannedProductName} (ID: ${scannedProductId})`);
++        throw new ApiError(409, 'WRONG_ORDER');
++      }
+ 
+       const line = moveLines[0];
+       const required = line.product_uom_qty;
+diff --git a/src/validators/taskValidators.js b/src/validators/taskValidators.js
+index 0c32278..a889525 100644
+--- a/src/validators/taskValidators.js
++++ b/src/validators/taskValidators.js
+@@ -14,7 +14,11 @@ const scanItemValidator = [
+     .withMessage('Picking ID must be a number'),
+   body('barcode')
+     .notEmpty()
+-    .withMessage('Barcode is required')
++    .withMessage('Barcode is required'),
++  body('expected_product_id')
++    .optional()
++    .isNumeric()
++    .withMessage('Expected product ID must be a number')
+ ];
+ 
+ const validatePickingValidator = [
+diff --git a/warehouse_app/lib/screens/error_wrong_order_screen.dart b/warehouse_app/lib/screens/error_wrong_order_screen.dart
+new file mode 100644
+index 0000000..6f767d0
+--- /dev/null
++++ b/warehouse_app/lib/screens/error_wrong_order_screen.dart
+@@ -0,0 +1,78 @@
++import 'package:flutter/material.dart';
++import '../theme/app_theme.dart';
++import '../services/sound_service.dart';
++
++class ErrorWrongOrderScreen extends StatefulWidget {
++  const ErrorWrongOrderScreen({super.key});
++
++  @override
++  State<ErrorWrongOrderScreen> createState() => _ErrorWrongOrderScreenState();
++}
++
++class _ErrorWrongOrderScreenState extends State<ErrorWrongOrderScreen> {
++  final SoundService _soundService = SoundService();
++  
++  @override
++  void initState() {
++    super.initState();
++    
++    // Відтворюємо звук помилки
++    _playErrorSound();
++    
++    // Автоматически возвращаемся на предыдущий экран через 800 мс
++    Future.delayed(const Duration(milliseconds: 800), () {
++      if (mounted) {
++        Navigator.of(context).pop();
++      }
++    });
++  }
++  
++  Future<void> _playErrorSound() async {
++    try {
++      await _soundService.playErrorSound();
++      print('Error sound played on ErrorWrongOrderScreen');
++    } catch (e) {
++      print('Error playing error sound on ErrorWrongOrderScreen: $e');
++    }
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return Scaffold(
++      body: Container(
++        color: AppTheme.errorColor,
++        child: Center(
++          child: Column(
++            mainAxisAlignment: MainAxisAlignment.center,
++            children: [
++              const Icon(
++                Icons.error_outline,
++                size: 100,
++                color: Colors.white,
++              ),
++              const SizedBox(height: 20),
++              const Text(
++                'ЦЕЙ ТОВАР СКАНУВАТИ РАНО',
++                style: TextStyle(
++                  color: Colors.white,
++                  fontSize: 28,
++                  fontWeight: FontWeight.bold,
++                ),
++                textAlign: TextAlign.center,
++              ),
++              const SizedBox(height: 10),
++              const Text(
++                'Спочатку закінчіть сканування поточного товару',
++                style: TextStyle(
++                  color: Colors.white,
++                  fontSize: 18,
++                ),
++                textAlign: TextAlign.center,
++              ),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++}
+diff --git a/warehouse_app/lib/screens/product_scan_screen.dart b/warehouse_app/lib/screens/product_scan_screen.dart
+index 7bd6892..eb4e033 100644
+--- a/warehouse_app/lib/screens/product_scan_screen.dart
++++ b/warehouse_app/lib/screens/product_scan_screen.dart
+@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
+ import 'package:mobile_scanner/mobile_scanner.dart';
+ import '../theme/app_theme.dart';
+ import '../services/api_service.dart';
+-import '../services/sound_service.dart';
+ import '../models/picking_model.dart';
++import '../services/sound_service.dart';
+ import 'cancel_picking_screen.dart';
+ import 'success_scan_screen.dart';
+ import 'error_extra_screen.dart';
+ import 'error_not_in_order_screen.dart';
++import 'error_wrong_order_screen.dart';
+ import 'line_completed_screen.dart';
+ import 'order_completed_screen.dart';
+ 
+@@ -120,7 +121,8 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
+     try {
+       // Отправляем запрос к API для сканирования товара
+       final apiService = ApiService();
+-      final response = await apiService.scanItem(widget.pickingId, code);
++      // Передаємо ID поточного товару
++      final response = await apiService.scanItem(widget.pickingId, code, _currentLine.productId);
+       
+       if (!response.success) {
+         // Обрабатываем ошибки
+@@ -140,6 +142,14 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
+               MaterialPageRoute(builder: (context) => const ErrorExtraScreen()),
+             );
+           }
++        } else if (response.error == 'WRONG_ORDER') {
++          // Відтворюємо звук помилки
++          _soundService.playErrorSound();
++          if (mounted) {
++            Navigator.of(context).push(
++              MaterialPageRoute(builder: (context) => const ErrorWrongOrderScreen()),
++            );
++          }
+         } else {
+           setState(() {
+             _errorMessage = response.error ?? 'Ошибка при сканировании товара';
+diff --git a/warehouse_app/lib/services/api_service.dart b/warehouse_app/lib/services/api_service.dart
+index c318ac7..8b4ae2d 100644
+--- a/warehouse_app/lib/services/api_service.dart
++++ b/warehouse_app/lib/services/api_service.dart
+@@ -301,15 +301,16 @@ class ApiService {
+   }
+   
+   // Сканирование товара
+-  Future<ApiResponse> scanItem(int pickingId, String barcode) async {
++  Future<ApiResponse> scanItem(int pickingId, String barcode, int expectedProductId) async {
+     try {
+-      print('Scanning item: $barcode for picking: $pickingId');
++      print('Scanning item: $barcode for picking: $pickingId, expected product ID: $expectedProductId');
+       final response = await http.post(
+         Uri.parse(AppConstants.baseUrl + AppConstants.scanItemEndpoint),
+         headers: await _getHeaders(withAuth: true),
+         body: json.encode({
+           'picking_id': pickingId,
+           'barcode': barcode,
++          'expected_product_id': expectedProductId,
+         }),
+       );
+       
+-- 
+2.49.0.windows.1
+

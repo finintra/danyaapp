@@ -55,6 +55,7 @@ dependencies:
   
   # Audio player for sound effects
   audioplayers: ^5.2.1
+  printing: ^5.13.4
 
 dev_dependencies:
   flutter_test:

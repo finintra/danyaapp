@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Link-OS Multiplatform SDK Open Source Software Notices&trade;</title>
+
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+        
+        .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        
+        .reg {
+            vertical-align: top;
+            font-size: 0.5em;
+        }
+        
+        .link-os-text {
+            white-space: nowrap;
+        }
+        
+        /* Main header */
+        
+        #landingPageHeaderContainer {
+            background-color: black;
+            color: white;
+        }
+        
+        #landingPageHeader {
+            transition: all 0.2s linear;
+            display: block;
+            max-width: 900px;
+            position: relative;
+            margin: 0 auto;
+            height: 240px;
+        }
+        
+        #zebraLogo {
+            transition: all 0.2s linear;
+            display: block;
+            height: 120px;
+            width: 86px;
+            position: absolute;
+            top: 60px;
+            left: 60px;
+        }
+        
+        #landingPageHeaderTextContainer {
+            transition: all 0.2s linear;
+            padding-left: 175px;
+            padding-right: 60px;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .header-text {
+            display: block;
+        }
+        
+        #headerLinkOsText {
+            transition: all 0.2s linear;
+            color: #F6BE00;
+            font-size: 2.5em;
+            font-weight: 100;
+            letter-spacing: 4px;
+        }
+        
+        #headerSubhHeaderText {
+            transition: all 0.2s linear;
+            font-size: 1.5em;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        
+        /* Landing page overview */
+        
+        #mainContentContainer {
+            background-color: #ddd;
+            padding: 30px 0;
+        }
+        
+        #landingPageOverviewContainer {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        
+        #landingPageOverview {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            padding: 30px;
+            color: #555;
+            font-weight: 300;
+            position: relative;
+        }
+        
+        #landingPageOverviewDescriptionContainer {
+            float: left;
+            width: 100%;
+            height: 100%;
+            font-size: 0.8em;
+            line-height: 1.5em;
+        }
+        
+        #landingPageOverviewZipContainer {
+            float: left;
+            width: 50%;
+            height: 100%;
+            padding-left: 30px;
+            border-left: 1px solid #ddd;
+            font-size: 0.8em;
+        }
+        
+        .softwareLicenseItemContainer {
+            border-top: 1px dotted #bbb;
+            width: 100%;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        
+        #zipIcon {
+            width: 3em;
+            height: 3em;
+            display: block;
+            float: left;
+        }
+        
+        #landingPageOverviewZipDescription {
+            display: table-cell;
+            vertical-align: middle;
+            width: auto;
+            overflow: hidden;
+            padding-left: 15px;
+            height: 3em;
+        }
+        
+        #landingPageOverviewList {
+            font-weight: 500;
+        }
+        
+        #landingPageTermsNote {
+            font-size: 0.9em;
+            font-style: italic;
+        }
+        
+        /* Main footer */
+        
+        #landingPageFooter {
+            display: block;
+            color: #aaa;
+            text-align: center;
+            padding-top: 15px;
+            padding-bottom: 30px;
+        }
+        
+        #landingPageFooterText {
+            font-size: 0.7em;
+        }
+        
+        /* Media queries */
+        @media (max-width: 500px) {
+            #landingPageHeader {
+                height: 160px;
+            }
+        
+            #zebraLogo {
+                top: 20px;
+                left: 40px;
+            }
+        
+            #landingPageHeaderTextContainer {
+                padding-left: 145px;
+            }
+        
+            #headerSubhHeaderText {
+                font-size: 1.1em;
+            }
+        
+            #headerLinkOsText {
+                font-size: 1.5em;
+            }
+        
+            .section-link-grid-container {
+                width: 100%;
+            }
+        
+            #landingPageOverviewDescriptionContainer {
+                width: 100%;
+                padding: 0 0 30px;
+            }
+        
+            #landingPageOverviewZipContainer {
+                border: 0;
+                padding: 30px 0 0;
+                width: 100%;
+                position: relative;
+            }
+        
+            #landingPageOverviewZipContainer:before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 25%;
+                right: 25%;
+                border-top: 1px solid #ddd;
+            }
+        }
+        
+        .span_pre {
+            display: block;
+            unicode-bidi: embed;
+            font-family: monospace;
+            white-space: pre;
+            font-size: 1.1em;
+        }
+        
+        .licenseHeader {
+            transition: all 0.2s linear;
+            font-size: 1.5em;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        
+        .listHeader {
+            padding-bottom: 10px;
+            transition: all 0.2s linear;
+            font-size: 1.5em;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="landingPageHeaderContainer">
+        <header id="landingPageHeader">
+            <?xml version="1.0" encoding="utf-8"?>
+            <!-- Generator: Adobe Illustrator 18.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+            <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+            <svg version="1.1" id="zebraLogo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 68.74 110">
+                <defs>
+                    <style>
+                        .a{fill:#fff;}
+                    </style>
+                </defs>
+                <title>zebra-logo-white</title>
+                <polygon class="a" points="50.93 39.44 45.52 34.03 45.52 49.32 50.93 49.32 50.93 39.44" />
+                <path class="a" d="M58.95,31.16H72.1l-5.38-5.38,0,0H59.78A8.9,8.9,0,0,0,58.95,8V25.78h0L44.16,11q-1.17.61-2.28,1.33a27.07,27.07,0,0,0-2.33,1.71L53.55,28v30.6l10.8,10.8V61.79l-5.4-5.4V31.16Z" transform="translate(-29.63 -8)" />
+                <polygon class="a" points="34.72 23.19 34.69 49.28 40.09 49.28 40.12 28.62 34.72 23.19" />
+                <polygon class="a" points="53.26 34.03 47.85 28.63 40.12 28.63 45.52 34.03 53.26 34.03" />
+                <path class="a" d="M48.14,53.54V53.22h0V30.3L35.73,17.89a27,27,0,0,0-3,4.6l10,10v7.64h0L30.55,28a26.88,26.88,0,0,0-.92,6.72S47.54,52.91,48.14,53.54" transform="translate(-29.63 -8)" />
+                <polygon class="a" points="0.09 34.43 0.09 42.07 34.72 76.7 34.72 69.06 0.09 34.43" />
+                <path class="a" d="M91.36,50.49H86v6.83h-5.4a8.9,8.9,0,1,0,17.79,0Z" transform="translate(-29.63 -8)" />
+                <polygon class="a" points="12.68 106.71 10.83 110 0.04 110 7.04 96.55 0.84 96.55 2.57 93.27 13.33 93.27 6.33 106.71 12.68 106.71" />
+                <polygon class="a" points="18.78 99.97 24.3 99.97 24.3 103.25 18.78 103.25 18.78 106.71 24.3 106.71 24.3 110 14.72 110 14.72 93.27 24.3 93.27 24.3 96.55 18.78 96.55 18.78 99.97" />
+                <path class="a" d="M61.46,101.27c2.13,0,3.36.23,4.27,0.8a4.3,4.3,0,0,1,1.86,3.74,4,4,0,0,1-1.13,2.91,3.22,3.22,0,0,1-1.76,1,3.59,3.59,0,0,1,2,1,3.79,3.79,0,0,1,1.13,2.91,4.34,4.34,0,0,1-1.71,3.66,6,6,0,0,1-3.54.78H55.74V101.27h5.72Zm-1.66,6.92h1c1.86,0,2.63-.58,2.63-2s-0.78-1.93-2.69-1.93h-1v3.89Zm0,6.9h1.48c1.71,0,2.43-.58,2.43-1.93a1.78,1.78,0,0,0-.9-1.71,3.92,3.92,0,0,0-2.08-.3H59.8v3.94Z" transform="translate(-29.63 -8)" />
+                <path class="a" d="M73.66,118H69.59V101.27H75a7.89,7.89,0,0,1,4.92,1.25,5.22,5.22,0,0,1,1.81,4.24,4.94,4.94,0,0,1-3.24,5.09L82.19,118H77.32l-3.66-6.47V118Zm1.3-8.76c1.66,0,2.66-.85,2.66-2.31a2.26,2.26,0,0,0-2.41-2.33H73.66v4.64H75Z" transform="translate(-29.63 -8)" />
+                <path class="a" d="M92.88,101.27H87.71L82.19,118h4.29l1-3.25h5.45L94,118h4.41Zm-4.35,10.2,1.69-5.4,1.69,5.4H88.52Z" transform="translate(-29.63 -8)" />
+            </svg>
+            <div id="landingPageHeaderTextContainer">
+                <span id="headerLinkOsText" class="header-text">Link-OS&trade; Multiplatform SDK for Android&trade;</span>
+                <span id="headerSubhHeaderText" class="header-text">Open Source Software Notices</span>
+            </div>
+        </header>
+    </div>
+    <div id="mainContentContainer" class="clearfix">
+        <div id="landingPageOverviewContainer">
+            <div id="landingPageOverview" class="clearfix">
+                <h3>Legal Notice Applicable to Zebra Products</h3>
+                <div id="landingPageOverviewDescriptionContainer">
+                    The object code or source code (collectively, the "Software") included with the Product is the exclusive property of Zebra or its licensors, and any use is subject to the terms and conditions of one or more agreements in force between the purchaser of the Zebra Product or licensee of the Software and Zebra. SOFTWARE IS PROTECTED BY U.S. COPYRIGHT LAWS AND INTERNATIONAL LAWS AND TREATIES. UNAUTHORIZED COPYING, DISTRIBUTION OR OTHER USE OF THIS PRODUCT IS STRICTLY PROHIBITED. ANY DISTRIBUTION OR USE NOT SPECIFICALLY APPROVED BY ZEBRA IS STRICTLY PROHIBITED.
+                    <br /><br />
+                    Zebra Software is subject to the commercial terms and conditions entered into with Zebra, any other use is strictly prohibited. Commercial Software licensed for redistribution by Zebra ("Third Party Software") is subject to the terms and conditions in force between Zebra and the licensor of the Third Party Software. The terms and conditions governing the usage of Third Party Software may be part of the agreement entered into by the purchaser of the Product with Zebra or separate Third Party Software license agreement(s) included with the Product.
+                    <br /><br />
+                    Software provided by Zebra which is covered by a publicly available license governed solely under Copyright law, whereas the complete terms and obligations of such license attach to a licensee solely through the act of copying, using and/or distribution of the licensed Software, such obligations often include one or more of attribution obligations, distribution obligations, copyleft obligations, and intellectual property encumbrances is referred to herein as "Open Source Software". The use of any Open Source Software is subject to the licenses, terms and conditions of the commercial agreement in force between the purchaser of the Product and Zebra as well as the terms and conditions of the corresponding license of each Open Source Software package. If there is a conflict between the terms and conditions of any commercial agreement and the terms and conditions of the Open Source Software license, the applicable Open Source Software license will take precedence. Copies of the licenses for the included Open Source Software as well as their attributions, acknowledgements, and software information details, are listed below. Zebra is required to reproduce the software licenses, acknowledgements and copyright notices as provided by the authors and owners, thus, all such information is provided in its native language form, without modification or translation.
+                    <br /><br />
+                    For instructions on how to obtain a copy of any source code made publicly available by Zebra related to Open Source Software distributed by Zebra, you may send your request in writing to:
+                    <br /><br />
+                    Zebra Technologies Corporation
+                    Open Source Software Director
+                    Legal Department
+                    3 Overlook Point
+                    Lincolnshire, IL 60069 USA
+                    <br /><br />
+                    In your request, please include the Zebra Product name and version, along with the Open Source Software specifics, such as the Open Source Software name and version.
+                    <br /><br />
+                    <b>Note:</b> The source code for the Open Source Software included by Zebra may be resident on the Product's installation media provided with the Product or on supplemental Product media. Please reference and review the entire Zebra Open Source Software "Legal Notices" and any corresponding "End User License Agreement" provided with the Product or the commercial agreement under which the Product was purchased for details on the availability, location and method for obtaining source code. Further, depending on the license terms of the specific Open Source Software, source code may not be provided. Please reference and review the entire Zebra Open Source Software "Legal Notices" and "End User License Agreement" to identify which Open Source Software packages have source code provided or available.
+                    <br /><br />
+                    To view information regarding licenses, acknowledgments and required copyright notices for Open Source Software used in this Product, please select "Legal Notices" from the graphical user interface of the Software (if applicable) or as specified in the "Legal Notices" or End User License Agreement File/README associated with the Product. Use of any Software is subject to acceptance of the corresponding terms associated with the Software and by using the Software you agree you have reviewed the terms and agreed to be bound by said terms.
+                    <br /><br />
+					ZEBRA and the stylized Zebra head are trademarks of Zebra Technologies Corporation, registered in many jurisdictions worldwide. All other trademarks are the property of their respective owners. &copy;2025 Zebra Technologies Corporation and/or its affiliates. All rights reserved.</br>
+                    
+					<br/>
+                    <br/>
+                    <br/>
+                    <span class="listHeader">PUBLICLY AVAILABLE SOFTWARE LIST</span>
+
+                    <br />
+                    <br />
+					
+					<div class="softwareLicenseItemContainer">
+                    <a href="https://commons.apache.org/proper/commons-io/"><strong>Apache Commons IO</strong></a>
+                    <span class="span_pre">
+Apache Commons IO
+Copyright 2002-2024 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+                    </span>
+                    <a href="#apache2">Apache 2.0 License listed below</a>
+                    </div>
+
+                    <div class="softwareLicenseItemContainer">
+                    <a href="https://commons.apache.org/proper/commons-net/"><strong>Apache Commons Net</strong></a>
+                    <span class="span_pre">
+Apache Commons Net
+Copyright 2001-2024 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+                    </span>
+                    <a href="#apache2">Apache 2.0 License listed below</a>
+                    </div>
+
+
+                    <div class="softwareLicenseItemContainer">
+                    <a href="https://commons.apache.org/proper/commons-validator/"><strong>Apache Commons Validator</strong></a>
+                    <span class="span_pre">
+Apache Commons Validator
+Copyright 2002-2024 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+                    </span>
+                    <a href="#apache2">Apache 2.0 License listed below</a>
+                    </div>
+
+                    <div class="softwareLicenseItemContainer">
+                    <a href="https://commons.apache.org/proper/commons-lang/"><strong>Apache Commons Lang</strong></a>
+                    <span class="span_pre">
+Apache Commons Lang
+Copyright 2001-2024 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+
+This product includes software from the Spring Framework,
+under the Apache License 2.0 (see: StringUtils.containsWhitespace())
+                    </span>
+                    <a href="#apache2">Apache 2.0 License listed below</a>
+                    </div>
+
+                    <div class="softwareLicenseItemContainer">
+                    <a href="https://hc.apache.org/httpcomponents-core-ga/"><strong>Apache HttpComponents Core</strong></a>
+                    <span class="span_pre">
+Apache HttpComponents Core
+Copyright 2005-2025 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+
+This project contains annotations derived from JCIP-ANNOTATIONS
+Copyright 2006-2015 Brian Goetz and Tim Peierls. See http://www.jcip.net
+                    </span>
+                    <a href="#apache2">Apache 2.0 License listed below</a>
+                    </div>
+
+                    <div class="softwareLicenseItemContainer">
+                    <a href="https://hc.apache.org/httpcomponents-client-ga//"><strong>Apache HttpComponents Client</strong></a>
+                    <span class="span_pre">
+Apache HttpComponents Client
+Copyright 2005-2025 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+                    </span>
+                    <a href="#apache2">Apache 2.0 License listed below</a>
+                    </div>
+					
+					<div class="softwareLicenseItemContainer">
+                    <a href="https://hc.apache.org/httpcomponents-client-4.5.x/current/httpmime/summary.html"><strong>Apache HttpClient Mime</strong></a>
+                    <span class="span_pre">
+Apache HttpClient Mime
+Copyright © 1999–2022 The Apache Software Foundation. All rights reserved.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+                    </span>
+                    <a href="#apache2">Apache 2.0 License listed below</a>
+                    </div>
+
+                    <div class="softwareLicenseItemContainer">
+                    <a href="https://github.com/FasterXML/jackson-annotations"><strong>Jackson Annotations</strong></a>
+                    <span class="span_pre">
+This copy of Jackson JSON processor annotations is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
+
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+                    </span>
+                    <a href="#apache2">Apache 2.0 License listed below</a>
+                    </div>
+
+                    <div class="softwareLicenseItemContainer">
+                    <a href="https://github.com/FasterXML/jackson-core"><strong>Jackson Core</strong></a>
+                    <span class="span_pre">
+This copy of Jackson JSON processor streaming parser/generator is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
+
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+                    </span>
+                    <a href="#apache2">Apache 2.0 License listed below</a>
+                    </div>
+
+                    <div class="softwareLicenseItemContainer">
+                    <a href="https://github.com/FasterXML/jackson-databind"><strong>Jackson Databind</strong></a>
+                    <span class="span_pre">
+This copy of Jackson JSON processor databind module is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
+
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+                    </span>
+                    <a href="#apache2">Apache 2.0 License listed below</a>
+                    </div>
+
+                    <div class="softwareLicenseItemContainer">
+                    <a href="http://opencsv.sourceforge.net/"><strong>OpenCSV</strong></a>
+                    <span class="span_pre">
+Copyright (C) 2005–2025
+
+This copy of OpenCSV is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
+
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+                    </span>
+                    <a href="#apache2">Apache 2.0 License listed below</a>
+                    </div>
+
+                    <div class="softwareLicenseItemContainer">
+                    <a href="http://sourceforge.net/p/westhawksnmp/wiki/Home/"><strong>Westhawk SNMP</strong></a>
+                    <span class="span_pre">
+Copyright (C) 2000 - 2006 by Westhawk Ltd
+www.westhawk.co.uk
+
+Permission to use, copy, modify, and distribute this software
+for any purpose and without fee is hereby granted, provided
+that the above copyright notices appear in all copies and that
+both the copyright notice and this permission notice appear in
+supporting documentation.
+This software is provided "as is" without express or implied
+warranty.
+author: Tim Panton (snmp@westhawk.co.uk)
+
+
+The stack is freeware. The licence (see the header of each file) means that you can do
+whatever you like with it without cost, except
+
+1. blame us when it does/doesn't work
+2. remove our copyright
+
+The licence requires that you acknowledge our code, by mentioning its origin in the
+documentation of any product that uses it (in some cases there may be no documentation).
+                    </span>
+                    Freeware License
+                    </div>
+
+					<div class="softwareLicenseItemContainer">
+                    <a href="https://rtyley.github.io/spongycastle/"><strong>Spongy Castle</strong></a>
+                    <span class="span_pre">
+Copyright (c) 2000-2017 The Legion of the Bouncy Castle Inc. (http://www.bouncycastle.org)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this
+software and associated documentation files (the "Software"), to deal in the Software
+without restriction, including without limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+to whom the Software is furnished
+to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+                    </span>
+                    </div>
+
+                    <div class="softwareLicenseItemContainer">
+                        <a href="https://github.com/journeyapps/zxing-android-embedded"><strong>ZXing Android Embedded</strong></a>
+                        <span class="span_pre">
+Copyright (C) 2012-2022 ZXing authors, Journey Mobile
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file 
+except in compliance with the License.
+
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+                            
+Unless required by applicable law or agreed to in writing, software distributed under the 
+License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+either express or implied. See the License for the specific language governing permissions
+ and limitations under the License.
+                        </span>
+                        <a href="#apache2">Apache 2.0 License listed below</a>    
+                        </div>               
+
+                    <div class="softwareLicenseItemContainer">
+                        <a href="https://github.com/FasterXML/jackson-jr"><strong>Jackson Jr</strong></a>
+                        <span class="span_pre">
+This copy of Jackson Jr is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
+    
+You may obtain a copy of the License at:
+    
+http://www.apache.org/licenses/LICENSE-2.0
+                        </span>
+                        <a href="#apache2">Apache 2.0 License listed below</a>
+                        </div>
+
+					<div class="softwareLicenseItemContainer">
+						<a href="https://github.com/greenrobot/EventBus"><strong>EventBus</strong></a>
+						<span class="span_pre">
+Copyright (C) 2012-2021 Markus Junginger, greenrobot (https://greenrobot.org)
+
+EventBus binaries and source code can be used according to the Apache License, Version 2.0                                
+
+This copy of EventBus is licensed under the Apache (Software) License, 
+version 2.0 ("the License"). See the License for details about distribution rights,
+and the specific rights regarding derivate works.
+	
+You may obtain a copy of the License at:
+	
+http://www.apache.org/licenses/LICENSE-2.0
+						</span>
+						<a href="#apache2">Apache 2.0 License listed below</a>
+                    </div>    
+                    
+                    <br/>
+                    <span class="licenseHeader">Open Source Licenses</span>
+                    <div class="softwareLicenseItemContainer">
+                    <a name="apache2"><a href="http://www.apache.org/licenses/LICENSE-2.0.html"><strong>Apache 2.0</strong></a></a>
+                    <span class="span_pre">
+
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright [yyyy] [name of copyright owner]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+                    </span>
+
+                    </div>
+                </div>
+        </div>
+    </div>
+                    
+
+                    
+        <footer id="landingPageFooter">
+            <span id="landingPageFooterText">                
+				ZEBRA and the stylized Zebra head are trademarks of Zebra Technologies Corporation, registered in many jurisdictions worldwide. All other trademarks are the property of their respective owners.<br>
+				&copy;2025 Zebra Technologies Corporation and/or its affiliates.  All rights reserved.<br>
+				<a href="http://www.zebra.com">www.zebra.com</a>
+            </span>
+        </footer>
+</body>
+
+</html>

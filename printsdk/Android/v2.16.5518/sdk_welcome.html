@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Welcome to the Link-OS Multiplatform SDK for Android&trade;</title>
+
+    <style type="text/css">
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        /* Main header */
+
+        #landingPageHeaderContainer {
+            background-color: black;
+            color: white;
+        }
+
+        #landingPageHeader {
+            transition: all 0.2s linear;
+            display: block;
+            max-width: 768px;
+            position: relative;
+            margin: 0 auto;
+            height: 240px;
+        }
+
+        #zebraLogo {
+            transition: all 0.2s linear;
+            display: block;
+            height: 120px;
+            width: 86px;
+            position: absolute;
+            top: 60px;
+            left: 40px;
+        }
+
+        #landingPageHeaderTextContainer {
+            transition: all 0.2s linear;
+            padding-left: 175px;
+            padding-right: 60px;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .header-text {
+            display: block;
+        }
+
+        #headerWelcomeText {
+            transition: all 0.2s linear;
+            color: #ffcc33;
+            font-size: 2.5em;
+            font-weight: 100;
+            letter-spacing: 4px;
+        }
+
+        #headerLinkOsText {
+            transition: all 0.2s linear;
+            font-size: 1.5em;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        #headerPlatformText {
+            transition: all 0.2s linear;
+            font-weight: 200;
+        }
+
+        /* Section links */
+        
+        #mainContentContainer {
+            background-color: #ddd;
+        }
+
+        #sectionLinkMainContainer {
+            max-width: 768px;
+            margin: 0 auto;
+        }
+
+        .section-link-grid-container {
+            float: left;
+            padding: 15px;
+            width: 50%;
+            height: 270px;
+        }
+
+        .section-link-container {
+            transition: all 0.2s linear;
+            text-align: center;
+            border-radius: 10px;
+            background-color: transparent;
+            padding: 30px;
+            height: 100%;
+        }
+
+        .section-link-container:hover {
+            background-color: #eee;
+            cursor: pointer;
+        }
+
+        .section-link-icon-container {
+            transition: all 0.2s linear;
+            margin: 0 auto;
+            background: #3A75C4;
+            height: 100px;
+            width: 100px;
+            text-align: center;
+            border-radius: 50px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .section-link-icon-container:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .section-link-icon {
+            max-height: 50px;
+            max-width: 50px;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .section-link-heading {
+            color: #3A75C4;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        .section-link-text {
+            margin: 0;
+            font-size: 0.8em;
+            font-weight: 200;
+        }
+
+        /* Main footer */
+
+        #landingPageFooter {
+            display: block;
+            background: white;
+            color: #aaa;
+            text-align: center;
+            padding-top: 15px;
+            padding-bottom: 30px;
+        }
+
+        #landingPageFooterText {
+            font-size: 0.7em;
+        }
+
+        /* Media queries */
+        @media (max-width: 500px) {
+            #landingPageHeader {
+                height: 160px;
+            }
+
+            #zebraLogo {
+                top: 20px;
+                left: 30px;
+            }
+
+            #landingPageHeaderTextContainer {
+                padding-left: 145px;
+            }
+
+            #headerWelcomeText {
+                font-size: 1.5em;
+            }
+
+            #headerLinkOsText {
+                font-size: 1.1em;
+            }
+
+            .section-link-grid-container {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="landingPageHeaderContainer">
+        <header id="landingPageHeader">
+            <?xml version="1.0" encoding="utf-8"?>
+            <!-- Generator: Adobe Illustrator 18.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+            <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+            <svg version="1.1" id="zebraLogo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 68.74 110"><defs><style>.a{fill:#fff;}</style></defs><title>zebra-logo-white</title><polygon class="a" points="50.93 39.44 45.52 34.03 45.52 49.32 50.93 49.32 50.93 39.44"/><path class="a" d="M58.95,31.16H72.1l-5.38-5.38,0,0H59.78A8.9,8.9,0,0,0,58.95,8V25.78h0L44.16,11q-1.17.61-2.28,1.33a27.07,27.07,0,0,0-2.33,1.71L53.55,28v30.6l10.8,10.8V61.79l-5.4-5.4V31.16Z" transform="translate(-29.63 -8)"/><polygon class="a" points="34.72 23.19 34.69 49.28 40.09 49.28 40.12 28.62 34.72 23.19"/><polygon class="a" points="53.26 34.03 47.85 28.63 40.12 28.63 45.52 34.03 53.26 34.03"/><path class="a" d="M48.14,53.54V53.22h0V30.3L35.73,17.89a27,27,0,0,0-3,4.6l10,10v7.64h0L30.55,28a26.88,26.88,0,0,0-.92,6.72S47.54,52.91,48.14,53.54" transform="translate(-29.63 -8)"/><polygon class="a" points="0.09 34.43 0.09 42.07 34.72 76.7 34.72 69.06 0.09 34.43"/><path class="a" d="M91.36,50.49H86v6.83h-5.4a8.9,8.9,0,1,0,17.79,0Z" transform="translate(-29.63 -8)"/><polygon class="a" points="12.68 106.71 10.83 110 0.04 110 7.04 96.55 0.84 96.55 2.57 93.27 13.33 93.27 6.33 106.71 12.68 106.71"/><polygon class="a" points="18.78 99.97 24.3 99.97 24.3 103.25 18.78 103.25 18.78 106.71 24.3 106.71 24.3 110 14.72 110 14.72 93.27 24.3 93.27 24.3 96.55 18.78 96.55 18.78 99.97"/><path class="a" d="M61.46,101.27c2.13,0,3.36.23,4.27,0.8a4.3,4.3,0,0,1,1.86,3.74,4,4,0,0,1-1.13,2.91,3.22,3.22,0,0,1-1.76,1,3.59,3.59,0,0,1,2,1,3.79,3.79,0,0,1,1.13,2.91,4.34,4.34,0,0,1-1.71,3.66,6,6,0,0,1-3.54.78H55.74V101.27h5.72Zm-1.66,6.92h1c1.86,0,2.63-.58,2.63-2s-0.78-1.93-2.69-1.93h-1v3.89Zm0,6.9h1.48c1.71,0,2.43-.58,2.43-1.93a1.78,1.78,0,0,0-.9-1.71,3.92,3.92,0,0,0-2.08-.3H59.8v3.94Z" transform="translate(-29.63 -8)"/><path class="a" d="M73.66,118H69.59V101.27H75a7.89,7.89,0,0,1,4.92,1.25,5.22,5.22,0,0,1,1.81,4.24,4.94,4.94,0,0,1-3.24,5.09L82.19,118H77.32l-3.66-6.47V118Zm1.3-8.76c1.66,0,2.66-.85,2.66-2.31a2.26,2.26,0,0,0-2.41-2.33H73.66v4.64H75Z" transform="translate(-29.63 -8)"/><path class="a" d="M92.88,101.27H87.71L82.19,118h4.29l1-3.25h5.45L94,118h4.41Zm-4.35,10.2,1.69-5.4,1.69,5.4H88.52Z" transform="translate(-29.63 -8)"/></svg>
+            <div id="landingPageHeaderTextContainer">
+                <span id="headerWelcomeText" class="header-text">WELCOME</span>
+                <span id="headerLinkOsText" class="header-text">Link-OS Multiplatform SDK</span>
+                <span id="headerPlatformText" class="header-text">for Android&trade;</span>
+            </div>
+        </header>
+    </div>
+    <div id="mainContentContainer">
+        <div id="sectionLinkMainContainer" class="clearfix">
+            <div class="section-link-grid-container">
+                <div id="releaseNotes" class="section-link-container">
+                    <div class="section-link-icon-container">
+                        <?xml version="1.0" encoding="utf-8"?>
+                        <!-- Generator: Adobe Illustrator 18.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+                        <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+                        <svg class="section-link-icon" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                             viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
+                        <g>
+                            <g>
+                                <path fill="#FFFFFF" d="M0,0v100h100V0H0z M91.7,92.3H8.3V7.7h83.3V92.3z"/>
+                                <rect x="20.8" y="23.1" fill="#FFFFFF" width="25" height="7.7"/>
+                                <rect x="20.8" y="38.5" fill="#FFFFFF" width="25" height="7.7"/>
+                                <rect x="20.8" y="53.8" fill="#FFFFFF" width="58.3" height="7.7"/>
+                                <rect x="20.8" y="69.2" fill="#FFFFFF" width="58.3" height="7.7"/>
+                                <path fill="#FFFFFF" d="M79.2,23.1h-25v23.1h25V23.1z M70.8,38.5h-8.3v-7.7h8.3V38.5z"/>
+                            </g>
+                        </g>
+                        </svg>
+                    </div>
+                    <h4 class="section-link-heading">Release Notes</h4>
+                    <p class="section-link-text">Supported devices, requirements, known issues, and change log</p>
+                </div>
+            </div>
+            <div class="section-link-grid-container">
+                <div id="documentation" class="section-link-container">
+                    <div class="section-link-icon-container">
+                        <?xml version="1.0" encoding="utf-8"?>
+                        <!-- Generator: Adobe Illustrator 18.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+                        <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+                        <svg class="section-link-icon" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                             viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
+                        <g>
+                            <g>
+                                <rect x="33.3" y="38.5" fill="#FFFFFF" width="50" height="7.7"/>
+                                <rect x="33.3" y="23.1" fill="#FFFFFF" width="50" height="7.7"/>
+                                <path fill="#FFFFFF" d="M0,0v100h100V0H0z M8.3,92.3V7.7h8.3v84.6H8.3z M91.7,92.3H25V7.7h66.7V92.3z"/>
+                            </g>
+                        </g>
+                        </svg>
+                    </div>
+                    <h4 class="section-link-heading">Documentation</h4>
+                    <p class="section-link-text">Packages and classes available in the API</p>
+                </div>
+            </div>
+            <div class="section-link-grid-container">
+                <div id="exampleCode" class="section-link-container">
+                    <div class="section-link-icon-container">
+                        <?xml version="1.0" encoding="utf-8"?>
+                        <!-- Generator: Adobe Illustrator 18.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+                        <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+                        <svg class="section-link-icon" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                             viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
+                        <g>
+                            <g>
+                                <path fill="#FFFFFF" d="M0,0v100h100V0H0z M91.8,91.7c-7.2,0-76.3,0-83.5,0c0-7.2,0-76.2,0-83.4c7.2,0,76.4,0,83.5,0
+                                    C91.8,15.5,91.8,84.5,91.8,91.7z"/>
+                                <path fill="#FFFFFF" d="M26.3,57.7c0.3,1,0.4,3.1,0.4,6.3c0,2.8,0.1,4.8,0.4,6.1c0.3,1.3,0.9,2.4,1.7,3.2c0.9,0.9,1.9,1.5,3.2,1.9
+                                    c1.3,0.4,3.1,0.6,5.4,0.6h1.4v-6.3c-1.9,0-3.1-0.1-3.6-0.4c-0.6-0.2-1-0.6-1.3-1c-0.3-0.5-0.4-1.3-0.4-2.4c0-0.8-0.1-2.7-0.2-5.6
+                                    c-0.1-1.9-0.3-3.4-0.7-4.6c-0.3-1.1-0.8-2.1-1.5-2.9c-0.6-0.8-1.5-1.5-2.5-2.1c1.2-0.8,2-1.5,2.6-2.2c0.6-0.7,1-1.6,1.4-2.7
+                                    c0.4-1.1,0.6-2.5,0.7-4.2c0.2-3.1,0.2-5.2,0.2-6.3c0-1.1,0.1-1.9,0.4-2.3c0.3-0.4,0.7-0.8,1.2-1c0.5-0.2,1.8-0.3,3.7-0.3v-6.3
+                                    h-1.4c-2.3,0-3.9,0.2-5,0.5c-1.6,0.5-2.8,1.1-3.6,1.9c-0.8,0.8-1.4,1.9-1.7,3.2c-0.3,1.3-0.5,3.7-0.5,7.1c0,2.1-0.1,3.5-0.2,4.4
+                                    c-0.2,1.1-0.5,2-1,2.8c-0.5,0.7-1,1.3-1.7,1.6c-0.6,0.3-1.6,0.5-2.9,0.6v6.3c1.6,0.1,2.8,0.4,3.6,1C25.4,55.3,25.9,56.3,26.3,57.7
+                                    z"/>
+                                <path fill="#FFFFFF" d="M44.7,70l1.4,3.1c1.6-0.6,2.9-1.3,3.9-2.3s1.7-2.1,2.1-3.3c0.4-1.2,0.6-2.9,0.6-5.1v-5.3h-7.3v7.4h3.5
+                                    c0,1.5-0.4,2.6-1,3.5C47.2,68.8,46.2,69.5,44.7,70z"/>
+                                <rect x="45.3" y="36.6" fill="#FFFFFF" width="7.3" height="7.4"/>
+                                <path fill="#FFFFFF" d="M65.6,75.3c1.6-0.5,2.8-1.1,3.6-1.9c0.8-0.8,1.4-1.9,1.7-3.2c0.3-1.4,0.5-3.7,0.5-7.1
+                                    c0-2.1,0.1-3.5,0.2-4.4c0.2-1.1,0.5-2,1-2.8c0.5-0.7,1-1.3,1.6-1.6c0.6-0.3,1.6-0.5,2.9-0.6h0v-6.3c-1.6-0.1-2.8-0.4-3.6-1
+                                    c-0.8-0.6-1.4-1.6-1.7-3c-0.3-1-0.4-3.1-0.4-6.3c0-2.8-0.1-4.8-0.5-6.1c-0.3-1.3-0.9-2.4-1.7-3.3c-0.9-0.9-1.9-1.5-3.2-1.9
+                                    c-1.3-0.4-3.1-0.6-5.4-0.6h-1.4v6.3c2,0,3.2,0.1,3.8,0.4c0.6,0.2,1,0.6,1.2,1c0.2,0.4,0.3,1.3,0.3,2.6c0.1,4.2,0.2,6.9,0.4,8.1
+                                    c0.3,1.8,0.9,3.3,1.7,4.4c0.6,0.8,1.5,1.6,2.8,2.5c-1,0.6-1.8,1.2-2.4,2c-0.6,0.8-1.1,1.7-1.5,2.8c-0.4,1.1-0.6,2.6-0.7,4.4
+                                    c-0.1,3-0.2,5.1-0.2,6.1c0,1.1-0.1,1.8-0.4,2.3c-0.3,0.5-0.7,0.8-1.3,1c-0.6,0.2-1.8,0.3-3.7,0.3v6.3h1.4
+                                    C62.8,75.8,64.5,75.6,65.6,75.3z"/>
+                            </g>
+                        </g>
+                        </svg>
+
+                    </div>
+                    <h4 class="section-link-heading">Example Code</h4>
+                    <p class="section-link-text">Working example source code developed using the SDK</p>
+                </div>
+            </div>
+            <div class="section-link-grid-container">
+                <div id="eula" class="section-link-container">
+                    <div class="section-link-icon-container">
+                        <?xml version="1.0" encoding="utf-8"?>
+                        <!-- Generator: Adobe Illustrator 18.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+                        <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+                        <svg class="section-link-icon" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                             viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
+                        <g>
+                            <g>
+                                <rect x="27.1" y="39.1" fill="#FFFFFF" width="43" height="4.3"/>
+                                <rect x="27.1" y="28.6" fill="#FFFFFF" width="43" height="4.3"/>
+                                <path fill="#FFFFFF" d="M99.1,29.1L92,22.9c-1-0.8-2.4-0.9-3.1-0.1L84.5,28l10.7,9.2l4.4-5.1C100.3,31.3,100.1,29.9,99.1,29.1z"/>
+                                <path fill="#FFFFFF" d="M83.3,29.3L81.9,31V14.2H15v71.5h66.9V52.5l12.1-14L83.3,29.3z M76.7,80.7H20.2V21.2h56.5V37L64.2,51.4
+                                    H27.1v4.3h33.4L60,56.2l10.6,9.2l6-6.9L76.7,80.7L76.7,80.7z"/>
+                                <polygon fill="#FFFFFF" points="55.5,71.2 56.1,71.7 69.5,66.8 58.8,57.6 		"/>
+                                <circle fill="#FFFFFF" cx="35.8" cy="69.5" r="6.8"/>
+                            </g>
+                        </g>
+                        </svg>
+                    </div>
+                    <h4 class="section-link-heading">EULA</h4>
+                    <p class="section-link-text">End-User License Agreement for using this SDK</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer id="landingPageFooter">
+        <span id="landingPageFooterText">
+        ZEBRA and the stylized Zebra head are trademarks of Zebra Technologies Corporation, registered in many jurisdictions worldwide. All other trademarks are the property of their respective owners. &copy;2025 Zebra Technologies Corporation and/or its affiliates. All rights reserved.</br>
+        <a href="http://www.zebra.com">www.zebra.com</a>
+        </span>
+    </footer>
+    
+    <script>
+        // Click handlers
+        document.getElementById('releaseNotes').onclick = function() {
+            window.location.href = 'documentation/readme.html';
+        }
+        document.getElementById('documentation').onclick = function() {
+            window.location.href = 'documentation/index.html';
+        }
+        document.getElementById('exampleCode').onclick = function() {
+            window.location.href = 'demos';
+        }
+        document.getElementById('eula').onclick = function() {
+            window.location.href = 'documentation/Zebra_Development_Tool_License_Agreement.pdf';
+        }
+    </script>
+</body>
+</html>

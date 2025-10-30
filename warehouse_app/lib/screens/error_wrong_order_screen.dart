@@ -52,7 +52,7 @@ class _ErrorWrongOrderScreenState extends State<ErrorWrongOrderScreen> {
               ),
               const SizedBox(height: 20),
               const Text(
-                'ЦЕЙ ТОВАР СКАНУВАТИ ЩЕ РАНО',
+                'ВІДСКАНОВАНИЙ НЕ ТОЙ ТОВАР',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 28,

@@ -118,22 +118,30 @@ class SoundService {
     
     try {
       print('Playing error sound: wrong.mp3');
-      
+      bool played = false;
+      // 1) Try bundled asset first (works on Android reliably)
       try {
-        // Спробуємо відтворити звук з прямого шляху
-        final soundPath = 'C:/Users/finbe/Downloads/MOBILE APP/warehouse_app/sounds/wrong.mp3';
-        await _audioPlayer.play(DeviceFileSource(soundPath));
-        print('Error sound played using DeviceFileSource from direct path');
+        await _audioPlayer.play(AssetSource('sounds/wrong.mp3'));
+        print('Error sound played using AssetSource');
+        played = true;
       } catch (e) {
-        print('Error playing with DeviceFileSource: $e');
-        
-        // Якщо не вдалося, спробуємо з AssetSource
+        print('Error playing error sound with AssetSource: $e');
+      }
+      // 2) Fallback to temp file method if needed
+      if (!played) {
         try {
-          await _audioPlayer.play(AssetSource('sounds/wrong.mp3'));
-          print('Error sound played using AssetSource');
+          final file = await _loadSoundFile('sounds/wrong.mp3');
+          if (file != null) {
+            await _audioPlayer.play(DeviceFileSource(file.path));
+            print('Error sound played using DeviceFileSource from temp file');
+            played = true;
+          }
         } catch (e) {
-          print('Error playing with AssetSource: $e');
+          print('Error playing error sound from temp file: $e');
         }
+      }
+      if (!played) {
+        print('FAILED TO PLAY ERROR SOUND');
       }
     } catch (e) {
       print('Error playing error sound: $e');

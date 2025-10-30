@@ -152,7 +152,10 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  child: const Text('ВІДМІНИ ЗАМОВЛЕННЯ'),
+                  child: const Text(
+                    'ВІДМІНИТИ ЗАМОВЛЕННЯ',
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Text(

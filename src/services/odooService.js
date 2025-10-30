@@ -699,6 +699,12 @@ class OdooService {
             if (incompleteLines.length === 0) {
               // If no more lines need work, the order is completed
               result.order_completed = true;
+              try {
+                const totalItems = allMoveLines.reduce((sum, ml) => sum + (ml.product_uom_qty || 0), 0);
+                result.order_summary = Object.assign({}, result.order_summary, { total_items: totalItems });
+              } catch (e) {
+                // ignore
+              }
             }
           }
         } catch (err) {

@@ -1,6 +1,6 @@
 class AppConstants {
   // API URLs
-  static const String baseUrl = 'http://192.168.31.252:3000';
+  static const String baseUrl = 'http://192.168.31.6:3000';
   static const String apiPrefix = '/flf/api/v1';
   
   // API Endpoints

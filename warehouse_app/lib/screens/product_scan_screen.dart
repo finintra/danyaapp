@@ -253,10 +253,18 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
             
             // Заказ завершен
             if (mounted) {
-              // Отримуємо загальну кількість товарів
+              // Отримуємо загальну кількість товарів (fallback через details якщо не надійшло)
               int totalItems = 0;
               if (response.data['order_summary'] != null && response.data['order_summary']['total_items'] != null) {
                 totalItems = response.data['order_summary']['total_items'];
+              } else {
+                try {
+                  final details = await apiService.getPickingDetails(widget.pickingId);
+                  if (details.success && details.data['lines'] != null) {
+                    final lines = details.data['lines'] as List<dynamic>;
+                    totalItems = lines.fold<int>(0, (sum, l) => sum + ((l['required'] ?? 0) as int));
+                  }
+                } catch (_) {}
               }
               
               Navigator.of(context).pushReplacement(

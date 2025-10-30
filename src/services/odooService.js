@@ -550,9 +550,11 @@ class OdooService {
             fields: ['id', 'product_uom_qty', 'qty_done'] 
           });
 
+          const totalRequired = scannedProductLines.reduce((sum, l) => sum + (l.product_uom_qty || 0), 0);
+          const totalDone = scannedProductLines.reduce((sum, l) => sum + (l.qty_done || 0), 0);
           const hasAnyRemain = scannedProductLines.some(l => (l.product_uom_qty || 0) > (l.qty_done || 0));
 
-          if (!hasAnyRemain && scannedProductLines.length > 0) {
+          if (scannedProductLines.length > 0 && (!hasAnyRemain || totalDone >= totalRequired)) {
             // Товар присутній у замовленні, але вже повністю відсканований
             throw new ApiError(409, 'ALREADY_SCANNED');
           }

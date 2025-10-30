@@ -112,16 +112,16 @@ class SoundService {
     }
   }
 
-  /// Відтворює звук помилки
+  /// Відтворює звук помилки (wrong.mp3)
   Future<void> playErrorSound() async {
     if (_isMuted) return;
     
     try {
-      print('Playing error sound: mp3.mp3');
+      print('Playing error sound: wrong.mp3');
       
       try {
         // Спробуємо відтворити звук з прямого шляху
-        final soundPath = 'C:/Users/finbe/Downloads/MOBILE APP/warehouse_app/sounds/mp3.mp3';
+        final soundPath = 'C:/Users/finbe/Downloads/MOBILE APP/warehouse_app/sounds/wrong.mp3';
         await _audioPlayer.play(DeviceFileSource(soundPath));
         print('Error sound played using DeviceFileSource from direct path');
       } catch (e) {
@@ -129,7 +129,7 @@ class SoundService {
         
         // Якщо не вдалося, спробуємо з AssetSource
         try {
-          await _audioPlayer.play(AssetSource('sounds/mp3.mp3'));
+          await _audioPlayer.play(AssetSource('sounds/wrong.mp3'));
           print('Error sound played using AssetSource');
         } catch (e) {
           print('Error playing with AssetSource: $e');

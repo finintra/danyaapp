@@ -208,9 +208,10 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
         final rowCompleted = response.data['row_completed'] ?? false;
         final orderCompleted = response.data['order_completed'] ?? false;
         
-        // Показываем экран успешного сканирования
+        // Показываем екран успішного сканування і чекаємо закриття, 
+        // щоб не накладалися навігаційні переходи
         if (mounted) {
-          Navigator.of(context).push(
+          await Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => const SuccessScanScreen()),
           );
         }
@@ -223,7 +224,7 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
           // Показываем экран завершения рядка
           await Future.delayed(const Duration(milliseconds: 800));
           if (mounted) {
-            Navigator.of(context).push(
+            await Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const LineCompletedScreen()),
             );
           }

@@ -54,9 +54,9 @@ class _ErrorExtraScreenState extends State<ErrorExtraScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              'ЦЕ ЛИШНІЙ\nТОВАР',
+              'ЦЕЙ ТОВАР\nВЖЕ ВІДСКАНОВАНО',
               style: TextStyle(
-                fontSize: 50,
+                fontSize: 44,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
                 height: 1.2,

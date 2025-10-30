@@ -4,7 +4,10 @@ import '../theme/app_theme.dart';
 import '../services/sound_service.dart';
 
 class SuccessScanScreen extends StatefulWidget {
-  const SuccessScanScreen({super.key});
+  final String? nextProductName;
+  final bool orderCompleted;
+
+  const SuccessScanScreen({super.key, this.nextProductName, this.orderCompleted = false});
 
   @override
   State<SuccessScanScreen> createState() => _SuccessScanScreenState();
@@ -20,8 +23,8 @@ class _SuccessScanScreenState extends State<SuccessScanScreen> {
     // Відтворюємо звук успішного сканування
     _playSuccessSound();
     
-    // Автоматически возвращаемся на предыдущий экран через 400 мс
-    Future.delayed(const Duration(milliseconds: 400), () {
+    // Автоматично повертаємось на попередній екран
+    Future.delayed(const Duration(milliseconds: 700), () {
       if (mounted) {
         Navigator.of(context).pop();
       }
@@ -49,15 +52,55 @@ class _SuccessScanScreenState extends State<SuccessScanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool allDone = widget.orderCompleted;
+    final String? nextName = widget.nextProductName;
+
     return Scaffold(
       backgroundColor: AppTheme.successColor,
       body: Center(
-        child: Text(
-          '✓',
-          style: TextStyle(
-            fontSize: 150,
-            color: Colors.white,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              '✓',
+              style: TextStyle(
+                fontSize: 150,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 10),
+            if (allDone)
+              const Text(
+                'ВСЕ ВІДСКАНОВАНО',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+            else if (nextName != null && nextName.isNotEmpty) ...[
+              const Text(
+                'ТЕПЕР СКАНУЙ',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                nextName,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );

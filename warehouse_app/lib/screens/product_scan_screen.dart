@@ -215,11 +215,20 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
         final rowCompleted = response.data['row_completed'] ?? false;
         final orderCompleted = response.data['order_completed'] ?? false;
         
-        // Показываем екран успішного сканування і чекаємо закриття, 
-        // щоб не накладалися навігаційні переходи
+        // Підготуємо дані наступного кроку, щоб показати на зеленому екрані
+        final nextLineDataPreview = response.data['next_line'];
+        final bool orderCompletedPreview = response.data['order_completed'] ?? false;
+        final String? nextNamePreview = nextLineDataPreview != null ? (nextLineDataPreview['product_name']?.toString() ?? '') : null;
+
+        // Показуємо екран успішного сканування і чекаємо закриття
         if (mounted) {
           await Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const SuccessScanScreen()),
+            MaterialPageRoute(
+              builder: (context) => SuccessScanScreen(
+                nextProductName: orderCompletedPreview ? null : nextNamePreview,
+                orderCompleted: orderCompletedPreview,
+              ),
+            ),
           );
         }
         

@@ -9,6 +9,7 @@ import 'success_scan_screen.dart';
 import 'error_extra_screen.dart';
 import 'error_not_in_order_screen.dart';
 import 'error_wrong_order_screen.dart';
+import 'error_already_scanned_screen.dart';
 import 'line_completed_screen.dart';
 import 'order_completed_screen.dart';
 
@@ -142,12 +143,18 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
               MaterialPageRoute(builder: (context) => const ErrorExtraScreen()),
             );
           }
-        } else if (response.error == 'WRONG_ORDER') {
+        } else if (response.error == 'WRONG_ORDER' || response.error == 'ALREADY_SCANNED') {
           // Відтворюємо звук помилки
           _soundService.playErrorSound();
           if (mounted) {
+            // Показуємо окремі екрани для вже відсканованого та раннього товару
+            final isAlreadyScanned = response.error == 'ALREADY_SCANNED';
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const ErrorWrongOrderScreen()),
+              MaterialPageRoute(
+                builder: (context) => isAlreadyScanned
+                    ? const ErrorAlreadyScannedScreen()
+                    : const ErrorWrongOrderScreen(),
+              ),
             );
           }
         } else {

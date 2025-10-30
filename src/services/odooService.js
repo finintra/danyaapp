@@ -537,8 +537,28 @@ class OdooService {
       
       console.log(`Comparing product IDs: expected=${expectedProductId}, scanned=${scannedProductId}, equal=${expectedProductId === scannedProductId}`);
       
-      // Якщо відсканований товар не відповідає очікуваному, повертаємо помилку
+      // Якщо відсканований товар не відповідає очікуваному, визначаємо причину
       if (expectedProductId !== scannedProductId) {
+        // Перевіряємо, чи вже відскановано весь обсяг для цього товару
+        try {
+          const scannedProductLines = await this.execute('stock.move.line', 'search_read', [
+            [
+              ['picking_id', '=', pickingId],
+              ['product_id', '=', scannedProductId]
+            ]
+          ], { 
+            fields: ['id', 'product_uom_qty', 'qty_done'] 
+          });
+
+          const hasAnyRemain = scannedProductLines.some(l => (l.product_uom_qty || 0) > (l.qty_done || 0));
+
+          if (!hasAnyRemain && scannedProductLines.length > 0) {
+            // Товар присутній у замовленні, але вже повністю відсканований
+            throw new ApiError(409, 'ALREADY_SCANNED');
+          }
+        } catch (probeErr) {
+          // Ігноруємо помилки перевірки, продовжимо як WRONG_ORDER
+        }
         // Get product info for better logging
         const firstIncompleteProduct = await this.execute('product.product', 'search_read', [
           [['id', '=', firstIncompleteLine.product_id[0]]]

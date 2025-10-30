@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/sound_service.dart';
 import 'confirm_order_screen.dart';
-import 'package:printing/printing.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
 class OrderCompletedScreen extends StatefulWidget {
@@ -118,14 +118,33 @@ class _OrderCompletedScreenState extends State<OrderCompletedScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
+                    // Ask user for Bluetooth MAC quickly via prompt
+                    final ctrl = TextEditingController();
+                    await showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('MAC адреса принтера'),
+                        content: TextField(
+                          controller: ctrl,
+                          decoration: const InputDecoration(hintText: 'Напр.: AA:BB:CC:DD:EE:FF'),
+                        ),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('OK')),
+                        ],
+                      ),
+                    );
+                    final mac = ctrl.text.trim();
+                    if (mac.isEmpty) return;
+                    const url = 'https://my.novaposhta.ua/orders/printMarking100x100/orders/20451280298214/type/pdf/zebra/zebra/apiKey/1a36944a6c98d62870208660d22c072b';
+                    const platform = MethodChannel('zebra_print');
                     try {
-                      final uri = Uri.parse('https://my.novaposhta.ua/orders/printMarking100x100/orders/20451280298214/type/pdf/zebra/zebra/apiKey/1a36944a6c98d62870208660d22c072b');
-                      final resp = await http.get(uri);
-                      if (resp.statusCode >= 200 && resp.statusCode < 300) {
-                        final bytes = resp.bodyBytes;
-                        await Printing.layoutPdf(onLayout: (_) async => bytes);
-                      }
-                    } catch (_) {}
+                      await platform.invokeMethod('printPdfFromUrl', {
+                        'btAddress': mac,
+                        'url': url,
+                      });
+                    } catch (e) {
+                      // ignore for now
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,

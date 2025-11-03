@@ -15,15 +15,52 @@ class CredentialsService {
   }
 
   /**
+   * Get encryption key as 32-byte buffer
+   * Supports hex (64 chars), base64 (44 chars), or raw string (32 chars)
+   * @returns {Buffer} - 32-byte key buffer
+   */
+  getKeyBuffer() {
+    let keyBuffer;
+    
+    // Try hex format (64 characters = 32 bytes)
+    if (this.encryptionKey.length === 64 && /^[0-9a-fA-F]+$/.test(this.encryptionKey)) {
+      keyBuffer = Buffer.from(this.encryptionKey, 'hex');
+    }
+    // Try base64 format
+    else if (this.encryptionKey.length >= 32) {
+      try {
+        keyBuffer = Buffer.from(this.encryptionKey, 'base64').slice(0, 32);
+      } catch (e) {
+        // Fallback to raw string
+        keyBuffer = Buffer.from(this.encryptionKey.padEnd(32, '0').slice(0, 32));
+      }
+    }
+    // Raw string (pad to 32 bytes)
+    else {
+      keyBuffer = Buffer.from(this.encryptionKey.padEnd(32, '0').slice(0, 32));
+    }
+    
+    // Ensure exactly 32 bytes
+    if (keyBuffer.length !== 32) {
+      const finalKey = Buffer.alloc(32);
+      keyBuffer.copy(finalKey, 0, 0, Math.min(32, keyBuffer.length));
+      return finalKey;
+    }
+    
+    return keyBuffer;
+  }
+
+  /**
    * Encrypt text
    * @param {string} text - Text to encrypt
    * @returns {string} - Encrypted text (iv:encryptedData)
    */
   encrypt(text) {
     const iv = crypto.randomBytes(16);
+    const keyBuffer = this.getKeyBuffer();
     const cipher = crypto.createCipheriv(
       this.algorithm,
-      Buffer.from(this.encryptionKey.padEnd(32, '0').slice(0, 32)),
+      keyBuffer,
       iv
     );
     let encrypted = cipher.update(text, 'utf8', 'hex');
@@ -40,9 +77,10 @@ class CredentialsService {
     const parts = encryptedText.split(':');
     const iv = Buffer.from(parts[0], 'hex');
     const encrypted = parts[1];
+    const keyBuffer = this.getKeyBuffer();
     const decipher = crypto.createDecipheriv(
       this.algorithm,
-      Buffer.from(this.encryptionKey.padEnd(32, '0').slice(0, 32)),
+      keyBuffer,
       iv
     );
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');

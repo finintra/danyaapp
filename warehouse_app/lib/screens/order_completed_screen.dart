@@ -2,9 +2,20 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/sound_service.dart';
 import 'confirm_order_screen.dart';
+import 'package:printing/printing.dart';
+import 'package:http/http.dart' as http;
 
 class OrderCompletedScreen extends StatefulWidget {
-  const OrderCompletedScreen({super.key});
+  final String invoiceNumber;
+  final int pickingId;
+  final int totalItems;
+  
+  const OrderCompletedScreen({
+    super.key,
+    required this.invoiceNumber,
+    required this.pickingId,
+    this.totalItems = 0,
+  });
 
   @override
   State<OrderCompletedScreen> createState() => _OrderCompletedScreenState();
@@ -53,7 +64,7 @@ class _OrderCompletedScreenState extends State<OrderCompletedScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  '5 ШТУК',
+                  '${widget.totalItems} ШТУК',
                   style: TextStyle(
                     fontSize: 60,
                     fontWeight: FontWeight.bold,
@@ -80,9 +91,9 @@ class _OrderCompletedScreenState extends State<OrderCompletedScreen> {
                     onPressed: () {
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
-                          builder: (context) => const ConfirmOrderScreen(
-                            invoiceNumber: 'OUT/00123',
-                            pickingId: 1, // Тимчасове значення, в реальному додатку має передаватися з попереднього екрану
+                          builder: (context) => ConfirmOrderScreen(
+                            invoiceNumber: widget.invoiceNumber,
+                            pickingId: widget.pickingId,
                           ),
                         ),
                       );
@@ -101,6 +112,35 @@ class _OrderCompletedScreenState extends State<OrderCompletedScreen> {
                     child: const Text('ПІДТВЕРДИТИ'),
                   ),
                 ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 60,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    try {
+                      final uri = Uri.parse('https://my.novaposhta.ua/orders/printMarking100x100/orders/20451280298214/type/pdf/zebra/zebra/apiKey/1a36944a6c98d62870208660d22c072b');
+                      final resp = await http.get(uri);
+                      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+                        final bytes = resp.bodyBytes;
+                        await Printing.layoutPdf(onLayout: (_) async => bytes);
+                      }
+                    } catch (_) {}
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppTheme.successColor,
+                    textStyle: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('ДРУК ТТН'),
+                ),
+              ),
               ],
             ),
           ),

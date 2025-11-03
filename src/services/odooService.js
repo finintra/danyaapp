@@ -36,6 +36,10 @@ class OdooService {
           args: [this.db, this.username, this.password, {}]
         },
         id: Math.floor(Math.random() * 1000000)
+      }, {
+        headers: {
+          'X-db-name': this.db
+        }
       });
 
       console.log('Odoo response status:', response.status);
@@ -83,6 +87,10 @@ class OdooService {
           args: [this.db, this.uid, this.password, model, method, args, kwargs]
         },
         id: Math.floor(Math.random() * 1000000)
+      }, {
+        headers: {
+          'X-db-name': this.db
+        }
       });
 
       if (response.data.error) {
@@ -122,6 +130,10 @@ class OdooService {
           password: password
         },
         id: Math.floor(Math.random() * 1000000)
+      }, {
+        headers: {
+          'X-db-name': this.db
+        }
       });
 
       console.log('Authentication response status:', response.status);
@@ -537,8 +549,30 @@ class OdooService {
       
       console.log(`Comparing product IDs: expected=${expectedProductId}, scanned=${scannedProductId}, equal=${expectedProductId === scannedProductId}`);
       
-      // Якщо відсканований товар не відповідає очікуваному, повертаємо помилку
+      // Якщо відсканований товар не відповідає очікуваному, визначаємо причину
       if (expectedProductId !== scannedProductId) {
+        // Перевіряємо, чи вже відскановано весь обсяг для цього товару
+        try {
+          const scannedProductLines = await this.execute('stock.move.line', 'search_read', [
+            [
+              ['picking_id', '=', pickingId],
+              ['product_id', '=', scannedProductId]
+            ]
+          ], { 
+            fields: ['id', 'product_uom_qty', 'qty_done'] 
+          });
+
+          const totalRequired = scannedProductLines.reduce((sum, l) => sum + (l.product_uom_qty || 0), 0);
+          const totalDone = scannedProductLines.reduce((sum, l) => sum + (l.qty_done || 0), 0);
+          const hasAnyRemain = scannedProductLines.some(l => (l.product_uom_qty || 0) > (l.qty_done || 0));
+
+          if (scannedProductLines.length > 0 && (!hasAnyRemain || totalDone >= totalRequired)) {
+            // Товар присутній у замовленні, але вже повністю відсканований
+            throw new ApiError(409, 'ALREADY_SCANNED');
+          }
+        } catch (probeErr) {
+          // Ігноруємо помилки перевірки, продовжимо як WRONG_ORDER
+        }
         // Get product info for better logging
         const firstIncompleteProduct = await this.execute('product.product', 'search_read', [
           [['id', '=', firstIncompleteLine.product_id[0]]]
@@ -679,6 +713,12 @@ class OdooService {
             if (incompleteLines.length === 0) {
               // If no more lines need work, the order is completed
               result.order_completed = true;
+              try {
+                const totalItems = allMoveLines.reduce((sum, ml) => sum + (ml.product_uom_qty || 0), 0);
+                result.order_summary = Object.assign({}, result.order_summary, { total_items: totalItems });
+              } catch (e) {
+                // ignore
+              }
             }
           }
         } catch (err) {

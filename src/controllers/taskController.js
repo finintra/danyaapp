@@ -102,7 +102,6 @@ const scanItem = async (req, res, next) => {
     
     // Якщо товар відповідає очікуваному, валідуємо сканування
     console.log(`Calling odooService.validateItemScan with picking_id=${picking_id}, barcode="${barcode}", userLang=${userLang}`);
-    const userId = req.user?.id || null;
     const result = await odooService.validateItemScan(picking_id, barcode, userLang, userId);
     console.log(`validateItemScan successful, result:`, result);
 

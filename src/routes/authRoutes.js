@@ -1,6 +1,6 @@
 const express = require('express');
-const { login, loginWithBadge, loginWithPin, getDeviceStatus, logout } = require('../controllers/authController');
-const { loginValidator, loginWithBadgeValidator, loginWithPinValidator } = require('../validators/authValidators');
+const { login, loginWithBadge, loginWithPin, createPin, getDeviceStatus, logout } = require('../controllers/authController');
+const { loginValidator, loginWithBadgeValidator, loginWithPinValidator, createPinValidator } = require('../validators/authValidators');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -9,6 +9,7 @@ const router = express.Router();
 router.post('/login', loginValidator, login);
 router.post('/login_badge', loginWithBadgeValidator, loginWithBadge);
 router.post('/login_pin', loginWithPinValidator, loginWithPin);
+router.post('/create_pin', createPinValidator, createPin);
 
 // Protected routes
 router.get('/device/status', protect, getDeviceStatus);

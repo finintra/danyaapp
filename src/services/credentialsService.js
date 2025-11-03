@@ -9,6 +9,8 @@ class CredentialsService {
   constructor() {
     // In-memory storage: userId -> encrypted credentials
     this.credentials = new Map();
+    // In-memory storage: userId -> hashed PIN
+    this.userPins = new Map(); // userId -> { hashedPin, createdAt, expiresAt }
     // Encryption key from environment or generate a default (should be set in production!)
     this.encryptionKey = process.env.CREDENTIALS_ENCRYPTION_KEY || 'default-key-change-in-production-32chars!!';
     this.algorithm = 'aes-256-cbc';
@@ -110,6 +112,72 @@ class CredentialsService {
   }
 
   /**
+   * Store PIN for a user (hashed)
+   * @param {number} userId - User ID
+   * @param {string} hashedPin - Hashed PIN
+   * @param {number} expiresInDays - Expiration in days (default 30)
+   */
+  storePin(userId, hashedPin, expiresInDays = 30) {
+    this.userPins.set(userId, {
+      hashedPin,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000)
+    });
+
+    logger.info(`Stored PIN for user ${userId}, expires at ${new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000)}`);
+  }
+
+  /**
+   * Check if user has PIN
+   * @param {number} userId - User ID
+   * @returns {boolean} - True if PIN exists and not expired
+   */
+  hasPin(userId) {
+    const pinData = this.userPins.get(userId);
+    if (!pinData) {
+      return false;
+    }
+
+    if (new Date() > new Date(pinData.expiresAt)) {
+      this.userPins.delete(userId);
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Verify PIN for a user
+   * @param {number} userId - User ID
+   * @param {string} pin - PIN to verify
+   * @returns {Promise<boolean>} - True if PIN matches
+   */
+  async verifyPin(userId, pin) {
+    const pinData = this.userPins.get(userId);
+    if (!pinData) {
+      return false;
+    }
+
+    if (new Date() > new Date(pinData.expiresAt)) {
+      this.userPins.delete(userId);
+      return false;
+    }
+
+    // Use bcrypt to compare
+    const bcrypt = require('bcrypt');
+    return bcrypt.compare(pin, pinData.hashedPin);
+  }
+
+  /**
+   * Remove PIN for a user
+   * @param {number} userId - User ID
+   */
+  removePin(userId) {
+    this.userPins.delete(userId);
+    logger.info(`Removed PIN for user ${userId}`);
+  }
+
+  /**
    * Get decrypted credentials for a user
    * @param {number} userId - User ID
    * @returns {Object|null} - Decrypted credentials {login, password} or null if not found/expired
@@ -151,12 +219,13 @@ class CredentialsService {
   }
 
   /**
-   * Clean up expired credentials (should be called periodically)
+   * Clean up expired credentials and PINs (should be called periodically)
    */
   cleanupExpired() {
     const now = new Date();
     let cleaned = 0;
 
+    // Clean expired credentials
     for (const [userId, encrypted] of this.credentials.entries()) {
       try {
         const decrypted = JSON.parse(this.decrypt(encrypted));
@@ -171,8 +240,16 @@ class CredentialsService {
       }
     }
 
+    // Clean expired PINs
+    for (const [userId, pinData] of this.userPins.entries()) {
+      if (now > new Date(pinData.expiresAt)) {
+        this.userPins.delete(userId);
+        cleaned++;
+      }
+    }
+
     if (cleaned > 0) {
-      logger.info(`Cleaned up ${cleaned} expired credential entries`);
+      logger.info(`Cleaned up ${cleaned} expired credential/PIN entries`);
     }
   }
 }

@@ -1,4 +1,6 @@
 const authService = require('../services/authService');
+const credentialsService = require('../services/credentialsService');
+const odooService = require('../services/odooService');
 const { ApiError } = require('./errorHandler');
 const logger = require('../utils/logger');
 
@@ -30,6 +32,12 @@ const protect = async (req, res, next) => {
         deviceId: decoded.deviceId,
         lang: decoded.lang || 'uk_UA' // Add language with default fallback
       };
+
+      // Load and set stored credentials for Odoo requests
+      const storedCreds = credentialsService.getCredentials(decoded.id);
+      if (storedCreds) {
+        odooService.setUserCredentials(decoded.id, storedCreds.login, storedCreds.password);
+      }
 
       next();
     } catch (error) {

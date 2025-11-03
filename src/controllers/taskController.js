@@ -26,8 +26,9 @@ const attachToPicking = async (req, res, next) => {
     const userLang = req.user?.lang || 'uk_UA';
     console.log(`Using user language: ${userLang}`);
 
-    // Get picking by barcode with user language
-    const result = await odooService.getPickingByBarcode(picking_barcode, userLang);
+    // Get picking by barcode with user language and user ID
+    const userId = req.user?.id || null;
+    const result = await odooService.getPickingByBarcode(picking_barcode, userLang, userId);
 
     // Return success response
     res.status(200).json({
@@ -76,7 +77,8 @@ const scanItem = async (req, res, next) => {
     console.log(`Using user language for item scan: ${userLang}`);
 
     // Перш ніж валідувати сканування, знайдемо товар за штрих-кодом
-    const products = await odooService.findProductByBarcode(barcode, userLang);
+    const userId = req.user?.id || null;
+    const products = await odooService.findProductByBarcode(barcode, userLang, userId);
     
     if (!products || products.length === 0) {
       console.log(`No product found with barcode: ${barcode}`);
@@ -100,7 +102,8 @@ const scanItem = async (req, res, next) => {
     
     // Якщо товар відповідає очікуваному, валідуємо сканування
     console.log(`Calling odooService.validateItemScan with picking_id=${picking_id}, barcode="${barcode}", userLang=${userLang}`);
-    const result = await odooService.validateItemScan(picking_id, barcode, userLang);
+    const userId = req.user?.id || null;
+    const result = await odooService.validateItemScan(picking_id, barcode, userLang, userId);
     console.log(`validateItemScan successful, result:`, result);
 
     // Return success response
@@ -158,7 +161,8 @@ const validatePicking = async (req, res, next) => {
     const { picking_id, payload } = req.body;
 
     // Validate picking
-    const result = await odooService.validatePicking(picking_id, payload);
+    const userId = req.user?.id || null;
+    const result = await odooService.validatePicking(picking_id, payload, userId);
 
     // Return success response
     res.status(200).json({
@@ -202,7 +206,8 @@ const cancelLocalPicking = async (req, res, next) => {
     }
     
     // Reset progress for this picking
-    await odooService.resetPickingProgress(picking_id);
+    const userId = req.user?.id || null;
+    await odooService.resetPickingProgress(picking_id, userId);
     
     res.status(200).json({
       ok: true,
@@ -221,11 +226,12 @@ const cancelLocalPicking = async (req, res, next) => {
 const getAvailableTasks = async (req, res, next) => {
   try {
     // Get available pickings from Odoo
+    const userId = req.user?.id || null;
     const pickings = await odooService.execute('stock.picking', 'search_read', [
       [['state', '=', 'assigned']]
     ], { 
       fields: ['id', 'name', 'date', 'partner_id', 'move_line_ids'] 
-    });
+    }, userId);
 
     // Format response
     const formattedPickings = pickings.map(picking => ({
@@ -263,12 +269,13 @@ const getTaskDetails = async (req, res, next) => {
     const context = { lang: userLang };
 
     // Get picking details
+    const userId = req.user?.id || null;
     const pickings = await odooService.execute('stock.picking', 'search_read', [
       [['id', '=', pickingId]]
     ], { 
       fields: ['id', 'name', 'date', 'partner_id', 'move_line_ids'],
       context: context // Pass the language context
-    });
+    }, userId);
 
     if (!pickings || pickings.length === 0) {
       return next(new ApiError(404, 'PICKING_NOT_FOUND'));
@@ -284,7 +291,7 @@ const getTaskDetails = async (req, res, next) => {
         'id', 'product_id', 'product_uom_qty', 'qty_done', 
         'product_uom_id', 'state'
       ] 
-    });
+    }, userId);
 
     // Get product info for each move line with user language
     const productIds = moveLines.map(line => line.product_id[0]);
@@ -293,7 +300,7 @@ const getTaskDetails = async (req, res, next) => {
     ], { 
       fields: ['id', 'name', 'barcode', 'default_code', 'list_price', 'uom_id'],
       context: context // Pass the language context
-    });
+    }, userId);
 
     // Create a map of product info
     const productMap = {};

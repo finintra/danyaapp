@@ -22,7 +22,21 @@ const loginValidator = [
     .withMessage('Password is required')
 ];
 
+const loginWithPinValidator = [
+  body('pin')
+    .notEmpty()
+    .withMessage('PIN is required')
+    .isLength({ min: 4, max: 10 })
+    .withMessage('PIN must be between 4 and 10 characters'),
+  body('token')
+    .notEmpty()
+    .withMessage('Token is required')
+    .isString()
+    .withMessage('Token must be a string')
+];
+
 module.exports = {
   loginWithBadgeValidator,
-  loginValidator
+  loginValidator,
+  loginWithPinValidator
 };

@@ -6,22 +6,56 @@ class OdooService {
   constructor() {
     this.url = process.env.ODOO_URL;
     this.db = process.env.ODOO_DB;
-    this.username = process.env.ODOO_USERNAME;
-    this.password = process.env.ODOO_PASSWORD;
-    this.uid = null;
-    this.session = null;
+    // Default credentials from env (for backward compatibility)
+    this.defaultUsername = process.env.ODOO_USERNAME;
+    this.defaultPassword = process.env.ODOO_PASSWORD;
+    // Per-user credentials (userId -> {username, password, uid})
+    this.userCredentials = new Map();
     this.apiKey = process.env.ODOO_API_KEY;
   }
 
   /**
-   * Initialize connection to Odoo
+   * Set credentials for a specific user
+   * @param {number} userId - User ID
+   * @param {string} username - Username
+   * @param {string} password - Password
    */
-  async init() {
+  setUserCredentials(userId, username, password) {
+    this.userCredentials.set(userId, {
+      username,
+      password,
+      uid: null
+    });
+  }
+
+  /**
+   * Get credentials for a user or use defaults
+   * @param {number|null} userId - User ID (null for default)
+   * @returns {Object} - {username, password, uid}
+   */
+  getCredentials(userId = null) {
+    if (userId && this.userCredentials.has(userId)) {
+      return this.userCredentials.get(userId);
+    }
+    return {
+      username: this.defaultUsername,
+      password: this.defaultPassword,
+      uid: null
+    };
+  }
+
+  /**
+   * Initialize connection to Odoo for a specific user
+   * @param {number|null} userId - User ID (null for default credentials)
+   */
+  async init(userId = null) {
     try {
+      const creds = this.getCredentials(userId);
+      
       // Debug connection parameters
       console.log('Connecting to Odoo with URL:', this.url);
       console.log('Database:', this.db);
-      console.log('Username:', this.username);
+      console.log('Username:', creds.username);
       
       const requestUrl = `${this.url}/jsonrpc`;
       console.log('Request URL:', requestUrl);
@@ -33,7 +67,7 @@ class OdooService {
         params: {
           service: 'common',
           method: 'authenticate',
-          args: [this.db, this.username, this.password, {}]
+          args: [this.db, creds.username, creds.password, {}]
         },
         id: Math.floor(Math.random() * 1000000)
       }, {
@@ -50,9 +84,16 @@ class OdooService {
         throw new ApiError(500, `Odoo authentication error: ${response.data.error.message}`);
       }
 
-      this.uid = response.data.result;
-      logger.info(`Connected to Odoo with UID: ${this.uid}`);
-      return true;
+      const uid = response.data.result;
+      if (userId && this.userCredentials.has(userId)) {
+        this.userCredentials.get(userId).uid = uid;
+      } else {
+        // For backward compatibility, store in old location
+        this.defaultUid = uid;
+      }
+      
+      logger.info(`Connected to Odoo with UID: ${uid} for user ${userId || 'default'}`);
+      return uid;
     } catch (error) {
       console.error('Failed to connect to Odoo:', error.message);
       if (error.response) {
@@ -70,12 +111,17 @@ class OdooService {
    * @param {string} method - Method to call
    * @param {Array} args - Arguments for the method
    * @param {Object} kwargs - Keyword arguments
+   * @param {number|null} userId - User ID (null for default credentials)
    * @returns {Promise<any>} - Response from Odoo
    */
-  async execute(model, method, args = [], kwargs = {}) {
+  async execute(model, method, args = [], kwargs = {}, userId = null) {
     try {
-      if (!this.uid) {
-        await this.init();
+      const creds = this.getCredentials(userId);
+      
+      // Initialize connection if needed
+      let uid = creds.uid;
+      if (!uid) {
+        uid = await this.init(userId);
       }
 
       const response = await axios.post(`${this.url}/jsonrpc`, {
@@ -84,7 +130,7 @@ class OdooService {
         params: {
           service: 'object',
           method: 'execute_kw',
-          args: [this.db, this.uid, this.password, model, method, args, kwargs]
+          args: [this.db, uid, creds.password, model, method, args, kwargs]
         },
         id: Math.floor(Math.random() * 1000000)
       }, {
@@ -150,10 +196,13 @@ class OdooService {
         throw new ApiError(401, 'INVALID_CREDENTIALS');
       }
 
+      // Set credentials for this user for future requests
+      this.setUserCredentials(result.uid, login, password);
+
       // Get user details with employee_id and language
       const users = await this.execute('res.users', 'read', [
         [result.uid]
-      ], { fields: ['id', 'name', 'login', 'active', 'employee_id', 'lang'] });
+      ], { fields: ['id', 'name', 'login', 'active', 'employee_id', 'lang'] }, result.uid);
 
       if (!users || users.length === 0) {
         throw new ApiError(401, 'INVALID_CREDENTIALS');
@@ -181,7 +230,7 @@ class OdooService {
         try {
           const employees = await this.execute('hr.employee', 'read', [
             [user.employee_id[0]]
-          ], { fields: ['id', 'name', 'pin', 'active', 'lang'] });
+          ], { fields: ['id', 'name', 'pin', 'active', 'lang'] }, result.uid);
           
           if (employees && employees.length > 0) {
             const employee = employees[0];
@@ -229,10 +278,10 @@ class OdooService {
 
   async validateBadgeAndPin(badgeBarcode, pin) {
     try {
-      // Find employee by badge barcode
+      // Find employee by badge barcode (using default credentials as we don't have user yet)
       const employees = await this.execute('hr.employee', 'search_read', [
         [['barcode', '=', badgeBarcode]]
-      ], { fields: ['id', 'name', 'user_id', 'active', 'pin', 'lang'] });
+      ], { fields: ['id', 'name', 'user_id', 'active', 'pin', 'lang'] }, null);
 
       if (!employees || employees.length === 0) {
         throw new ApiError(401, 'BADGE_OR_PIN');
@@ -259,7 +308,7 @@ class OdooService {
       // Get user info to check if user is active and get language
       const users = await this.execute('res.users', 'read', [
         [userId]
-      ], { fields: ['active', 'lang'] });
+      ], { fields: ['active', 'lang'] }, null);
       
       if (!users || users.length === 0 || !users[0].active) {
         throw new ApiError(403, 'ARCHIVED');
@@ -301,14 +350,15 @@ class OdooService {
    * Get picking by barcode and reset progress
    * @param {string} pickingBarcode - Picking barcode
    * @param {string} [userLang='uk_UA'] - User language code
+   * @param {number|null} [userId=null] - User ID for credentials
    * @returns {Promise<Object>} - Picking info
    */
-  async getPickingByBarcode(pickingBarcode, userLang = 'uk_UA') {
+  async getPickingByBarcode(pickingBarcode, userLang = 'uk_UA', userId = null) {
     try {
       // Find picking by barcode
       const pickings = await this.execute('stock.picking', 'search_read', [
         [['name', '=', pickingBarcode]]
-      ], { fields: ['id', 'name', 'state', 'move_line_ids'] });
+      ], { fields: ['id', 'name', 'state', 'move_line_ids'] }, userId);
 
       if (!pickings || pickings.length === 0) {
         throw new ApiError(404, 'PICKING_NOT_FOUND');
@@ -325,7 +375,7 @@ class OdooService {
         await this.execute('stock.move.line', 'write', [
           [moveLineId],
           { qty_done: 0 }
-        ]);
+        ], {}, userId);
       }
       
       // Get move lines with reset progress and location information
@@ -336,7 +386,7 @@ class OdooService {
           'id', 'product_id', 'product_uom_qty', 'qty_done', 
           'product_uom_id', 'state', 'location_id'
         ] 
-      });
+      }, userId);
       
       console.log('Reset progress for picking:', pickingBarcode);
 
@@ -352,7 +402,7 @@ class OdooService {
       ], { 
         fields: ['id', 'name', 'barcode', 'default_code', 'list_price', 'uom_id'],
         context: context // Pass the language context
-      });
+      }, userId);
 
       // Create a map of product info
       const productMap = {};
@@ -366,7 +416,7 @@ class OdooService {
         [['id', 'in', locationIds]]
       ], { 
         fields: ['id', 'name', 'complete_name'] 
-      });
+      }, userId);
       
       // Create a map of location info
       const locationMap = {};
@@ -436,9 +486,10 @@ class OdooService {
    * Find product by barcode or default_code
    * @param {string} code - Scanned code (default_code or barcode)
    * @param {string} [userLang='uk_UA'] - User language code
+   * @param {number|null} [userId=null] - User ID for credentials
    * @returns {Promise<Array>} - Array of products
    */
-  async findProductByBarcode(code, userLang = 'uk_UA') {
+  async findProductByBarcode(code, userLang = 'uk_UA', userId = null) {
     try {
       console.log(`Finding product with code: ${code}, userLang=${userLang}`);
       
@@ -450,7 +501,7 @@ class OdooService {
       ], { 
         fields: ['id', 'name', 'default_code', 'barcode'],
         context: context // Pass the language context
-      });
+      }, userId);
       
       console.log(`Found ${products.length} products with code ${code}`);
       return products;
@@ -465,9 +516,10 @@ class OdooService {
    * @param {number} pickingId - Picking ID
    * @param {string} code - Scanned code (default_code or barcode)
    * @param {string} [userLang='uk_UA'] - User language code
+   * @param {number|null} [userId=null] - User ID for credentials
    * @returns {Promise<Object>} - Scan result
    */
-  async validateItemScan(pickingId, code, userLang = 'uk_UA') {
+  async validateItemScan(pickingId, code, userLang = 'uk_UA', userId = null) {
     try {
       console.log(`Validating item scan: pickingId=${pickingId}, code=${code}, userLang=${userLang}`);
       
@@ -480,7 +532,7 @@ class OdooService {
       ], { 
         fields: ['id', 'name', 'default_code'],
         context: context // Pass the language context
-      });
+      }, userId);
 
       if (!products || products.length === 0) {
         console.log(`No product found with code: ${code}`);
@@ -498,7 +550,7 @@ class OdooService {
         ]
       ], { 
         fields: ['id', 'product_uom_qty', 'qty_done', 'location_id'] 
-      });
+      }, userId);
 
       if (!moveLines || moveLines.length === 0) {
         console.log(`Product ${productId} is not in picking ${pickingId}`);
@@ -510,7 +562,7 @@ class OdooService {
         [['picking_id', '=', pickingId]]
       ], { 
         fields: ['id', 'product_id', 'product_uom_qty', 'qty_done'] 
-      });
+      }, userId);
       
       console.log(`All move lines for picking ${pickingId}: ${JSON.stringify(allMoveLines)}`);
       
@@ -560,7 +612,7 @@ class OdooService {
             ]
           ], { 
             fields: ['id', 'product_uom_qty', 'qty_done'] 
-          });
+          }, userId);
 
           const totalRequired = scannedProductLines.reduce((sum, l) => sum + (l.product_uom_qty || 0), 0);
           const totalDone = scannedProductLines.reduce((sum, l) => sum + (l.qty_done || 0), 0);
@@ -579,7 +631,7 @@ class OdooService {
         ], { 
           fields: ['id', 'name', 'default_code'],
           context: context
-        });
+        }, userId);
         
         const expectedProductName = firstIncompleteProduct.length > 0 ? firstIncompleteProduct[0].name : 'Unknown';
         const scannedProductName = products[0].name;
@@ -602,12 +654,12 @@ class OdooService {
       await this.execute('stock.move.line', 'write', [
         [line.id],
         { qty_done: done }
-      ]);
+      ], {}, userId);
       
       // Get updated line data
       const updatedLines = await this.execute('stock.move.line', 'search_read', [
         [['id', '=', line.id]]
-      ], { fields: ['id', 'product_uom_qty', 'qty_done', 'location_id'] });
+      ], { fields: ['id', 'product_uom_qty', 'qty_done', 'location_id'] }, userId);
       
       const updatedLine = updatedLines[0];
       const updatedDone = updatedLine.qty_done;
@@ -628,7 +680,7 @@ class OdooService {
           [['id', '=', updatedLine.location_id[0]]]
         ], { 
           fields: ['id', 'name', 'complete_name'] 
-        });
+        }, userId);
         
         if (locations && locations.length > 0) {
           locationInfo = {
@@ -660,7 +712,7 @@ class OdooService {
             [['picking_id', '=', pickingId]]
           ], { 
             fields: ['id', 'product_id', 'product_uom_qty', 'qty_done', 'location_id'] 
-          });
+          }, userId);
           
           // Find a line that still has work to do
           const nextLine = allMoveLines.find(ml => ml.product_uom_qty > ml.qty_done && ml.id !== line.id);
@@ -671,7 +723,7 @@ class OdooService {
               [['id', '=', nextLine.product_id[0]]]
             ], { 
               fields: ['id', 'name', 'barcode', 'default_code', 'list_price', 'uom_id'] 
-            });
+            }, userId);
             
             if (nextProduct && nextProduct.length > 0) {
               // Get location information for next line
@@ -681,7 +733,7 @@ class OdooService {
                   [['id', '=', nextLine.location_id[0]]]
                 ], { 
                   fields: ['id', 'name', 'complete_name'] 
-                });
+                }, userId);
                 
                 if (nextLocations && nextLocations.length > 0) {
                   nextLocationInfo = {
@@ -740,21 +792,22 @@ class OdooService {
   /**
    * Reset picking progress
    * @param {number} pickingId - Picking ID
+   * @param {number|null} [userId=null] - User ID for credentials
    * @returns {Promise<Object>} - Reset result
    */
-  async resetPickingProgress(pickingId) {
+  async resetPickingProgress(pickingId, userId = null) {
     try {
       // Find all move lines for this picking
       const moveLines = await this.execute('stock.move.line', 'search_read', [
         [['picking_id', '=', pickingId]]
-      ], { fields: ['id', 'qty_done'] });
+      ], { fields: ['id', 'qty_done'] }, userId);
       
       // Reset qty_done to 0 for all lines
       for (const line of moveLines) {
         await this.execute('stock.move.line', 'write', [
           [line.id],
           { qty_done: 0 }
-        ]);
+        ], {}, userId);
       }
       
       return { success: true };
@@ -768,14 +821,15 @@ class OdooService {
    * Validate picking
    * @param {number} pickingId - Picking ID
    * @param {Array} payload - Array of line items with quantities
+   * @param {number|null} [userId=null] - User ID for credentials
    * @returns {Promise<Object>} - Validation result
    */
-  async validatePicking(pickingId, payload) {
+  async validatePicking(pickingId, payload, userId = null) {
     try {
       // Get current state of the picking
       const pickings = await this.execute('stock.picking', 'search_read', [
         [['id', '=', pickingId]]
-      ], { fields: ['id', 'name', 'state', 'move_line_ids'] });
+      ], { fields: ['id', 'name', 'state', 'move_line_ids'] }, userId);
 
       if (!pickings || pickings.length === 0) {
         throw new ApiError(404, 'PICKING_NOT_FOUND');
@@ -792,7 +846,7 @@ class OdooService {
         [['id', 'in', picking.move_line_ids]]
       ], { 
         fields: ['id', 'product_id', 'product_uom_qty', 'qty_done'] 
-      });
+      }, userId);
 
       // Check for mismatches
       const diffs = [];
@@ -826,7 +880,7 @@ class OdooService {
         await this.execute('stock.move.line', 'write', [
           [item.line_id],
           { qty_done: item.qty }
-        ]);
+        ], {}, userId);
       }
 
       // Count how many labels are needed (one per line)

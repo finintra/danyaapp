@@ -258,7 +258,10 @@ class OdooService {
           // Don't fail if we can't get employee data, just continue without it
         }
       } else {
-        console.log(`User ${user.login} does not have an associated employee`);
+        console.log(`User ${user.login} does not have an associated employee - this is OK, PIN will be stored on backend`);
+        // Ensure employee is null/undefined, not missing
+        userObject.employee_id = null;
+        userObject.employee = null;
       }
 
       return userObject;

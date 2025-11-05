@@ -861,7 +861,11 @@ class OdooService {
               result.order_completed = true;
               try {
                 const totalItems = allMoveLines.reduce((sum, ml) => sum + (ml.product_uom_qty || 0), 0);
-                result.order_summary = Object.assign({}, result.order_summary, { total_items: totalItems });
+                const totalLines = allMoveLines.length;
+                result.order_summary = {
+                  total_items: totalItems,
+                  total_lines: totalLines
+                };
               } catch (e) {
                 // ignore
               }

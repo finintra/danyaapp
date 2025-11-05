@@ -36,7 +36,10 @@ const protect = async (req, res, next) => {
       // Load and set stored credentials for Odoo requests
       const storedCreds = credentialsService.getCredentials(decoded.id);
       if (storedCreds) {
+        logger.info(`Loading stored credentials for user ${decoded.id}`);
         odooService.setUserCredentials(decoded.id, storedCreds.login, storedCreds.password);
+      } else {
+        logger.warn(`No stored credentials found for user ${decoded.id}`);
       }
 
       next();

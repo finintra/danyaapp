@@ -85,15 +85,31 @@ class OdooService {
       }
 
       const uid = response.data.result;
-      if (userId && this.userCredentials.has(userId)) {
-        this.userCredentials.get(userId).uid = uid;
-      } else {
-        // For backward compatibility, store in old location
-        this.defaultUid = uid;
+      
+      // Check if authentication failed (Odoo returns false on auth failure)
+      if (uid === false || uid === null || uid === undefined) {
+        console.error('Odoo authentication returned false/null/undefined');
+        console.error('Username used:', creds.username);
+        console.error('Database:', this.db);
+        throw new ApiError(500, 'Odoo authentication failed: Invalid credentials');
       }
       
-      logger.info(`Connected to Odoo with UID: ${uid} for user ${userId || 'default'}`);
-      return uid;
+      // Ensure uid is a number
+      const numericUid = typeof uid === 'number' ? uid : parseInt(uid, 10);
+      if (isNaN(numericUid) || numericUid <= 0) {
+        console.error('Invalid UID received from Odoo:', uid);
+        throw new ApiError(500, 'Odoo authentication failed: Invalid UID received');
+      }
+      
+      if (userId && this.userCredentials.has(userId)) {
+        this.userCredentials.get(userId).uid = numericUid;
+      } else {
+        // For backward compatibility, store in old location
+        this.defaultUid = numericUid;
+      }
+      
+      logger.info(`Connected to Odoo with UID: ${numericUid} for user ${userId || 'default'}`);
+      return numericUid;
     } catch (error) {
       console.error('Failed to connect to Odoo:', error.message);
       if (error.response) {
@@ -118,10 +134,22 @@ class OdooService {
     try {
       const creds = this.getCredentials(userId);
       
+      // Check if credentials exist
+      if (!creds.username || !creds.password) {
+        logger.error(`Missing credentials for user ${userId || 'default'}`);
+        throw new ApiError(500, 'Odoo credentials not configured');
+      }
+      
       // Initialize connection if needed
       let uid = creds.uid;
-      if (!uid) {
+      if (!uid || uid === false) {
         uid = await this.init(userId);
+      }
+      
+      // Validate UID after initialization
+      if (!uid || uid === false || typeof uid !== 'number' || uid <= 0) {
+        logger.error(`Invalid UID after initialization: ${uid} for user ${userId || 'default'}`);
+        throw new ApiError(500, 'Failed to authenticate with Odoo: Invalid UID');
       }
 
       const response = await axios.post(`${this.url}/jsonrpc`, {

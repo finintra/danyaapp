@@ -98,6 +98,8 @@ class CredentialsService {
    * @param {number} expiresInDays - Expiration in days (default 30)
    */
   storeCredentials(userId, login, password, expiresInDays = 30) {
+    logger.info(`Storing credentials for user ${userId}, login: ${login}, expiresInDays: ${expiresInDays}`);
+    
     const credentials = {
       login,
       password,
@@ -109,6 +111,8 @@ class CredentialsService {
     this.credentials.set(userId, encrypted);
 
     logger.info(`Stored encrypted credentials for user ${userId}, expires at ${credentials.expiresAt}`);
+    logger.info(`Total credentials now stored: ${this.credentials.size}`);
+    logger.info(`Stored user IDs: ${Array.from(this.credentials.keys()).join(', ')}`);
   }
 
   /**
@@ -183,6 +187,10 @@ class CredentialsService {
    * @returns {Object|null} - Decrypted credentials {login, password} or null if not found/expired
    */
   getCredentials(userId) {
+    logger.info(`Getting credentials for user ${userId}`);
+    logger.info(`Total credentials stored: ${this.credentials.size}`);
+    logger.info(`Stored user IDs: ${Array.from(this.credentials.keys()).join(', ')}`);
+    
     const encrypted = this.credentials.get(userId);
     if (!encrypted) {
       logger.warn(`No credentials found for user ${userId}`);
@@ -194,17 +202,19 @@ class CredentialsService {
       
       // Check if expired
       if (new Date() > new Date(decrypted.expiresAt)) {
-        logger.warn(`Credentials expired for user ${userId}`);
+        logger.warn(`Credentials expired for user ${userId}. Expired at: ${decrypted.expiresAt}, now: ${new Date()}`);
         this.credentials.delete(userId);
         return null;
       }
 
+      logger.info(`Successfully retrieved credentials for user ${userId}`);
       return {
         login: decrypted.login,
         password: decrypted.password
       };
     } catch (error) {
       logger.error(`Error decrypting credentials for user ${userId}:`, error);
+      this.credentials.delete(userId);
       return null;
     }
   }

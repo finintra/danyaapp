@@ -135,8 +135,9 @@ class OdooService {
       const creds = this.getCredentials(userId);
       
       // Check if credentials exist
-      if (!creds.username || !creds.password) {
+      if (!creds || !creds.username || !creds.password) {
         logger.error(`Missing credentials for user ${userId || 'default'}`);
+        logger.error(`Credentials object:`, creds ? JSON.stringify({ hasUsername: !!creds.username, hasPassword: !!creds.password }) : 'null');
         throw new ApiError(500, 'Odoo credentials not configured');
       }
       

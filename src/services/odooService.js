@@ -152,7 +152,7 @@ class OdooService {
         throw new ApiError(500, 'Failed to authenticate with Odoo: Invalid UID');
       }
 
-      const response = await axios.post(`${this.url}/jsonrpc`, {
+      const requestPayload = {
         jsonrpc: '2.0',
         method: 'call',
         params: {
@@ -161,22 +161,40 @@ class OdooService {
           args: [this.db, uid, creds.password, model, method, args, kwargs]
         },
         id: Math.floor(Math.random() * 1000000)
-      }, {
+      };
+      
+      // Log request details for debugging
+      console.log(`Executing ${model}.${method}:`, {
+        db: this.db,
+        uid: uid,
+        args: args,
+        kwargs: kwargs
+      });
+      
+      const response = await axios.post(`${this.url}/jsonrpc`, requestPayload, {
         headers: {
           'X-db-name': this.db
         }
       });
 
+      // Log full response for debugging
+      console.log(`Odoo response for ${model}.${method}:`, {
+        status: response.status,
+        data: JSON.stringify(response.data, null, 2)
+      });
+
       if (response.data.error) {
         const errorDetails = response.data.error;
-        logger.error(`Odoo execution error for ${model}.${method}:`, {
+        const errorInfo = {
           message: errorDetails.message,
           code: errorDetails.code,
           data: errorDetails.data,
           name: errorDetails.name,
           debug: errorDetails.debug,
           fullError: JSON.stringify(errorDetails, null, 2)
-        });
+        };
+        console.error(`Odoo execution error for ${model}.${method}:`, errorInfo);
+        logger.error(`Odoo execution error for ${model}.${method}:`, errorInfo);
         throw new ApiError(500, `Odoo execution error: ${errorDetails.message || JSON.stringify(errorDetails)}`);
       }
 
@@ -596,7 +614,7 @@ class OdooService {
           ['product_id', '=', productId]
         ]
       ], { 
-        fields: ['id', 'product_uom_qty', 'qty_done', 'location_id'] 
+        fields: ['id', 'product_uom_qty', 'qty_done', 'location_id', 'state', 'picking_id'] 
       }, userId);
 
       if (!moveLines || moveLines.length === 0) {
@@ -708,14 +726,28 @@ class OdooService {
         lineId: lineId,
         required: required,
         current_qty_done: line.qty_done,
-        new_qty_done: done
+        new_qty_done: done,
+        state: line.state,
+        picking_id: line.picking_id
       });
       
+      // Check if line is in a state that allows writing
+      if (line.state && line.state !== 'assigned' && line.state !== 'partially_available') {
+        console.warn(`Warning: Move line state is ${line.state}, might not allow writing`);
+      }
+      
       // Update the quantity in Odoo
-      await this.execute('stock.move.line', 'write', [
-        [lineId],
-        { qty_done: done }
-      ], {}, userId);
+      try {
+        await this.execute('stock.move.line', 'write', [
+          [lineId],
+          { qty_done: done }
+        ], {}, userId);
+        console.log(`Successfully updated stock.move.line ${lineId} with qty_done=${done}`);
+      } catch (writeError) {
+        console.error(`Failed to write to stock.move.line ${lineId}:`, writeError);
+        console.error(`Line state: ${line.state}, picking_id: ${line.picking_id}`);
+        throw writeError;
+      }
       
       // Get updated line data
       const updatedLines = await this.execute('stock.move.line', 'search_read', [

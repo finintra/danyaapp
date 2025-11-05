@@ -140,13 +140,29 @@ class OdooService {
       });
 
       if (response.data.error) {
-        throw new ApiError(500, `Odoo execution error: ${response.data.error.message}`);
+        const errorDetails = response.data.error;
+        logger.error(`Odoo execution error for ${model}.${method}:`, {
+          message: errorDetails.message,
+          code: errorDetails.code,
+          data: errorDetails.data,
+          name: errorDetails.name,
+          debug: errorDetails.debug,
+          fullError: JSON.stringify(errorDetails, null, 2)
+        });
+        throw new ApiError(500, `Odoo execution error: ${errorDetails.message || JSON.stringify(errorDetails)}`);
       }
 
       return response.data.result;
     } catch (error) {
       logger.error(`Error executing ${model}.${method}:`, error);
-      throw new ApiError(500, `Error executing ${model}.${method}`);
+      if (error.response) {
+        logger.error(`Response status: ${error.response.status}`);
+        logger.error(`Response data: ${JSON.stringify(error.response.data, null, 2)}`);
+      }
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(500, `Error executing ${model}.${method}: ${error.message}`);
     }
   }
 
@@ -644,6 +660,10 @@ class OdooService {
       }
 
       const line = moveLines[0];
+      
+      // Extract line ID - it might be a number or an array [id, name]
+      const lineId = Array.isArray(line.id) ? line.id[0] : line.id;
+      
       const required = line.product_uom_qty;
       const done = line.qty_done + 1; // Increment by 1 for this scan
       const remain = required - done;
@@ -653,15 +673,25 @@ class OdooService {
         throw new ApiError(409, 'OVERPICK');
       }
       
+      // Log the write operation details
+      console.log(`Updating stock.move.line with ID: ${lineId}, setting qty_done to: ${done}`);
+      console.log(`Line details:`, {
+        id: line.id,
+        lineId: lineId,
+        required: required,
+        current_qty_done: line.qty_done,
+        new_qty_done: done
+      });
+      
       // Update the quantity in Odoo
       await this.execute('stock.move.line', 'write', [
-        [line.id],
+        [lineId],
         { qty_done: done }
       ], {}, userId);
       
       // Get updated line data
       const updatedLines = await this.execute('stock.move.line', 'search_read', [
-        [['id', '=', line.id]]
+        [['id', '=', lineId]]
       ], { fields: ['id', 'product_uom_qty', 'qty_done', 'location_id'] }, userId);
       
       const updatedLine = updatedLines[0];

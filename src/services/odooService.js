@@ -256,7 +256,8 @@ class OdooService {
       }, {
         headers: {
           'X-db-name': this.db
-        }
+        },
+        timeout: 30000 // 30 seconds timeout
       });
 
       console.log('Authentication response status:', response.status);

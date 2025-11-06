@@ -62,6 +62,7 @@ class OdooService {
       
       // Authenticate with Odoo
       const response = await axios.post(requestUrl, {
+        timeout: 30000, // 30 seconds timeout
         jsonrpc: '2.0',
         method: 'call',
         params: {
@@ -245,6 +246,7 @@ class OdooService {
       
       // Authenticate directly with Odoo session
       const response = await axios.post(`${this.url}/web/session/authenticate`, {
+        timeout: 30000, // 30 seconds timeout
         jsonrpc: '2.0',
         method: 'call',
         params: {

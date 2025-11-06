@@ -981,13 +981,12 @@ class OdooService {
         ], {}, userId);
       }
 
-      // Set picking state to 'done'
-      await this.execute('stock.picking', 'write', [
-        [pickingId],
-        { state: 'done' }
+      // Set picking state to 'done' using action_done method
+      await this.execute('stock.picking', 'action_done', [
+        [pickingId]
       ], {}, userId);
 
-      logger.info(`Picking ${pickingId} set to 'done' state`);
+      logger.info(`Picking ${pickingId} set to 'done' state using action_done`);
 
       // Count how many labels are needed (one per line)
       const labelsCount = payload.length;

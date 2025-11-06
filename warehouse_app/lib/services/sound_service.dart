@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/services.dart';
 
 class SoundService {
   final AudioPlayer _audioPlayer = AudioPlayer();
@@ -20,7 +21,8 @@ class SoundService {
     try {
       // Встановлюємо гучність на максимум
       await _audioPlayer.setVolume(1.0);
-      print('AudioPlayer initialized with volume 1.0');
+      await _audioPlayer.setPlayerMode(PlayerMode.lowLatency);
+      print('AudioPlayer initialized with volume 1.0, mode: lowLatency');
       _isInitialized = true;
     } catch (e) {
       print('Error initializing AudioPlayer: $e');
@@ -35,17 +37,24 @@ class SoundService {
       print('Attempting to play scan success sound: sounds/Scanned.wav');
       await _audioPlayer.stop(); // Stop any currently playing sound
       await _audioPlayer.setReleaseMode(ReleaseMode.release);
+      
+      // Try loading asset first
+      try {
+        final asset = await rootBundle.load('sounds/Scanned.wav');
+        final bytes = asset.buffer.asUint8List();
+        print('Asset loaded, size: ${bytes.length} bytes');
+      } catch (loadError) {
+        print('Error loading asset: $loadError');
+      }
+      
       await _audioPlayer.play(AssetSource('sounds/Scanned.wav'));
       print('Scan success sound playing');
     } catch (e) {
       print('Error playing scan success sound: $e');
       print('Error details: ${e.toString()}');
-      // Try alternative path
-      try {
-        await _audioPlayer.play(AssetSource('assets/sounds/Scanned.wav'));
-        print('Scan success sound playing with alternative path');
-      } catch (e2) {
-        print('Error with alternative path: $e2');
+      print('Error type: ${e.runtimeType}');
+      if (e is PlatformException) {
+        print('Platform error code: ${e.code}, message: ${e.message}');
       }
     }
   }
@@ -63,12 +72,9 @@ class SoundService {
     } catch (e) {
       print('Error playing error sound: $e');
       print('Error details: ${e.toString()}');
-      // Try alternative path
-      try {
-        await _audioPlayer.play(AssetSource('assets/sounds/wrong product.wav'));
-        print('Error sound playing with alternative path');
-      } catch (e2) {
-        print('Error with alternative path: $e2');
+      print('Error type: ${e.runtimeType}');
+      if (e is PlatformException) {
+        print('Platform error code: ${e.code}, message: ${e.message}');
       }
     }
   }
@@ -86,12 +92,9 @@ class SoundService {
     } catch (e) {
       print('Error playing extra item sound: $e');
       print('Error details: ${e.toString()}');
-      // Try alternative path
-      try {
-        await _audioPlayer.play(AssetSource('assets/sounds/more then needed.wav'));
-        print('Extra item sound playing with alternative path');
-      } catch (e2) {
-        print('Error with alternative path: $e2');
+      print('Error type: ${e.runtimeType}');
+      if (e is PlatformException) {
+        print('Platform error code: ${e.code}, message: ${e.message}');
       }
     }
   }
@@ -109,12 +112,9 @@ class SoundService {
     } catch (e) {
       print('Error playing success sound: $e');
       print('Error details: ${e.toString()}');
-      // Try alternative path
-      try {
-        await _audioPlayer.play(AssetSource('assets/sounds/productdone.wav'));
-        print('Success sound playing with alternative path');
-      } catch (e2) {
-        print('Error with alternative path: $e2');
+      print('Error type: ${e.runtimeType}');
+      if (e is PlatformException) {
+        print('Platform error code: ${e.code}, message: ${e.message}');
       }
     }
   }

@@ -175,6 +175,10 @@ class OdooService {
       const response = await axios.post(`${this.url}/jsonrpc`, requestPayload, {
         headers: {
           'X-db-name': this.db
+        },
+        timeout: 30000, // 30 seconds timeout
+        validateStatus: function (status) {
+          return status >= 200 && status < 500; // Accept 2xx and 4xx status codes
         }
       });
 
@@ -202,6 +206,16 @@ class OdooService {
       return response.data.result;
     } catch (error) {
       logger.error(`Error executing ${model}.${method}:`, error);
+      
+      // Handle connection errors
+      if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.message === 'socket hang up' || error.message.includes('timeout')) {
+        logger.error(`Connection error: ${error.code || error.message}`);
+        throw new ApiError(503, 'CONNECTION_ERROR', false, { 
+          message: 'Помилка з\'єднання з сервером. Спробуйте ще раз.',
+          originalError: error.message 
+        });
+      }
+      
       if (error.response) {
         logger.error(`Response status: ${error.response.status}`);
         logger.error(`Response data: ${JSON.stringify(error.response.data, null, 2)}`);

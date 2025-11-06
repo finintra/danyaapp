@@ -60,6 +60,14 @@ const login = async (req, res, next) => {
       });
     }
 
+    if (error.message === 'CONNECTION_ERROR') {
+      return res.status(503).json({
+        ok: false,
+        error: 'CONNECTION_ERROR',
+        message: error.data?.message || 'Помилка з\'єднання з сервером. Спробуйте ще раз.'
+      });
+    }
+
     next(error);
   }
 };

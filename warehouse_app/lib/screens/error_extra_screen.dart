@@ -29,8 +29,7 @@ class _ErrorExtraScreenState extends State<ErrorExtraScreen> {
   
   Future<void> _playErrorSound() async {
     try {
-      await _soundService.playErrorSound();
-      print('Error sound played on ErrorExtraScreen');
+      await _soundService.playExtraItemSound();
     } catch (e) {
       print('Error playing error sound on ErrorExtraScreen: $e');
     }

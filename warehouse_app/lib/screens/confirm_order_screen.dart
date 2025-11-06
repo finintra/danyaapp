@@ -41,11 +41,9 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
       // Формуємо payload з усіх рядків накладної
       final lines = detailsResponse.data['lines'] as List<dynamic>;
       final payload = lines.map((line) => {
-        return {
-          'line_id': line['line_id'],
-          'product_id': line['product_id'],
-          'qty': line['done'], // Використовуємо відскановану кількість
-        };
+        'line_id': line['line_id'],
+        'product_id': line['product_id'],
+        'qty': line['done'], // Використовуємо відскановану кількість
       }).toList();
       
       // Викликаємо API для підтвердження накладної

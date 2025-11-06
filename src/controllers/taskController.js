@@ -50,6 +50,15 @@ const attachToPicking = async (req, res, next) => {
       });
     }
 
+    if (error.message === 'Odoo credentials not configured') {
+      logger.error('Credentials not found for user in attachToPicking, returning CREDENTIALS_NOT_FOUND error');
+      return res.status(401).json({
+        ok: false,
+        error: 'CREDENTIALS_NOT_FOUND',
+        message: 'Збережені облікові дані не знайдено. Будь ласка, увійдіть знову через логін/пароль.'
+      });
+    }
+
     next(error);
   }
 };
@@ -140,6 +149,15 @@ const scanItem = async (req, res, next) => {
       });
     }
 
+    if (error.message === 'Odoo credentials not configured') {
+      logger.error('Credentials not found for user, returning CREDENTIALS_NOT_FOUND error');
+      return res.status(401).json({
+        ok: false,
+        error: 'CREDENTIALS_NOT_FOUND',
+        message: 'Збережені облікові дані не знайдено. Будь ласка, увійдіть знову через логін/пароль.'
+      });
+    }
+
     next(error);
   }
 };
@@ -181,6 +199,15 @@ const validatePicking = async (req, res, next) => {
       return res.status(409).json({
         ok: false,
         error: 'ORDER_LOCKED'
+      });
+    }
+
+    if (error.message === 'Odoo credentials not configured') {
+      logger.error('Credentials not found for user in validatePicking, returning CREDENTIALS_NOT_FOUND error');
+      return res.status(401).json({
+        ok: false,
+        error: 'CREDENTIALS_NOT_FOUND',
+        message: 'Збережені облікові дані не знайдено. Будь ласка, увійдіть знову через логін/пароль.'
       });
     }
 
@@ -247,6 +274,14 @@ const getAvailableTasks = async (req, res, next) => {
       pickings: formattedPickings
     });
   } catch (error) {
+    if (error.message === 'Odoo credentials not configured') {
+      logger.error('Credentials not found for user in getAvailableTasks, returning CREDENTIALS_NOT_FOUND error');
+      return res.status(401).json({
+        ok: false,
+        error: 'CREDENTIALS_NOT_FOUND',
+        message: 'Збережені облікові дані не знайдено. Будь ласка, увійдіть знову через логін/пароль.'
+      });
+    }
     next(error);
   }
 };
@@ -336,6 +371,14 @@ const getTaskDetails = async (req, res, next) => {
       lines: formattedLines
     });
   } catch (error) {
+    if (error.message === 'Odoo credentials not configured') {
+      logger.error('Credentials not found for user in getTaskDetails, returning CREDENTIALS_NOT_FOUND error');
+      return res.status(401).json({
+        ok: false,
+        error: 'CREDENTIALS_NOT_FOUND',
+        message: 'Збережені облікові дані не знайдено. Будь ласка, увійдіть знову через логін/пароль.'
+      });
+    }
     next(error);
   }
 };

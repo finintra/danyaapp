@@ -11,6 +11,7 @@ import 'error_not_in_order_screen.dart';
 import 'error_wrong_order_screen.dart';
 import 'line_completed_screen.dart';
 import 'order_completed_screen.dart';
+import 'login_screen.dart';
 
 class ProductScanScreen extends StatefulWidget {
   final String invoiceNumber;
@@ -148,6 +149,22 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
           if (mounted) {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const ErrorWrongOrderScreen()),
+            );
+          }
+        } else if (response.error == 'CREDENTIALS_NOT_FOUND') {
+          // Показуємо повідомлення та переходимо на екран логіну
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(response.message ?? 'Збережені облікові дані не знайдено. Будь ласка, увійдіть знову.'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+            // Переходимо на екран логіну
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+              (route) => false,
             );
           }
         } else {

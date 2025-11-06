@@ -982,11 +982,48 @@ class OdooService {
       }
 
       // Set picking state to 'done' using action_done method
-      await this.execute('stock.picking', 'action_done', [
-        [pickingId]
-      ], {}, userId);
-
-      logger.info(`Picking ${pickingId} set to 'done' state using action_done`);
+      try {
+        const doneResult = await this.execute('stock.picking', 'action_done', [
+          [pickingId]
+        ], {}, userId);
+        
+        logger.info(`Picking ${pickingId} action_done result: ${JSON.stringify(doneResult)}`);
+        
+        // Verify that picking is actually done
+        const verifyPickings = await this.execute('stock.picking', 'search_read', [
+          [['id', '=', pickingId]]
+        ], { fields: ['id', 'name', 'state'] }, userId);
+        
+        if (verifyPickings && verifyPickings.length > 0) {
+          const verifyPicking = verifyPickings[0];
+          logger.info(`Picking ${pickingId} state after action_done: ${verifyPicking.state}`);
+          
+          if (verifyPicking.state !== 'done') {
+            logger.warn(`Picking ${pickingId} state is ${verifyPicking.state}, expected 'done'. Trying button_validate...`);
+            // Try alternative method
+            await this.execute('stock.picking', 'button_validate', [], {}, userId);
+            
+            // Verify again
+            const verifyPickings2 = await this.execute('stock.picking', 'search_read', [
+              [['id', '=', pickingId]]
+            ], { fields: ['id', 'name', 'state'] }, userId);
+            
+            if (verifyPickings2 && verifyPickings2.length > 0) {
+              logger.info(`Picking ${pickingId} state after button_validate: ${verifyPickings2[0].state}`);
+            }
+          }
+        }
+      } catch (doneError) {
+        logger.error(`Error setting picking ${pickingId} to done: ${doneError.message}`);
+        // Try alternative method
+        try {
+          await this.execute('stock.picking', 'button_validate', [], {}, userId);
+          logger.info(`Picking ${pickingId} set to 'done' using button_validate`);
+        } catch (buttonError) {
+          logger.error(`Error with button_validate for picking ${pickingId}: ${buttonError.message}`);
+          throw doneError;
+        }
+      }
 
       // Count how many labels are needed (one per line)
       const labelsCount = payload.length;

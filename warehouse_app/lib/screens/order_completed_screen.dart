@@ -8,12 +8,14 @@ import 'package:http/http.dart' as http;
 class OrderCompletedScreen extends StatefulWidget {
   final String invoiceNumber;
   final int pickingId;
-  final int totalItems;
+  final int totalLines; // Кількість товарів (рядків)
+  final int totalItems; // Загальна кількість одиниць
   
   const OrderCompletedScreen({
     super.key,
     required this.invoiceNumber,
     required this.pickingId,
+    this.totalLines = 0,
     this.totalItems = 0,
   });
 
@@ -62,11 +64,22 @@ class _OrderCompletedScreenState extends State<OrderCompletedScreen> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 30),
                 Text(
-                  '${widget.totalItems} ШТУК',
+                  'Відскановано\n${widget.totalLines} товарів',
                   style: TextStyle(
-                    fontSize: 60,
+                    fontSize: 36,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    height: 1.2,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  '${widget.totalItems} одиниць загалом',
+                  style: TextStyle(
+                    fontSize: 48,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),

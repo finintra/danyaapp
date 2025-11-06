@@ -72,13 +72,6 @@ class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
   }
 
   Future<void> _processInvoice(String invoice) async {
-    if (!invoice.startsWith('OUT/') && !invoice.startsWith('WH/OUT')) {
-      setState(() {
-        _errorMessage = 'Неверный формат накладной. Должен начинаться с OUT/ или WH/OUT';
-      });
-      return;
-    }
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;

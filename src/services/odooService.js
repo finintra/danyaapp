@@ -559,13 +559,13 @@ class OdooService {
     try {
       console.log(`Finding product with code: ${code}, userLang=${userLang}`);
       
-      // Find product by default_code or barcode with user language
+      // Find product by default_code or barcode_ids (many2many field) with user language
       const context = { lang: userLang };
       
       const products = await this.execute('product.product', 'search_read', [
-        ['|', ['default_code', '=', code], ['barcode', '=', code]]
+        ['|', ['default_code', '=', code], ['barcode_ids.name', '=', code]]
       ], { 
-        fields: ['id', 'name', 'default_code', 'barcode'],
+        fields: ['id', 'name', 'default_code', 'barcode_ids'],
         context: context // Pass the language context
       }, userId);
       
@@ -589,14 +589,14 @@ class OdooService {
     try {
       console.log(`Validating item scan: pickingId=${pickingId}, code=${code}, userLang=${userLang}`);
       
-      // Find product by default_code or barcode with user language
+      // Find product by default_code or barcode_ids (many2many field) with user language
       const context = { lang: userLang };
       console.log(`Using language context for product scan: ${userLang}`);
       
       const products = await this.execute('product.product', 'search_read', [
-        ['|', ['default_code', '=', code], ['barcode', '=', code]]
+        ['|', ['default_code', '=', code], ['barcode_ids.name', '=', code]]
       ], { 
-        fields: ['id', 'name', 'default_code'],
+        fields: ['id', 'name', 'default_code', 'barcode_ids'],
         context: context // Pass the language context
       }, userId);
 
@@ -980,6 +980,14 @@ class OdooService {
           { qty_done: item.qty }
         ], {}, userId);
       }
+
+      // Set picking state to 'done'
+      await this.execute('stock.picking', 'write', [
+        [pickingId],
+        { state: 'done' }
+      ], {}, userId);
+
+      logger.info(`Picking ${pickingId} set to 'done' state`);
 
       // Count how many labels are needed (one per line)
       const labelsCount = payload.length;

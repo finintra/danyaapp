@@ -45,7 +45,7 @@ dependencies:
   shared_preferences: ^2.2.2
   
   # Barcode scanning
-  mobile_scanner: ^3.5.6
+  mobile_scanner: ^4.0.0
   
   # JWT token handling
   jwt_decoder: ^2.0.1
@@ -55,6 +55,9 @@ dependencies:
   
   # Audio player for sound effects
   audioplayers: ^5.2.1
+  
+  # Printing support
+  printing: ^5.12.0
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +69,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -107,3 +111,12 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "flv2.png"
+  min_sdk_android: 21
+  # Adaptive icon для Android 8+ - використовуємо білий фон
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "flv2.png"

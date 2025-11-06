@@ -6,6 +6,8 @@ class AppConstants {
   // API Endpoints
   static const String loginEndpoint = '$apiPrefix/login';
   static const String loginBadgeEndpoint = '$apiPrefix/login_badge';
+  static const String loginPinEndpoint = '$apiPrefix/login_pin';
+  static const String createPinEndpoint = '$apiPrefix/create_pin';
   static const String deviceStatusEndpoint = '$apiPrefix/device/status';
   static const String logoutEndpoint = '$apiPrefix/logout';
   static const String taskAttachEndpoint = '$apiPrefix/task/attach';

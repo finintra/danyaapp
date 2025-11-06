@@ -234,10 +234,19 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
             // Відтворюємо звук успішного завершення
             _soundService.playSuccessSound();
             
-            // Заказ завершен
+            // Заказ завершен - отримуємо дані з order_summary
+            final orderSummary = response.data['order_summary'] ?? {};
+            final totalScannedLines = widget.completedLines + 1; // Кількість товарів (рядків)
+            final totalScannedItems = orderSummary['total_items'] ?? totalScannedLines; // Загальна кількість одиниць
+            
             if (mounted) {
               Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const OrderCompletedScreen()),
+                MaterialPageRoute(builder: (context) => OrderCompletedScreen(
+                  invoiceNumber: widget.invoiceNumber,
+                  pickingId: widget.pickingId,
+                  totalLines: totalScannedLines,
+                  totalItems: totalScannedItems,
+                )),
               );
             }
             return;
@@ -320,6 +329,7 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Column(
         children: [
           // Заголовок с номером накладной
@@ -346,7 +356,7 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
           
           // Основная зона
           Expanded(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -448,22 +458,29 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
                     ),
                   ),
                   
+                  const SizedBox(height: 10),
+                  
+                  // Назва товару - значно більша
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       _currentLine.productName,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                   
+                  const SizedBox(height: 15),
+                  
+                  // Місце зберігання - значно більше
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       _currentLine.location != null ? _currentLine.location! : 'Місцезнаходження не вказано',
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

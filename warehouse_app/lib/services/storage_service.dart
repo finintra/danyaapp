@@ -39,10 +39,7 @@ class StorageService {
     await prefs.setString('user_data', userJson);
     print('User data saved: ${user.name}');
     
-    // Якщо у користувача є PIN-код, зберігаємо його
-    if (user.pin != null && user.pin!.isNotEmpty) {
-      await savePin(user.pin!);
-    }
+    // PIN більше не зберігається в Odoo, тому не зберігаємо його тут
     
     // Якщо у користувача є мова, зберігаємо її
     if (user.lang != null && user.lang!.isNotEmpty) {
@@ -191,6 +188,21 @@ class StorageService {
     return lang;
   }
   
+  // Збереження прапорця про необхідність створення PIN
+  Future<void> saveRequiresPinSetup(bool requires) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('requires_pin_setup', requires);
+    print('Requires PIN setup saved: $requires');
+  }
+
+  // Отримання прапорця про необхідність створення PIN
+  Future<bool> getRequiresPinSetup() async {
+    final prefs = await SharedPreferences.getInstance();
+    final requires = prefs.getBool('requires_pin_setup') ?? true; // За замовчуванням true
+    print('Requires PIN setup retrieved: $requires');
+    return requires;
+  }
+
   // Очистка данных сессии
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
@@ -199,6 +211,7 @@ class StorageService {
     await prefs.remove('token_expiry');
     await prefs.remove('user_pin');
     await prefs.remove('is_logged_in');
+    await prefs.remove('requires_pin_setup');
     // Не видаляємо deviceId та user_lang, щоб зберегти їх для наступного входу
     print('All auth data cleared');
   }

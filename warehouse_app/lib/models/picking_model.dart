@@ -115,19 +115,61 @@ class PickingLine {
         remain = 0.0;
       }
       
+      // Parse uom safely - can be String, bool (false), or null
+      String? uom;
+      if (json['uom'] is String) {
+        uom = json['uom'] as String;
+      } else if (json['uom'] is bool && json['uom'] == false) {
+        uom = 'Units';
+      } else {
+        uom = 'Units';
+      }
+      
+      // Parse productCode safely - can be String, bool (false), or null
+      String? productCode;
+      if (json['product_code'] is String) {
+        productCode = json['product_code'] as String;
+      } else {
+        productCode = null;
+      }
+      
+      // Parse barcode safely - can be String, bool (false), or null
+      String? barcode;
+      if (json['barcode'] is String) {
+        barcode = json['barcode'] as String;
+      } else {
+        barcode = null;
+      }
+      
+      // Parse location safely - can be String, bool (false), or null
+      String? location;
+      if (json['location'] is String) {
+        location = json['location'] as String;
+      } else {
+        location = null;
+      }
+      
+      // Parse locationComplete safely - can be String, bool (false), or null
+      String? locationComplete;
+      if (json['location_complete'] is String) {
+        locationComplete = json['location_complete'] as String;
+      } else {
+        locationComplete = null;
+      }
+      
       return PickingLine(
         lineId: lineId,
         productId: productId,
         productName: productName,
-        productCode: json['product_code'] as String?,
+        productCode: productCode,
         price: price,
-        uom: json['uom'] as String? ?? 'Units',
+        uom: uom,
         required: required,
         done: done,
         remain: remain,
-        barcode: json['barcode'] as String?,
-        location: json['location'] as String?,
-        locationComplete: json['location_complete'] as String?,
+        barcode: barcode,
+        location: location,
+        locationComplete: locationComplete,
       );
     } catch (e) {
       print('Error parsing PickingLine: $e');

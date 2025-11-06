@@ -2,138 +2,76 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
 
 class SoundService {
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  bool _isMuted = false;
-  bool _isInitialized = false;
-
-  // Singleton pattern
   static final SoundService _instance = SoundService._internal();
-  
-  factory SoundService() {
-    return _instance;
-  }
-  
-  SoundService._internal() {
-    _initialize();
-  }
-  
-  Future<void> _initialize() async {
-    try {
-      // Встановлюємо гучність на максимум
-      await _audioPlayer.setVolume(1.0);
-      await _audioPlayer.setPlayerMode(PlayerMode.lowLatency);
-      print('AudioPlayer initialized with volume 1.0, mode: lowLatency');
-      _isInitialized = true;
-    } catch (e) {
-      print('Error initializing AudioPlayer: $e');
-    }
-  }
+  factory SoundService() => _instance;
+  SoundService._internal();
 
-  /// Відтворює звук успішного сканування (Scanned.wav)
+  final AudioPlayer _player = AudioPlayer();
+  bool _isMuted = false;
+
+  /// Відтворює звук успішного сканування (Scanned.wav) - зелений екран
   Future<void> playScanSuccessSound() async {
     if (_isMuted) return;
-    
-    try {
-      print('Attempting to play scan success sound: sounds/Scanned.wav');
-      await _audioPlayer.stop(); // Stop any currently playing sound
-      await _audioPlayer.setReleaseMode(ReleaseMode.release);
-      
-      // Try loading asset first
-      try {
-        final asset = await rootBundle.load('sounds/Scanned.wav');
-        final bytes = asset.buffer.asUint8List();
-        print('Asset loaded, size: ${bytes.length} bytes');
-      } catch (loadError) {
-        print('Error loading asset: $loadError');
-      }
-      
-      await _audioPlayer.play(AssetSource('sounds/Scanned.wav'));
-      print('Scan success sound playing');
-    } catch (e) {
-      print('Error playing scan success sound: $e');
-      print('Error details: ${e.toString()}');
-      print('Error type: ${e.runtimeType}');
-      if (e is PlatformException) {
-        print('Platform error code: ${e.code}, message: ${e.message}');
-      }
-    }
+    await _playSound('sounds/Scanned.wav');
   }
 
-  /// Відтворює звук помилки (wrong product.wav)
+  /// Відтворює звук помилки (wrong product.wav) - товар відсутній в замовленні
   Future<void> playErrorSound() async {
     if (_isMuted) return;
-    
-    try {
-      print('Attempting to play error sound: sounds/wrong product.wav');
-      await _audioPlayer.stop(); // Stop any currently playing sound
-      await _audioPlayer.setReleaseMode(ReleaseMode.release);
-      await _audioPlayer.play(AssetSource('sounds/wrong product.wav'));
-      print('Error sound playing');
-    } catch (e) {
-      print('Error playing error sound: $e');
-      print('Error details: ${e.toString()}');
-      print('Error type: ${e.runtimeType}');
-      if (e is PlatformException) {
-        print('Platform error code: ${e.code}, message: ${e.message}');
-      }
-    }
+    await _playSound('sounds/wrong product.wav');
   }
 
-  /// Відтворює звук для додаткового товару (more then needed.wav)
+  /// Відтворює звук для додаткового товару (more then needed.wav) - лишній товар
   Future<void> playExtraItemSound() async {
     if (_isMuted) return;
-    
-    try {
-      print('Attempting to play extra item sound: sounds/more then needed.wav');
-      await _audioPlayer.stop(); // Stop any currently playing sound
-      await _audioPlayer.setReleaseMode(ReleaseMode.release);
-      await _audioPlayer.play(AssetSource('sounds/more then needed.wav'));
-      print('Extra item sound playing');
-    } catch (e) {
-      print('Error playing extra item sound: $e');
-      print('Error details: ${e.toString()}');
-      print('Error type: ${e.runtimeType}');
-      if (e is PlatformException) {
-        print('Platform error code: ${e.code}, message: ${e.message}');
-      }
-    }
+    await _playSound('sounds/more then needed.wav');
   }
 
-  /// Відтворює звук завершення товару (productdone.wav)
+  /// Відтворює звук завершення товару (productdone.wav) - всі товари відскановані
   Future<void> playSuccessSound() async {
     if (_isMuted) return;
-    
+    await _playSound('sounds/productdone.wav');
+  }
+
+  Future<void> _playSound(String assetPath) async {
     try {
-      print('Attempting to play success sound: sounds/productdone.wav');
-      await _audioPlayer.stop(); // Stop any currently playing sound
-      await _audioPlayer.setReleaseMode(ReleaseMode.release);
-      await _audioPlayer.play(AssetSource('sounds/productdone.wav'));
-      print('Success sound playing');
+      // Зупиняємо попередній звук
+      await _player.stop();
+      
+      // Встановлюємо режим відтворення
+      await _player.setReleaseMode(ReleaseMode.release);
+      await _player.setPlayerMode(PlayerMode.lowLatency);
+      await _player.setVolume(1.0);
+      
+      // Відтворюємо звук
+      await _player.play(AssetSource(assetPath));
+      
+      print('Sound played: $assetPath');
     } catch (e) {
-      print('Error playing success sound: $e');
-      print('Error details: ${e.toString()}');
-      print('Error type: ${e.runtimeType}');
-      if (e is PlatformException) {
-        print('Platform error code: ${e.code}, message: ${e.message}');
+      print('Error playing sound $assetPath: $e');
+      // Спробуємо альтернативний метод через rootBundle
+      try {
+        final ByteData data = await rootBundle.load(assetPath);
+        final Uint8List bytes = data.buffer.asUint8List();
+        await _player.play(BytesSource(bytes));
+        print('Sound played via BytesSource: $assetPath');
+      } catch (e2) {
+        print('Error playing sound via BytesSource: $e2');
       }
     }
   }
 
-  /// Вмикає або вимикає звуки
   void setMuted(bool muted) {
     _isMuted = muted;
   }
 
-  /// Повертає поточний стан звуку (увімкнено/вимкнено)
   bool get isMuted => _isMuted;
 
-  /// Перемикає стан звуку (увімкнено/вимкнено)
   void toggleMute() {
     _isMuted = !_isMuted;
   }
 
-  /// Звільняє ресурси
   void dispose() {
-    _audioPlayer.dispose();
+    _player.dispose();
   }
 }

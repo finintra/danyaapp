@@ -4,6 +4,7 @@ import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import '../models/picking_model.dart';
 import 'product_scan_screen.dart';
+import 'error_order_locked_screen.dart';
 
 class InvoiceScanScreen extends StatefulWidget {
   const InvoiceScanScreen({super.key});
@@ -85,6 +86,19 @@ class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
       if (!response.success) {
         setState(() {
           _isLoading = false;
+        });
+        
+        // Обробка помилки ORDER_LOCKED
+        if (response.error == 'ORDER_LOCKED') {
+          if (mounted) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const ErrorOrderLockedScreen()),
+            );
+          }
+          return;
+        }
+        
+        setState(() {
           _errorMessage = response.error ?? 'Ошибка при обработке накладной';
         });
         return;

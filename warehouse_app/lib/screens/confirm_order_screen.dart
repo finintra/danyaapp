@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import 'invoice_scan_screen.dart';
 import 'cancel_picking_screen.dart';
+import 'error_order_locked_screen.dart';
 
 class ConfirmOrderScreen extends StatefulWidget {
   final String invoiceNumber;
@@ -50,6 +51,17 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
       final response = await apiService.validatePicking(widget.pickingId, payload);
       
       if (!response.success) {
+        // Обробка помилки ORDER_LOCKED
+        if (response.error == 'ORDER_LOCKED') {
+          if (mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const ErrorOrderLockedScreen()),
+              (route) => false,
+            );
+          }
+          return;
+        }
+        
         throw Exception(response.error ?? 'Помилка підтвердження накладної');
       }
 

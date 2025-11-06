@@ -1000,8 +1000,10 @@ class OdooService {
           
           if (verifyPicking.state !== 'done') {
             logger.warn(`Picking ${pickingId} state is ${verifyPicking.state}, expected 'done'. Trying button_validate...`);
-            // Try alternative method
-            await this.execute('stock.picking', 'button_validate', [], {}, userId);
+            // Try alternative method - button_validate is called on the record
+            await this.execute('stock.picking', 'button_validate', [
+              [pickingId]
+            ], {}, userId);
             
             // Verify again
             const verifyPickings2 = await this.execute('stock.picking', 'search_read', [
@@ -1015,9 +1017,11 @@ class OdooService {
         }
       } catch (doneError) {
         logger.error(`Error setting picking ${pickingId} to done: ${doneError.message}`);
-        // Try alternative method
+        // Try alternative method - button_validate is called on the record
         try {
-          await this.execute('stock.picking', 'button_validate', [], {}, userId);
+          await this.execute('stock.picking', 'button_validate', [
+            [pickingId]
+          ], {}, userId);
           logger.info(`Picking ${pickingId} set to 'done' using button_validate`);
         } catch (buttonError) {
           logger.error(`Error with button_validate for picking ${pickingId}: ${buttonError.message}`);

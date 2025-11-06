@@ -157,26 +157,28 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _cancelOrder,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppTheme.warningColor,
-                      minimumSize: const Size(double.infinity, 80),
-                      side: const BorderSide(
-                        color: AppTheme.warningColor,
-                        width: 3,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      textStyle: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w600,
-                      ),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _cancelOrder,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppTheme.warningColor,
+                    minimumSize: const Size(double.infinity, 80),
+                    alignment: Alignment.center,
+                    side: const BorderSide(
+                      color: AppTheme.warningColor,
+                      width: 3,
                     ),
-                    child: const Text('ВІДМІНИ ЗАМОВЛЕННЯ'),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  child: const Text(
+                    'ВІДМІНИ ЗАМОВЛЕННЯ',
+                    textAlign: TextAlign.center,
                   ),
                 ),
                 const SizedBox(height: 20),

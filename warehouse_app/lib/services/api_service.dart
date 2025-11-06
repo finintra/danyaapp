@@ -299,6 +299,28 @@ class ApiService {
       );
     }
   }
+
+  // Підтвердження накладної (validate picking)
+  Future<ApiResponse> validatePicking(int pickingId, List<Map<String, dynamic>> payload) async {
+    try {
+      final response = await http.post(
+        Uri.parse(AppConstants.baseUrl + AppConstants.validateEndpoint),
+        headers: await _getHeaders(withAuth: true),
+        body: json.encode({
+          'picking_id': pickingId,
+          'payload': payload,
+        }),
+      );
+      
+      return _handleResponse(response);
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        error: 'CONNECTION_ERROR',
+        message: e.toString(),
+      );
+    }
+  }
   
   // Выход из системы
   Future<ApiResponse> logout() async {

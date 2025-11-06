@@ -460,43 +460,35 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
                   
                   const SizedBox(height: 10),
                   
-                  // Назва товару - значно більша
+                  // Назва товару - ще більша
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       _currentLine.productName,
+                      style: const TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Повний шлях місця зберігання - значно більше
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      _currentLine.locationComplete != null 
+                          ? _currentLine.locationComplete! 
+                          : (_currentLine.location != null 
+                              ? _currentLine.location! 
+                              : 'Місцезнаходження не вказано'),
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  
-                  const SizedBox(height: 15),
-                  
-                  // Місце зберігання - значно більше
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      _currentLine.location != null ? _currentLine.location! : 'Місцезнаходження не вказано',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  
-                  if (_currentLine.locationComplete != null)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        _currentLine.locationComplete!,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
                   
                   const SizedBox(height: 15),
                   

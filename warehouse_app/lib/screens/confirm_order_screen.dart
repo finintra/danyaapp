@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../services/api_service.dart';
 import 'invoice_scan_screen.dart';
 import 'cancel_picking_screen.dart';
 
@@ -28,9 +29,31 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
     });
 
     try {
-      // В реальном приложении здесь будет запрос к API
-      // Симулируем задержку
-      await Future.delayed(const Duration(seconds: 1));
+      final apiService = ApiService();
+      
+      // Отримуємо деталі накладної для формування payload
+      final detailsResponse = await apiService.getPickingDetails(widget.pickingId);
+      
+      if (!detailsResponse.success) {
+        throw Exception(detailsResponse.error ?? 'Помилка отримання деталей накладної');
+      }
+      
+      // Формуємо payload з усіх рядків накладної
+      final lines = detailsResponse.data['lines'] as List<dynamic>;
+      final payload = lines.map((line) => {
+        return {
+          'line_id': line['line_id'],
+          'product_id': line['product_id'],
+          'qty': line['done'], // Використовуємо відскановану кількість
+        };
+      }).toList();
+      
+      // Викликаємо API для підтвердження накладної
+      final response = await apiService.validatePicking(widget.pickingId, payload);
+      
+      if (!response.success) {
+        throw Exception(response.error ?? 'Помилка підтвердження накладної');
+      }
 
       if (mounted) {
         // После успешного подтверждения возвращаемся на экран сканирования накладной
@@ -104,25 +127,27 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _cancelOrder,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: AppTheme.warningColor,
-                    minimumSize: const Size(double.infinity, 80),
-                    side: const BorderSide(
-                      color: AppTheme.warningColor,
-                      width: 3,
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _cancelOrder,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppTheme.warningColor,
+                      minimumSize: const Size(double.infinity, 80),
+                      side: const BorderSide(
+                        color: AppTheme.warningColor,
+                        width: 3,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    child: const Text('ВІДМІНИ ЗАМОВЛЕННЯ'),
                   ),
-                  child: const Text('ВІДМІНИ ЗАМОВЛЕННЯ'),
                 ),
                 const SizedBox(height: 20),
                 Text(

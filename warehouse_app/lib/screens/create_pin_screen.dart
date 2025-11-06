@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
-import 'pin_entry_screen.dart';
+import 'invoice_scan_screen.dart';
 
 class CreatePinScreen extends StatefulWidget {
   const CreatePinScreen({super.key});
@@ -47,9 +47,10 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
 
       if (success) {
         if (mounted) {
-          // Після успішного створення PIN переходимо на екран введення PIN
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const PinEntryScreen()),
+          // Після успішного створення PIN переходимо на екран сканування накладної
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const InvoiceScanScreen()),
+            (route) => false,
           );
         }
       } else {
@@ -66,6 +67,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -91,6 +93,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                     TextFormField(
                       controller: _pinController,
                       obscureText: true,
+                      keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         hintText: 'PIN-код',
                       ),
@@ -112,6 +115,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                     TextFormField(
                       controller: _pinConfirmController,
                       obscureText: true,
+                      keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         hintText: 'Підтвердіть PIN-код',
                       ),

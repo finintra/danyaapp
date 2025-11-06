@@ -32,9 +32,13 @@ class SoundService {
     if (_isMuted) return;
     
     try {
+      print('Attempting to play scan success sound: sounds/Scanned.wav');
+      await _audioPlayer.stop(); // Stop any currently playing sound
       await _audioPlayer.play(AssetSource('sounds/Scanned.wav'));
+      print('Scan success sound playing');
     } catch (e) {
       print('Error playing scan success sound: $e');
+      print('Error details: ${e.toString()}');
     }
   }
 
@@ -43,9 +47,13 @@ class SoundService {
     if (_isMuted) return;
     
     try {
+      print('Attempting to play error sound: sounds/wrong product.wav');
+      await _audioPlayer.stop(); // Stop any currently playing sound
       await _audioPlayer.play(AssetSource('sounds/wrong product.wav'));
+      print('Error sound playing');
     } catch (e) {
       print('Error playing error sound: $e');
+      print('Error details: ${e.toString()}');
     }
   }
 
@@ -54,9 +62,13 @@ class SoundService {
     if (_isMuted) return;
     
     try {
+      print('Attempting to play extra item sound: sounds/more then needed.wav');
+      await _audioPlayer.stop(); // Stop any currently playing sound
       await _audioPlayer.play(AssetSource('sounds/more then needed.wav'));
+      print('Extra item sound playing');
     } catch (e) {
       print('Error playing extra item sound: $e');
+      print('Error details: ${e.toString()}');
     }
   }
 
@@ -65,9 +77,13 @@ class SoundService {
     if (_isMuted) return;
     
     try {
+      print('Attempting to play success sound: sounds/productdone.wav');
+      await _audioPlayer.stop(); // Stop any currently playing sound
       await _audioPlayer.play(AssetSource('sounds/productdone.wav'));
+      print('Success sound playing');
     } catch (e) {
       print('Error playing success sound: $e');
+      print('Error details: ${e.toString()}');
     }
   }
 

@@ -177,7 +177,7 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
                     ),
                   ),
                   child: const Text(
-                    'ВІДМІНИ ЗАМОВЛЕННЯ',
+                    'ВІДМІНИТИ ЗАМОВЛЕННЯ',
                     textAlign: TextAlign.center,
                   ),
                 ),

@@ -85,8 +85,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - sounds/Scanned.wav
-    - sounds/wrong product.wav
-    - sounds/more then needed.wav
+    - sounds/wrong_product.wav
+    - sounds/more_then_needed.wav
     - sounds/productdone.wav
 
   # An image asset can refer to one or more resolution-specific "variants", see

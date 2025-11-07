@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
 
@@ -15,16 +16,16 @@ class SoundService {
     await _playSound('sounds/Scanned.wav');
   }
 
-  /// Відтворює звук помилки (wrong product.wav) - товар відсутній в замовленні
+  /// Відтворює звук помилки (wrong_product.wav) - товар відсутній в замовленні
   Future<void> playErrorSound() async {
     if (_isMuted) return;
-    await _playSound('sounds/wrong product.wav');
+    await _playSound('sounds/wrong_product.wav');
   }
 
-  /// Відтворює звук для додаткового товару (more then needed.wav) - лишній товар
+  /// Відтворює звук для додаткового товару (more_then_needed.wav) - лишній товар
   Future<void> playExtraItemSound() async {
     if (_isMuted) return;
-    await _playSound('sounds/more then needed.wav');
+    await _playSound('sounds/more_then_needed.wav');
   }
 
   /// Відтворює звук завершення товару (productdone.wav) - всі товари відскановані

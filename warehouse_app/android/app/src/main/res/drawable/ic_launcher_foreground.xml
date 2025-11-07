@@ -1,13 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- White circular background to satisfy adaptive icon mask -->
     <item>
         <shape android:shape="oval">
             <solid android:color="#FFFFFFFF" />
         </shape>
     </item>
+
+    <!-- Optional square backdrop so logo edges stay crisp inside the circle -->
     <item>
         <inset
-            android:inset="16dp">
+            android:inset="18dp">
+            <shape android:shape="rectangle">
+                <solid android:color="#FFFFFFFF" />
+            </shape>
+        </inset>
+    </item>
+
+    <!-- Scaled logo placed inside the circle -->
+    <item>
+        <inset
+            android:insetLeft="20dp"
+            android:insetTop="20dp"
+            android:insetRight="20dp"
+            android:insetBottom="20dp">
             <bitmap
                 android:gravity="center"
                 android:src="@drawable/flv2" />

@@ -118,7 +118,7 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "flv2.png"
+  image_path: "icon_circle_square.png"
   min_sdk_android: 21
   # Adaptive icon для Android 8+ - використовуємо білий фон
   adaptive_icon_background: "#ffffff"

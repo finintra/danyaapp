@@ -13,28 +13,31 @@ class SoundService {
   /// Відтворює звук успішного сканування (Scanned.wav) - зелений екран
   Future<void> playScanSuccessSound() async {
     if (_isMuted) return;
-    await _playSound('sounds/Scanned.wav');
+    await _playSound('Scanned.wav');
   }
 
   /// Відтворює звук помилки (wrong_product.wav) - товар відсутній в замовленні
   Future<void> playErrorSound() async {
     if (_isMuted) return;
-    await _playSound('sounds/wrong_product.wav');
+    await _playSound('wrong_product.wav');
   }
 
   /// Відтворює звук для додаткового товару (more_then_needed.wav) - лишній товар
   Future<void> playExtraItemSound() async {
     if (_isMuted) return;
-    await _playSound('sounds/more_then_needed.wav');
+    await _playSound('more_then_needed.wav');
   }
 
   /// Відтворює звук завершення товару (productdone.wav) - всі товари відскановані
   Future<void> playSuccessSound() async {
     if (_isMuted) return;
-    await _playSound('sounds/productdone.wav');
+    await _playSound('productdone.wav');
   }
 
-  Future<void> _playSound(String assetPath) async {
+  Future<void> _playSound(String fileName) async {
+    final assetSourcePath = 'sounds/$fileName';
+    final bundlePath = 'assets/sounds/$fileName';
+
     try {
       // Зупиняємо попередній звук
       await _player.stop();
@@ -44,18 +47,19 @@ class SoundService {
       await _player.setPlayerMode(PlayerMode.lowLatency);
       await _player.setVolume(1.0);
       
-      // Відтворюємо звук
-      await _player.play(AssetSource(assetPath));
+      // Відтворюємо звук з assets через AssetSource (працює з pubspec шляхом без префіксу assets/)
+      await _player.play(AssetSource(assetSourcePath));
       
-      print('Sound played: $assetPath');
+      print('Sound played: $bundlePath');
     } catch (e) {
-      print('Error playing sound $assetPath: $e');
+      print('Error playing sound $bundlePath: $e');
       // Спробуємо альтернативний метод через rootBundle
       try {
-        final ByteData data = await rootBundle.load(assetPath);
+        final ByteData data = await rootBundle.load(bundlePath);
         final Uint8List bytes = data.buffer.asUint8List();
+        await _player.setPlayerMode(PlayerMode.mediaPlayer);
         await _player.play(BytesSource(bytes));
-        print('Sound played via BytesSource: $assetPath');
+        print('Sound played via BytesSource: $bundlePath');
       } catch (e2) {
         print('Error playing sound via BytesSource: $e2');
       }

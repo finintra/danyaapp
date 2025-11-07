@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const crypto = require('crypto');
 const logger = require('../utils/logger');
 
@@ -14,6 +16,67 @@ class CredentialsService {
     // Encryption key from environment or generate a default (should be set in production!)
     this.encryptionKey = process.env.CREDENTIALS_ENCRYPTION_KEY || 'default-key-change-in-production-32chars!!';
     this.algorithm = 'aes-256-cbc';
+    this.pinStoragePath = path.resolve(__dirname, '../../data/pins.json');
+
+    this.loadPinsFromDisk();
+  }
+
+  ensurePinStorageDir() {
+    const dir = path.dirname(this.pinStoragePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  }
+
+  loadPinsFromDisk() {
+    try {
+      this.ensurePinStorageDir();
+      if (!fs.existsSync(this.pinStoragePath)) {
+        logger.info('No persisted PIN storage found, starting fresh');
+        return;
+      }
+
+      const raw = fs.readFileSync(this.pinStoragePath, 'utf8');
+      if (!raw) {
+        return;
+      }
+
+      const parsed = JSON.parse(raw);
+      this.userPins = new Map(
+        Object.entries(parsed).map(([userId, data]) => [
+          Number(userId),
+          {
+            hashedPin: data.hashedPin,
+            createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+            expiresAt: data.expiresAt ? new Date(data.expiresAt) : new Date(Date.now() - 1)
+          }
+        ])
+      );
+
+      logger.info(`Loaded ${this.userPins.size} persisted PIN entries from disk`);
+      this.cleanupExpired();
+    } catch (error) {
+      logger.error('Failed to load persisted PINs from disk:', error);
+    }
+  }
+
+  persistPinsToDisk() {
+    try {
+      this.ensurePinStorageDir();
+      const serializable = {};
+      for (const [userId, data] of this.userPins.entries()) {
+        serializable[userId] = {
+          hashedPin: data.hashedPin,
+          createdAt: data.createdAt ? new Date(data.createdAt).toISOString() : new Date().toISOString(),
+          expiresAt: data.expiresAt ? new Date(data.expiresAt).toISOString() : new Date().toISOString()
+        };
+      }
+
+      fs.writeFileSync(this.pinStoragePath, JSON.stringify(serializable, null, 2), 'utf8');
+      logger.info(`Persisted ${this.userPins.size} PIN entries to disk`);
+    } catch (error) {
+      logger.error('Failed to persist PINs to disk:', error);
+    }
   }
 
   /**
@@ -23,7 +86,7 @@ class CredentialsService {
    */
   getKeyBuffer() {
     let keyBuffer;
-    
+
     // Try hex format (64 characters = 32 bytes)
     if (this.encryptionKey.length === 64 && /^[0-9a-fA-F]+$/.test(this.encryptionKey)) {
       keyBuffer = Buffer.from(this.encryptionKey, 'hex');
@@ -41,14 +104,14 @@ class CredentialsService {
     else {
       keyBuffer = Buffer.from(this.encryptionKey.padEnd(32, '0').slice(0, 32));
     }
-    
+
     // Ensure exactly 32 bytes
     if (keyBuffer.length !== 32) {
       const finalKey = Buffer.alloc(32);
       keyBuffer.copy(finalKey, 0, 0, Math.min(32, keyBuffer.length));
       return finalKey;
     }
-    
+
     return keyBuffer;
   }
 
@@ -99,7 +162,7 @@ class CredentialsService {
    */
   storeCredentials(userId, login, password, expiresInDays = 30) {
     logger.info(`Storing credentials for user ${userId}, login: ${login}, expiresInDays: ${expiresInDays}`);
-    
+
     const credentials = {
       login,
       password,
@@ -129,6 +192,7 @@ class CredentialsService {
     });
 
     logger.info(`Stored PIN for user ${userId}, expires at ${new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000)}`);
+    this.persistPinsToDisk();
   }
 
   /**
@@ -144,6 +208,7 @@ class CredentialsService {
 
     if (new Date() > new Date(pinData.expiresAt)) {
       this.userPins.delete(userId);
+      this.persistPinsToDisk();
       return false;
     }
 
@@ -164,6 +229,7 @@ class CredentialsService {
 
     if (new Date() > new Date(pinData.expiresAt)) {
       this.userPins.delete(userId);
+      this.persistPinsToDisk();
       return false;
     }
 
@@ -178,6 +244,7 @@ class CredentialsService {
    */
   removePin(userId) {
     this.userPins.delete(userId);
+    this.persistPinsToDisk();
     logger.info(`Removed PIN for user ${userId}`);
   }
 
@@ -190,7 +257,7 @@ class CredentialsService {
     logger.info(`Getting credentials for user ${userId}`);
     logger.info(`Total credentials stored: ${this.credentials.size}`);
     logger.info(`Stored user IDs: ${Array.from(this.credentials.keys()).join(', ')}`);
-    
+
     const encrypted = this.credentials.get(userId);
     if (!encrypted) {
       logger.warn(`No credentials found for user ${userId}`);
@@ -199,7 +266,7 @@ class CredentialsService {
 
     try {
       const decrypted = JSON.parse(this.decrypt(encrypted));
-      
+
       // Check if expired
       if (new Date() > new Date(decrypted.expiresAt)) {
         logger.warn(`Credentials expired for user ${userId}. Expired at: ${decrypted.expiresAt}, now: ${new Date()}`);
@@ -260,6 +327,7 @@ class CredentialsService {
 
     if (cleaned > 0) {
       logger.info(`Cleaned up ${cleaned} expired credential/PIN entries`);
+      this.persistPinsToDisk();
     }
   }
 }

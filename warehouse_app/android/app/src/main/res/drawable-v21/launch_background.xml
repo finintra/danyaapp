@@ -7,7 +7,7 @@
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@mipmap/launch_image"
+            android:src="@drawable/launch_image"
             android:tileMode="disabled" />
     </item>
 </layer-list>

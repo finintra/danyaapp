@@ -35,8 +35,8 @@ class SoundService {
   }
 
   Future<void> _playSound(String fileName) async {
-    final assetSourcePath = 'sounds/$fileName';
-    final bundlePath = 'assets/sounds/$fileName';
+    final assetSourcePath = 'assets/sounds/' + fileName;
+    final bundlePath = 'assets/sounds/' + fileName;
 
     try {
       // Зупиняємо попередній звук

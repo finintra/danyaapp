@@ -174,7 +174,24 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
         }
       } else {
         // Успешное сканирование
+        // Проверяем наличие данных в ответе
+        if (response.data == null) {
+          setState(() {
+            _errorMessage = 'Ошибка: пустой ответ от сервера';
+          });
+          return;
+        }
+        
         final lineData = response.data['line'];
+        
+        // Проверяем наличие данных о линии
+        if (lineData == null) {
+          print('Warning: line data is null in response');
+          setState(() {
+            _errorMessage = 'Ошибка: данные о товаре не получены';
+          });
+          return;
+        }
         
         // Відтворюємо звук успішного сканування
         _soundService.playScanSuccessSound();
@@ -222,8 +239,8 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
         // Дебаг информация
         print('Updated remain: $_remainCount, done: $_doneCount');
         
-        final rowCompleted = response.data['row_completed'] ?? false;
-        final orderCompleted = response.data['order_completed'] ?? false;
+        final rowCompleted = response.data != null ? (response.data['row_completed'] ?? false) : false;
+        final orderCompleted = response.data != null ? (response.data['order_completed'] ?? false) : false;
         
         // Показываем экран успешного сканирования
         if (mounted) {
@@ -252,7 +269,7 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
             _soundService.playSuccessSound();
             
             // Заказ завершен - отримуємо дані з order_summary
-            final orderSummary = response.data['order_summary'] ?? {};
+            final orderSummary = response.data != null ? (response.data['order_summary'] ?? {}) : {};
             final totalScannedLines = widget.completedLines + 1; // Кількість товарів (рядків)
             final totalScannedItems = orderSummary['total_items'] ?? totalScannedLines; // Загальна кількість одиниць
             
@@ -269,9 +286,9 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
             return;
           }
           
-          // Получаем следующий товар
-          final nextLineData = response.data['next_line'];
-          if (nextLineData != null) {
+        // Получаем следующий товар
+        final nextLineData = response.data != null ? response.data['next_line'] : null;
+        if (nextLineData != null) {
             // Загружаем новый экран с новым товаром
             await Future.delayed(const Duration(milliseconds: 500));
             if (mounted) {
@@ -291,7 +308,7 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
           } else {
             // Если нет данных о следующем товаре, пробуем получить детали накладной
             final detailsResponse = await apiService.getPickingDetails(widget.pickingId);
-            if (detailsResponse.success && detailsResponse.data['lines'] != null) {
+            if (detailsResponse.success && detailsResponse.data != null && detailsResponse.data['lines'] != null) {
               final lines = detailsResponse.data['lines'] as List<dynamic>;
               dynamic nextLine;
               try {

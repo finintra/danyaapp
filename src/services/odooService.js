@@ -660,31 +660,39 @@ class OdooService {
       // Знаходимо перший незавершений рядок
       const incompleteLines = allMoveLines.filter(ml => ml.product_uom_qty > ml.qty_done && ml.product_uom_qty > 0);
       
-      // Якщо немає незавершених рядків, дозволяємо сканувати будь-який товар
-      if (incompleteLines.length === 0) {
-        console.log('No incomplete lines found, allowing any product to be scanned');
-        return;
-      }
-      
-      // Сортуємо незавершені рядки за ID
-      incompleteLines.sort((a, b) => a.id - b.id);
-      
-      // Перший незавершений рядок - це той, який повинен бути відсканований наступним
-      const firstIncompleteLine = incompleteLines[0];
-      
-      console.log('First incomplete line:', firstIncompleteLine ? 
-        `id=${firstIncompleteLine.id}, product_id=${firstIncompleteLine.product_id[0]}, qty_done=${firstIncompleteLine.qty_done}, product_uom_qty=${firstIncompleteLine.product_uom_qty}` : 
-        'No incomplete lines found');
-      console.log(`Scanned product ID: ${productId}`);
-      
       // Перетворюємо ID товарів на числа для коректного порівняння
-      const expectedProductId = firstIncompleteLine ? Number(firstIncompleteLine.product_id[0]) : null;
       const scannedProductId = Number(productId);
       
-      console.log(`Comparing product IDs: expected=${expectedProductId}, scanned=${scannedProductId}, equal=${expectedProductId === scannedProductId}`);
-      
-      // Якщо відсканований товар не відповідає очікуваному, визначаємо причину
-      if (expectedProductId !== scannedProductId) {
+      // Якщо немає незавершених рядків, але відсканований товар є в накладній, дозволяємо його сканувати
+      if (incompleteLines.length === 0) {
+        console.log('No incomplete lines found, but scanned product is in picking, allowing scan');
+        // Перевіряємо, чи відсканований товар є в накладній
+        const scannedProductInPicking = allMoveLines.find(ml => Number(ml.product_id[0]) === scannedProductId);
+        if (scannedProductInPicking) {
+          // Товар є в накладній, обробляємо його без перевірки порядку
+          console.log('Scanned product is in picking, processing without order check');
+        } else {
+          // Товар не в накладній
+          throw new ApiError(404, 'NOT_IN_ORDER');
+        }
+      } else {
+        // Сортуємо незавершені рядки за ID
+        incompleteLines.sort((a, b) => a.id - b.id);
+        
+        // Перший незавершений рядок - це той, який повинен бути відсканований наступним
+        const firstIncompleteLine = incompleteLines[0];
+        
+        console.log('First incomplete line:', firstIncompleteLine ? 
+          `id=${firstIncompleteLine.id}, product_id=${firstIncompleteLine.product_id[0]}, qty_done=${firstIncompleteLine.qty_done}, product_uom_qty=${firstIncompleteLine.product_uom_qty}` : 
+          'No incomplete lines found');
+        console.log(`Scanned product ID: ${productId}`);
+        
+        const expectedProductId = Number(firstIncompleteLine.product_id[0]);
+        
+        console.log(`Comparing product IDs: expected=${expectedProductId}, scanned=${scannedProductId}, equal=${expectedProductId === scannedProductId}`);
+        
+        // Якщо відсканований товар не відповідає очікуваному, визначаємо причину
+        if (expectedProductId !== scannedProductId) {
         // Перевіряємо, чи вже відскановано весь обсяг для цього товару
         try {
           const scannedProductLines = await this.execute('stock.move.line', 'search_read', [

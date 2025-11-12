@@ -728,6 +728,7 @@ class OdooService {
         
         console.log(`Wrong order: Expected product ${expectedProductName} (ID: ${expectedProductId}) but scanned ${scannedProductName} (ID: ${scannedProductId})`);
         throw new ApiError(409, 'WRONG_ORDER');
+        }
       }
 
       const line = moveLines[0];

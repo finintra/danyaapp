@@ -19,8 +19,8 @@ class _LineCompletedScreenState extends State<LineCompletedScreen> {
     // Відтворюємо звук успішного завершення
     _playSuccessSound();
     
-    // Автоматически возвращаемся на предыдущий экран через 500 мс
-    Future.delayed(const Duration(milliseconds: 500), () {
+    // Автоматически возвращаемся на предыдущий экран через 1000 мс
+    Future.delayed(const Duration(milliseconds: 1000), () {
       if (mounted) {
         Navigator.of(context).pop();
       }

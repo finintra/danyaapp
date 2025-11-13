@@ -19,8 +19,8 @@ class _SuccessScanScreenState extends State<SuccessScanScreen> {
     // Відтворюємо звук успішного сканування
     _playSuccessSound();
     
-    // Автоматически возвращаемся на предыдущий экран через 400 мс
-    Future.delayed(const Duration(milliseconds: 400), () {
+    // Автоматически возвращаемся на предыдущий экран через 800 мс
+    Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) {
         Navigator.of(context).pop();
       }

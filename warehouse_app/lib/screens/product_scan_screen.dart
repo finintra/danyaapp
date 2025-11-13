@@ -255,7 +255,7 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
           _soundService.playSuccessSound();
           
           // Показываем экран завершения рядка
-          await Future.delayed(const Duration(milliseconds: 800));
+          await Future.delayed(const Duration(milliseconds: 1600));
           if (mounted) {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const LineCompletedScreen()),
@@ -263,7 +263,7 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
           }
           
           // Проверяем завершение заказа
-          await Future.delayed(const Duration(milliseconds: 800));
+          await Future.delayed(const Duration(milliseconds: 1600));
           if (orderCompleted) {
             // Відтворюємо звук успішного завершення
             _soundService.playSuccessSound();
@@ -290,7 +290,7 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
         final nextLineData = response.data != null ? response.data['next_line'] : null;
         if (nextLineData != null) {
             // Загружаем новый экран с новым товаром
-            await Future.delayed(const Duration(milliseconds: 500));
+            await Future.delayed(const Duration(milliseconds: 1000));
             if (mounted) {
               final nextLine = PickingLine.fromJson(nextLineData);
               Navigator.of(context).pushReplacement(

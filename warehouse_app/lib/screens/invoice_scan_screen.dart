@@ -172,7 +172,7 @@ class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'СКАНУЙ НАКЛАДНУ',
+                  'СКАНУЙ НАКЛАДНУ\nАБО ТТН',
                   style: Theme.of(context).textTheme.displayMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -183,7 +183,7 @@ class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Піднесіть сканер до накладної OUT/... або WH/OUT...',
+                  'Піднесіть сканер до накладної OUT/... або WH/OUT...\nабо до номера ТТН',
                   style: Theme.of(context).textTheme.bodyLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -194,7 +194,7 @@ class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
                       child: TextField(
                         controller: _invoiceController,
                         decoration: const InputDecoration(
-                          hintText: 'OUT/... або WH/OUT...',
+                          hintText: 'OUT/... або ТТН',
                         ),
                         textAlign: TextAlign.center,
                         style: const TextStyle(

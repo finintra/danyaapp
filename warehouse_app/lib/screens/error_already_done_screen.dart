@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/sound_service.dart';
+import 'invoice_scan_screen.dart';
 
-class ErrorExtraScreen extends StatefulWidget {
-  const ErrorExtraScreen({super.key});
+class ErrorAlreadyDoneScreen extends StatefulWidget {
+  const ErrorAlreadyDoneScreen({super.key});
 
   @override
-  State<ErrorExtraScreen> createState() => _ErrorExtraScreenState();
+  State<ErrorAlreadyDoneScreen> createState() => _ErrorAlreadyDoneScreenState();
 }
 
-class _ErrorExtraScreenState extends State<ErrorExtraScreen> {
+class _ErrorAlreadyDoneScreenState extends State<ErrorAlreadyDoneScreen> {
   final SoundService _soundService = SoundService();
   
   @override
@@ -19,19 +20,22 @@ class _ErrorExtraScreenState extends State<ErrorExtraScreen> {
     // Відтворюємо звук помилки
     _playErrorSound();
     
-    // Автоматически возвращаемся на предыдущий экран через 1600 мс
-    Future.delayed(const Duration(milliseconds: 1600), () {
+    // Автоматически возвращаемся на экран сканирования накладной через 4000 мс
+    Future.delayed(const Duration(milliseconds: 4000), () {
       if (mounted) {
-        Navigator.of(context).pop();
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const InvoiceScanScreen()),
+          (route) => false,
+        );
       }
     });
   }
   
   Future<void> _playErrorSound() async {
     try {
-      await _soundService.playExtraItemSound();
+      await _soundService.playErrorSound();
     } catch (e) {
-      print('Error playing error sound on ErrorExtraScreen: $e');
+      print('Error playing error sound on ErrorAlreadyDoneScreen: $e');
     }
   }
 
@@ -51,9 +55,9 @@ class _ErrorExtraScreenState extends State<ErrorExtraScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             Text(
-              'ЦЕ ЛИШНІЙ\nТОВАР',
+              'ЦЯ НАКЛАДНА\nВЖЕ ЗІБРАНА',
               style: TextStyle(
                 fontSize: 50,
                 fontWeight: FontWeight.bold,
@@ -68,3 +72,4 @@ class _ErrorExtraScreenState extends State<ErrorExtraScreen> {
     );
   }
 }
+

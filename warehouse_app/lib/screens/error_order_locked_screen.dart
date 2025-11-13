@@ -20,8 +20,8 @@ class _ErrorOrderLockedScreenState extends State<ErrorOrderLockedScreen> {
     // Відтворюємо звук помилки
     _playErrorSound();
     
-    // Автоматически возвращаемся на экран сканирования накладной через 2000 мс
-    Future.delayed(const Duration(milliseconds: 2000), () {
+    // Автоматически возвращаемся на экран сканирования накладной через 4000 мс
+    Future.delayed(const Duration(milliseconds: 4000), () {
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const InvoiceScanScreen()),

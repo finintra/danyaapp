@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import '../models/picking_model.dart';
 import 'product_scan_screen.dart';
 import 'error_order_locked_screen.dart';
+import 'error_already_done_screen.dart';
 import 'login_screen.dart';
 
 class InvoiceScanScreen extends StatefulWidget {
@@ -88,6 +89,16 @@ class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
         setState(() {
           _isLoading = false;
         });
+        
+        // Обробка помилки ORDER_ALREADY_DONE
+        if (response.error == 'ORDER_ALREADY_DONE') {
+          if (mounted) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const ErrorAlreadyDoneScreen()),
+            );
+          }
+          return;
+        }
         
         // Обробка помилки ORDER_LOCKED
         if (response.error == 'ORDER_LOCKED') {

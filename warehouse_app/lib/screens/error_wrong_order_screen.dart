@@ -19,8 +19,8 @@ class _ErrorWrongOrderScreenState extends State<ErrorWrongOrderScreen> {
     // Відтворюємо звук помилки
     _playErrorSound();
     
-    // Автоматически возвращаемся на предыдущий экран через 800 мс
-    Future.delayed(const Duration(milliseconds: 800), () {
+    // Автоматически возвращаемся на предыдущий экран через 1600 мс
+    Future.delayed(const Duration(milliseconds: 1600), () {
       if (mounted) {
         Navigator.of(context).pop();
       }

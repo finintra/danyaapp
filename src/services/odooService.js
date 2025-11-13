@@ -448,7 +448,11 @@ class OdooService {
 
       const picking = pickings[0];
       
-      if (picking.state === 'done' || picking.state === 'cancel') {
+      if (picking.state === 'done') {
+        throw new ApiError(409, 'ORDER_ALREADY_DONE');
+      }
+      
+      if (picking.state === 'cancel') {
         throw new ApiError(409, 'ORDER_LOCKED');
       }
 

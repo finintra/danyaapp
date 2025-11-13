@@ -43,6 +43,13 @@ const attachToPicking = async (req, res, next) => {
       });
     }
 
+    if (error.message === 'ORDER_ALREADY_DONE') {
+      return res.status(409).json({
+        ok: false,
+        error: 'ORDER_ALREADY_DONE'
+      });
+    }
+
     if (error.message === 'ORDER_LOCKED') {
       return res.status(409).json({
         ok: false,

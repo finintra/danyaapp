@@ -438,9 +438,14 @@ class OdooService {
   async getPickingByBarcode(pickingBarcode, userLang = 'uk_UA', userId = null) {
     try {
       // Find picking by barcode (either name or carrier_tracking_ref)
+      console.log(`Searching for picking by barcode: "${pickingBarcode}" (will search by name OR carrier_tracking_ref)`);
       const pickings = await this.execute('stock.picking', 'search_read', [
         ['|', ['name', '=', pickingBarcode], ['carrier_tracking_ref', '=', pickingBarcode]]
       ], { fields: ['id', 'name', 'state', 'move_line_ids', 'carrier_tracking_ref'] }, userId);
+      
+      if (pickings && pickings.length > 0) {
+        console.log(`Found picking: ID=${pickings[0].id}, name="${pickings[0].name}", carrier_tracking_ref="${pickings[0].carrier_tracking_ref || 'N/A'}"`);
+      }
 
       if (!pickings || pickings.length === 0) {
         throw new ApiError(404, 'PICKING_NOT_FOUND');

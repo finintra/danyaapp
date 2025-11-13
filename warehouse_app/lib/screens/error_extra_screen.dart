@@ -19,8 +19,8 @@ class _ErrorExtraScreenState extends State<ErrorExtraScreen> {
     // Відтворюємо звук помилки
     _playErrorSound();
     
-    // Автоматически возвращаемся на предыдущий экран через 1600 мс
-    Future.delayed(const Duration(milliseconds: 1600), () {
+    // Автоматически возвращаемся на предыдущий экран через 3000 мс
+    Future.delayed(const Duration(milliseconds: 3000), () {
       if (mounted) {
         Navigator.of(context).pop();
       }

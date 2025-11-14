@@ -593,18 +593,48 @@ class OdooService {
     try {
       console.log(`Finding product with code: ${code}, userLang=${userLang}`);
       
-      // Find product by default_code or barcode_ids (many2many field) with user language
+      // Find product by default_code, barcode, or barcode_ids
+      // Note: barcode_ids is a many2many field, so we search it differently
       const context = { lang: userLang };
       
-      const products = await this.execute('product.product', 'search_read', [
-        ['|', ['default_code', '=', code], ['barcode_ids.name', '=', code]]
+      // First try searching by default_code and barcode (direct fields)
+      let products = await this.execute('product.product', 'search_read', [
+        ['|', ['default_code', '=', code], ['barcode', '=', code]]
       ], { 
-        fields: ['id', 'name', 'default_code', 'barcode_ids'],
-        context: context // Pass the language context
+        fields: ['id', 'name', 'default_code', 'barcode', 'barcode_ids'],
+        context: context
       }, userId);
       
-      console.log(`Found ${products.length} products with code ${code}`);
-      return products;
+      // If no products found, try searching barcode_ids using a different approach
+      if (!products || products.length === 0) {
+        console.log(`No products found by default_code or barcode, trying barcode_ids search...`);
+        try {
+          // Search product.barcode records first, then get related products
+          const barcodeRecords = await this.execute('product.barcode', 'search_read', [
+            [['name', '=', code]]
+          ], { 
+            fields: ['id', 'name', 'product_id']
+          }, userId);
+          
+          if (barcodeRecords && barcodeRecords.length > 0) {
+            const productIds = barcodeRecords.map(br => br.product_id[0]).filter(id => id);
+            if (productIds.length > 0) {
+              products = await this.execute('product.product', 'search_read', [
+                [['id', 'in', productIds]]
+              ], { 
+                fields: ['id', 'name', 'default_code', 'barcode', 'barcode_ids'],
+                context: context
+              }, userId);
+            }
+          }
+        } catch (barcodeIdsError) {
+          console.log(`Error searching barcode_ids: ${barcodeIdsError.message}, continuing...`);
+          // Continue with empty results if barcode_ids search fails
+        }
+      }
+      
+      console.log(`Found ${products ? products.length : 0} products with code ${code}`);
+      return products || [];
     } catch (error) {
       console.error(`Error finding product by barcode: ${error.message}`);
       throw error;
@@ -623,16 +653,10 @@ class OdooService {
     try {
       console.log(`Validating item scan: pickingId=${pickingId}, code=${code}, userLang=${userLang}`);
       
-      // Find product by default_code or barcode_ids (many2many field) with user language
-      const context = { lang: userLang };
+      // Find product using the safe search method that handles barcode_ids correctly
       console.log(`Using language context for product scan: ${userLang}`);
       
-      const products = await this.execute('product.product', 'search_read', [
-        ['|', ['default_code', '=', code], ['barcode_ids.name', '=', code]]
-      ], { 
-        fields: ['id', 'name', 'default_code', 'barcode_ids'],
-        context: context // Pass the language context
-      }, userId);
+      const products = await this.findProductByBarcode(code, userLang, userId);
 
       if (!products || products.length === 0) {
         console.log(`No product found with code: ${code}`);

@@ -598,10 +598,11 @@ class OdooService {
       const context = { lang: userLang };
       
       // First try searching by default_code and barcode (direct fields)
+      // Don't request barcode_ids field as it may not exist and causes 500 error
       let products = await this.execute('product.product', 'search_read', [
         ['|', ['default_code', '=', code], ['barcode', '=', code]]
       ], { 
-        fields: ['id', 'name', 'default_code', 'barcode', 'barcode_ids'],
+        fields: ['id', 'name', 'default_code', 'barcode'],
         context: context
       }, userId);
       
@@ -622,7 +623,7 @@ class OdooService {
               products = await this.execute('product.product', 'search_read', [
                 [['id', 'in', productIds]]
               ], { 
-                fields: ['id', 'name', 'default_code', 'barcode', 'barcode_ids'],
+                fields: ['id', 'name', 'default_code', 'barcode'],
                 context: context
               }, userId);
             }

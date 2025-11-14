@@ -443,15 +443,24 @@ class OdooService {
         ['|', ['name', '=', pickingBarcode], ['carrier_tracking_ref', '=', pickingBarcode]]
       ], { fields: ['id', 'name', 'state', 'move_line_ids', 'carrier_tracking_ref'] }, userId);
       
-      if (pickings && pickings.length > 0) {
-        console.log(`Found picking: ID=${pickings[0].id}, name="${pickings[0].name}", carrier_tracking_ref="${pickings[0].carrier_tracking_ref || 'N/A'}"`);
-      }
-
       if (!pickings || pickings.length === 0) {
         throw new ApiError(404, 'PICKING_NOT_FOUND');
       }
 
-      const picking = pickings[0];
+      // Log all found pickings
+      console.log(`Found ${pickings.length} picking(s) matching "${pickingBarcode}":`);
+      pickings.forEach((p, idx) => {
+        console.log(`  ${idx + 1}. ID=${p.id}, name="${p.name}", state="${p.state}", carrier_tracking_ref="${p.carrier_tracking_ref || 'N/A'}"`);
+      });
+
+      // Prioritize pickings in "assigned" state, then "waiting", then others (excluding "done" and "cancel")
+      // This ensures we select an active picking if multiple exist with the same name/tracking ref
+      let picking = pickings.find(p => p.state === 'assigned') ||
+                    pickings.find(p => p.state === 'waiting') ||
+                    pickings.find(p => p.state !== 'done' && p.state !== 'cancel') ||
+                    pickings[0]; // Fallback to first if all are done/cancel
+      
+      console.log(`Selected picking: ID=${picking.id}, name="${picking.name}", state="${picking.state}"`);
       
       if (picking.state === 'done') {
         throw new ApiError(409, 'ORDER_ALREADY_DONE');

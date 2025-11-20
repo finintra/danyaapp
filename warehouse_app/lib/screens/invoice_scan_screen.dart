@@ -110,6 +110,14 @@ class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
           return;
         }
         
+        // Обробка помилки NO_MOVE_LINES
+        if (response.error == 'NO_MOVE_LINES') {
+          setState(() {
+            _errorMessage = response.message ?? 'Накладна не містить товарів для збірки';
+          });
+          return;
+        }
+        
         // Обробка помилки CREDENTIALS_NOT_FOUND
         if (response.error == 'CREDENTIALS_NOT_FOUND') {
           if (mounted) {
@@ -136,7 +144,24 @@ class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
       }
       
       // Преобразуем ответ в модель
-      final pickingResponse = PickingAttachResponse.fromJson(response.data);
+      if (response.data == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Ошибка: Пустой ответ от сервера';
+        });
+        return;
+      }
+      
+      // Проверяем, что response.data является Map
+      if (response.data is! Map<String, dynamic>) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Ошибка: Неверный формат ответа от сервера';
+        });
+        return;
+      }
+      
+      final pickingResponse = PickingAttachResponse.fromJson(response.data as Map<String, dynamic>);
       
       if (mounted) {
         Navigator.of(context).pushReplacement(

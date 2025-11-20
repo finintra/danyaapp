@@ -490,6 +490,14 @@ class OdooService {
       
       console.log('Reset progress for picking:', pickingBarcode);
 
+      // Check if there are any move lines
+      if (!moveLines || moveLines.length === 0) {
+        console.log(`No move lines found for picking ${picking.id} (${picking.name})`);
+        throw new ApiError(404, 'NO_MOVE_LINES', false, {
+          message: 'Накладна не містить товарів для збірки'
+        });
+      }
+
       // Get product info for each move line with translations based on user language
       const productIds = moveLines.map(line => line.product_id[0]);
       
@@ -562,6 +570,14 @@ class OdooService {
       // Get first line that needs work
       const firstLine = formattedLines.find(line => line.remain > 0) || formattedLines[0];
 
+      // Ensure we have a valid line
+      if (!firstLine) {
+        console.log(`No valid line found for picking ${picking.id} (${picking.name})`);
+        throw new ApiError(404, 'NO_MOVE_LINES', false, {
+          message: 'Накладна не містить товарів для збірки'
+        });
+      }
+
       return {
         picking: {
           id: picking.id,
@@ -593,46 +609,17 @@ class OdooService {
     try {
       console.log(`Finding product with code: ${code}, userLang=${userLang}`);
       
-      // Find product by default_code, barcode, or barcode_ids
-      // Note: barcode_ids is a many2many field, so we search it differently
+      // Find product by default_code or barcode
+      // The barcode field exists directly on product.product model
       const context = { lang: userLang };
       
-      // First try searching by default_code and barcode (direct fields)
-      // Don't request barcode_ids field as it may not exist and causes 500 error
-      let products = await this.execute('product.product', 'search_read', [
+      // Search product by default_code and barcode (direct fields on product.product)
+      const products = await this.execute('product.product', 'search_read', [
         ['|', ['default_code', '=', code], ['barcode', '=', code]]
       ], { 
         fields: ['id', 'name', 'default_code', 'barcode'],
         context: context
       }, userId);
-      
-      // If no products found, try searching barcode_ids using a different approach
-      if (!products || products.length === 0) {
-        console.log(`No products found by default_code or barcode, trying barcode_ids search...`);
-        try {
-          // Search product.barcode records first, then get related products
-          const barcodeRecords = await this.execute('product.barcode', 'search_read', [
-            [['name', '=', code]]
-          ], { 
-            fields: ['id', 'name', 'product_id']
-          }, userId);
-          
-          if (barcodeRecords && barcodeRecords.length > 0) {
-            const productIds = barcodeRecords.map(br => br.product_id[0]).filter(id => id);
-            if (productIds.length > 0) {
-              products = await this.execute('product.product', 'search_read', [
-                [['id', 'in', productIds]]
-              ], { 
-                fields: ['id', 'name', 'default_code', 'barcode'],
-                context: context
-              }, userId);
-            }
-          }
-        } catch (barcodeIdsError) {
-          console.log(`Error searching barcode_ids: ${barcodeIdsError.message}, continuing...`);
-          // Continue with empty results if barcode_ids search fails
-        }
-      }
       
       console.log(`Found ${products ? products.length : 0} products with code ${code}`);
       return products || [];
@@ -654,7 +641,7 @@ class OdooService {
     try {
       console.log(`Validating item scan: pickingId=${pickingId}, code=${code}, userLang=${userLang}`);
       
-      // Find product using the safe search method that handles barcode_ids correctly
+      // Find product by barcode or default_code
       console.log(`Using language context for product scan: ${userLang}`);
       
       const products = await this.findProductByBarcode(code, userLang, userId);
@@ -1049,13 +1036,15 @@ class OdooService {
         ], {}, userId);
       }
 
-      // Set picking state to 'done' using action_done method
+      // Set picking state to 'done' using button_validate method
+      // Note: We use button_validate() directly as it's the method that works reliably.
+      // action_done() often fails due to lot/serial tracking requirements that the scanner doesn't provide.
       try {
-        const doneResult = await this.execute('stock.picking', 'action_done', [
+        await this.execute('stock.picking', 'button_validate', [
           [pickingId]
         ], {}, userId);
         
-        logger.info(`Picking ${pickingId} action_done result: ${JSON.stringify(doneResult)}`);
+        logger.info(`Picking ${pickingId} validated successfully using button_validate`);
         
         // Verify that picking is actually done
         const verifyPickings = await this.execute('stock.picking', 'search_read', [
@@ -1064,37 +1053,17 @@ class OdooService {
         
         if (verifyPickings && verifyPickings.length > 0) {
           const verifyPicking = verifyPickings[0];
-          logger.info(`Picking ${pickingId} state after action_done: ${verifyPicking.state}`);
+          logger.info(`Picking ${pickingId} state after validation: ${verifyPicking.state}`);
           
           if (verifyPicking.state !== 'done') {
-            logger.warn(`Picking ${pickingId} state is ${verifyPicking.state}, expected 'done'. Trying button_validate...`);
-            // Try alternative method - button_validate is called on the record
-            await this.execute('stock.picking', 'button_validate', [
-              [pickingId]
-            ], {}, userId);
-            
-            // Verify again
-            const verifyPickings2 = await this.execute('stock.picking', 'search_read', [
-              [['id', '=', pickingId]]
-            ], { fields: ['id', 'name', 'state'] }, userId);
-            
-            if (verifyPickings2 && verifyPickings2.length > 0) {
-              logger.info(`Picking ${pickingId} state after button_validate: ${verifyPickings2[0].state}`);
-            }
+            logger.warn(`Picking ${pickingId} state is ${verifyPicking.state}, expected 'done'`);
           }
         }
-      } catch (doneError) {
-        logger.error(`Error setting picking ${pickingId} to done: ${doneError.message}`);
-        // Try alternative method - button_validate is called on the record
-        try {
-          await this.execute('stock.picking', 'button_validate', [
-            [pickingId]
-          ], {}, userId);
-          logger.info(`Picking ${pickingId} set to 'done' using button_validate`);
-        } catch (buttonError) {
-          logger.error(`Error with button_validate for picking ${pickingId}: ${buttonError.message}`);
-          throw doneError;
-        }
+      } catch (error) {
+        logger.error(`Failed to validate picking ${pickingId}: ${error.message}`);
+        throw new ApiError(500, 'Failed to validate picking', false, {
+          message: `Не вдалося підтвердити накладну: ${error.message}`
+        });
       }
 
       // Count how many labels are needed (one per line)

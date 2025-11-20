@@ -57,6 +57,14 @@ const attachToPicking = async (req, res, next) => {
       });
     }
 
+    if (error.message === 'NO_MOVE_LINES') {
+      return res.status(404).json({
+        ok: false,
+        error: 'NO_MOVE_LINES',
+        message: error.data?.message || 'Накладна не містить товарів для збірки'
+      });
+    }
+
     if (error.message === 'Odoo credentials not configured') {
       logger.error('Credentials not found for user in attachToPicking, returning CREDENTIALS_NOT_FOUND error');
       return res.status(401).json({

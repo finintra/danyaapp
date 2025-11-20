@@ -198,6 +198,17 @@ class PickingAttachResponse {
     try {
       print('Parsing PickingAttachResponse from: $json');
       
+      // Check for null values
+      if (json['picking'] == null) {
+        throw Exception('Missing "picking" field in response');
+      }
+      if (json['line'] == null) {
+        throw Exception('Missing "line" field in response. The picking may not have any items to pick.');
+      }
+      if (json['order_summary'] == null) {
+        throw Exception('Missing "order_summary" field in response');
+      }
+      
       final pickingData = json['picking'] as Map<String, dynamic>;
       final lineData = json['line'] as Map<String, dynamic>;
       final orderSummary = json['order_summary'] as Map<String, dynamic>;

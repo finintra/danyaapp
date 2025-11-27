@@ -641,7 +641,8 @@ class OdooService {
     try {
       console.log(`Validating item scan: pickingId=${pickingId}, code=${code}, userLang=${userLang}`);
       
-      // Find product by barcode or default_code
+      // Set the language context for product names
+      const context = { lang: userLang };
       console.log(`Using language context for product scan: ${userLang}`);
       
       const products = await this.findProductByBarcode(code, userLang, userId);

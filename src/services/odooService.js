@@ -567,7 +567,10 @@ class OdooService {
         };
       });
 
-      // Get first line that needs work
+      // Сортуємо рядки за ID, щоб забезпечити правильний порядок
+      formattedLines.sort((a, b) => a.line_id - b.line_id);
+      
+      // Get first line that needs work (перший незавершений рядок за порядком ID)
       const firstLine = formattedLines.find(line => line.remain > 0) || formattedLines[0];
 
       // Ensure we have a valid line
@@ -758,7 +761,12 @@ class OdooService {
         const scannedProductName = products[0].name;
         
         console.log(`Wrong order: Expected product ${expectedProductName} (ID: ${expectedProductId}) but scanned ${scannedProductName} (ID: ${scannedProductId})`);
-        throw new ApiError(409, 'WRONG_ORDER');
+        throw new ApiError(409, 'WRONG_ORDER', false, {
+          expected_product_id: expectedProductId,
+          expected_product_name: expectedProductName,
+          scanned_product_id: scannedProductId,
+          scanned_product_name: scannedProductName
+        });
         }
       }
 

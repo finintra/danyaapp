@@ -115,16 +115,15 @@ const scanItem = async (req, res, next) => {
     const scannedProductId = products[0].id;
     console.log(`Found product: ${products[0].name} (ID: ${scannedProductId})`);
     
-    // Перевіряємо, чи відсканований товар відповідає очікуваному
+    // Перевіряємо, чи відсканований товар відповідає очікуваному (якщо вказано)
+    // Але дозволяємо validateItemScan визначити правильний товар на основі реального стану в Odoo
+    // Це важливо, якщо expected_product_id неправильний через помилку в getPickingByBarcode
     if (expected_product_id && Number(scannedProductId) !== Number(expected_product_id)) {
-      console.log(`Wrong product scanned: expected ${expected_product_id}, got ${scannedProductId}`);
-      return res.status(409).json({
-        ok: false,
-        error: 'WRONG_ORDER'
-      });
+      console.log(`Warning: expected_product_id (${expected_product_id}) doesn't match scanned product (${scannedProductId}). Will let validateItemScan determine the correct product.`);
     }
     
-    // Якщо товар відповідає очікуваному, валідуємо сканування
+    // Валідуємо сканування - validateItemScan сам визначить правильний очікуваний товар
+    // на основі реального стану в Odoo і поверне WRONG_ORDER, якщо потрібно
     console.log(`Calling odooService.validateItemScan with picking_id=${picking_id}, barcode="${barcode}", userLang=${userLang}`);
     const result = await odooService.validateItemScan(picking_id, barcode, userLang, userId);
     console.log(`validateItemScan successful, result:`, result);
@@ -160,7 +159,9 @@ const scanItem = async (req, res, next) => {
       console.log('Sending WRONG_ORDER error response');
       return res.status(409).json({
         ok: false,
-        error: 'WRONG_ORDER'
+        error: 'WRONG_ORDER',
+        expected_product_id: error.data?.expected_product_id || null,
+        expected_product_name: error.data?.expected_product_name || null
       });
     }
 

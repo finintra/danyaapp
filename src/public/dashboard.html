@@ -420,14 +420,22 @@
                 
                 url += '?' + params.toString();
                 
+                console.log('Fetching analytics from:', url);
                 const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const result = await response.json();
+                console.log('Analytics response:', result);
                 
                 if (result.ok && result.data) {
                     updateDashboard(result.data);
                 } else {
                     console.error('Failed to load analytics:', result);
-                    alert('Failed to load analytics data');
+                    const errorMsg = result.error || result.message || 'Failed to load analytics data';
+                    alert('Failed to load analytics: ' + errorMsg);
                 }
             } catch (error) {
                 console.error('Error loading analytics:', error);
@@ -439,18 +447,32 @@
         }
 
         function updateDashboard(data) {
-            // Update main stats
-            document.getElementById('ordersScanned').textContent = data.ordersScanned || 0;
-            document.getElementById('goodsScanned').textContent = data.goodsScanned || 0;
-            document.getElementById('errorScans').textContent = data.errorScans?.total || 0;
-            document.getElementById('wrongProduct').textContent = data.errorScans?.wrongProduct || 0;
-            document.getElementById('wrongTime').textContent = data.errorScans?.wrongTime || 0;
-            document.getElementById('backendErrors').textContent = data.backendErrors || 0;
+            console.log('Updating dashboard with data:', data);
+            
+            // Update main stats - ensure we handle null/undefined properly
+            const ordersScanned = data.ordersScanned || 0;
+            const goodsScanned = data.goodsScanned || 0;
+            const errorScansTotal = (data.errorScans && data.errorScans.total) || 0;
+            const wrongProduct = (data.errorScans && data.errorScans.wrongProduct) || 0;
+            const wrongTime = (data.errorScans && data.errorScans.wrongTime) || 0;
+            const backendErrors = data.backendErrors || 0;
+            
+            document.getElementById('ordersScanned').textContent = ordersScanned;
+            document.getElementById('goodsScanned').textContent = goodsScanned;
+            document.getElementById('errorScans').textContent = errorScansTotal;
+            document.getElementById('wrongProduct').textContent = wrongProduct;
+            document.getElementById('wrongTime').textContent = wrongTime;
+            document.getElementById('backendErrors').textContent = backendErrors;
             
             // Update last updated time
             if (data.lastUpdated) {
-                const date = new Date(data.lastUpdated);
-                document.getElementById('lastUpdated').textContent = date.toLocaleString();
+                try {
+                    const date = new Date(data.lastUpdated);
+                    document.getElementById('lastUpdated').textContent = date.toLocaleString();
+                } catch (e) {
+                    console.error('Error parsing date:', e);
+                    document.getElementById('lastUpdated').textContent = data.lastUpdated;
+                }
             }
             
             // Update daily chart
@@ -466,16 +488,27 @@
                 return;
             }
             
-            // Find max value for scaling
+            // Find max value for scaling - handle nested errorScans properly
             const maxValue = Math.max(
-                ...dailyStats.map(d => d.ordersScanned + d.goodsScanned + d.errorScans.total + d.backendErrors),
+                ...dailyStats.map(d => {
+                    const orders = d.ordersScanned || 0;
+                    const goods = d.goodsScanned || 0;
+                    const errors = (d.errorScans && d.errorScans.total) || 0;
+                    const backend = d.backendErrors || 0;
+                    return orders + goods + errors + backend;
+                }),
                 1
             );
             
             dailyStats.forEach(day => {
                 const date = new Date(day.date);
                 const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const total = day.ordersScanned + day.goodsScanned + day.errorScans.total + day.backendErrors;
+                
+                const orders = day.ordersScanned || 0;
+                const goods = day.goodsScanned || 0;
+                const errors = (day.errorScans && day.errorScans.total) || 0;
+                const backend = day.backendErrors || 0;
+                const total = orders + goods + errors + backend;
                 const percentage = (total / maxValue) * 100;
                 
                 const barDiv = document.createElement('div');

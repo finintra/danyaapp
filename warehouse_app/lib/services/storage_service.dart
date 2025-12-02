@@ -203,6 +203,21 @@ class StorageService {
     return requires;
   }
 
+  // Збереження стану спалаху (torch)
+  Future<void> saveTorchState(bool isOn) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('torch_state', isOn);
+    print('Torch state saved: $isOn');
+  }
+
+  // Отримання стану спалаху (torch)
+  Future<bool> getTorchState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isOn = prefs.getBool('torch_state') ?? false; // За замовчуванням вимкнено
+    print('Torch state retrieved: $isOn');
+    return isOn;
+  }
+
   // Очистка данных сессии
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();

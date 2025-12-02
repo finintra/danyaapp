@@ -23,8 +23,16 @@ app.use(cors()); // Enable CORS
 app.use(express.json()); // Parse JSON bodies
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } })); // HTTP request logging
 
+// Serve static files (dashboard)
+app.use(express.static('src/public'));
+
 // Routes
 app.use('/flf/api/v1', routes);
+
+// Dashboard route
+app.get('/dashboard', (req, res) => {
+  res.sendFile('dashboard.html', { root: './src/public' });
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {

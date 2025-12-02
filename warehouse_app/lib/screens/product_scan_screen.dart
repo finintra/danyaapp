@@ -4,6 +4,7 @@ import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import '../models/picking_model.dart';
 import '../services/sound_service.dart';
+import '../services/storage_service.dart';
 import 'cancel_picking_screen.dart';
 import 'success_scan_screen.dart';
 import 'error_extra_screen.dart';
@@ -35,12 +36,14 @@ class ProductScanScreen extends StatefulWidget {
 
 class _ProductScanScreenState extends State<ProductScanScreen> {
   final _scanController = TextEditingController();
+  final _focusNode = FocusNode();
   late int _remainCount;
   late int _doneCount;
   bool _isLoading = false;
   String? _errorMessage;
   late PickingLine _currentLine;
   final SoundService _soundService = SoundService();
+  final StorageService _storageService = StorageService();
   
   @override
   void initState() {
@@ -57,53 +60,137 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
     print('Remain: ${_currentLine.remain}');
     print('Remain count: $_remainCount');
     print('Done count: $_doneCount');
+    
+    // Автофокус на поле ввода после загрузки экрана
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
   }
 
   @override
   void dispose() {
     _scanController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   Future<void> _scanBarcode() async {
     try {
+      // Отримуємо збережений стан спалаху
+      final savedTorchState = await _storageService.getTorchState();
+      
+      // Створюємо контролер для сканера
+      final scannerController = MobileScannerController(
+        detectionSpeed: DetectionSpeed.noDuplicates,
+        facing: CameraFacing.back,
+      );
+      
+      // Якщо спалах був увімкнений, увімкнемо його при ініціалізації
+      if (savedTorchState) {
+        // Невелика затримка, щоб камера встигла ініціалізуватися
+        Future.delayed(const Duration(milliseconds: 300), () async {
+          try {
+            await scannerController.toggleTorch();
+          } catch (e) {
+            print('Error turning on torch on init: $e');
+          }
+        });
+      }
+      
       // Відкриваємо діалог зі сканером
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        builder: (context) => Container(
-          height: MediaQuery.of(context).size.height * 0.7,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'Скануйте штрих-код',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
-              Expanded(
-                child: MobileScanner(
-                  controller: MobileScannerController(),
-                  onDetect: (capture) {
-                    final List<Barcode> barcodes = capture.barcodes;
-                    if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
-                      String barcodeScanRes = barcodes.first.rawValue!;
-                      Navigator.pop(context); // Закриваємо сканер
-                      setState(() {
-                        _scanController.text = barcodeScanRes;
-                      });
-                      _processScannedItem(barcodeScanRes);
-                    }
-                  },
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Відміна'),
-              ),
-            ],
-          ),
+        builder: (context) => StatefulBuilder(
+          builder: (context, setModalState) {
+            // Слухаємо зміни стану спалаху
+            return ValueListenableBuilder<TorchState>(
+              valueListenable: scannerController.torchState,
+              builder: (context, torchState, child) {
+                final isTorchOn = torchState == TorchState.on;
+                
+                return Container(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Скануйте штрих-код або QR-код',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            // Кнопка для увімкнення/вимкнення спалаху
+                            // Завжди показуємо кнопку, але обробляємо помилки
+                            Container(
+                              margin: EdgeInsets.only(left: 8),
+                              decoration: BoxDecoration(
+                                color: isTorchOn ? Colors.amber.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: isTorchOn ? Colors.amber : Colors.grey,
+                                  width: 2,
+                                ),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  isTorchOn ? Icons.flash_on : Icons.flash_off,
+                                  size: 28,
+                                  color: isTorchOn ? Colors.amber : Colors.grey[700],
+                                ),
+                                onPressed: () async {
+                                  try {
+                                    await scannerController.toggleTorch();
+                                    // Зберігаємо новий стан спалаху
+                                    final newState = torchState == TorchState.off;
+                                    await _storageService.saveTorchState(newState);
+                                  } catch (e) {
+                                    print('Error toggling torch: $e');
+                                    // Якщо спалах недоступний, просто ігноруємо помилку
+                                    // Кнопка залишиться видимою, але не працюватиме
+                                  }
+                                },
+                                tooltip: isTorchOn ? 'Вимкнути спалах' : 'Увімкнути спалах',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: MobileScanner(
+                          controller: scannerController,
+                          onDetect: (capture) {
+                            final List<Barcode> barcodes = capture.barcodes;
+                            if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
+                              String barcodeScanRes = barcodes.first.rawValue!;
+                              scannerController.dispose(); // Закриваємо контролер перед закриттям
+                              Navigator.pop(context); // Закриваємо сканер
+                              setState(() {
+                                _scanController.text = barcodeScanRes;
+                              });
+                              _processScannedItem(barcodeScanRes);
+                            }
+                          },
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          scannerController.dispose();
+                          Navigator.pop(context);
+                        },
+                        child: Text('Відміна'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
         ),
       );
     } catch (e) {
@@ -193,9 +280,6 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
           return;
         }
         
-        // Відтворюємо звук успішного сканування
-        _soundService.playScanSuccessSound();
-        
         // Дебаг информация
         print('Line data: $lineData');
         
@@ -241,6 +325,32 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
         
         final rowCompleted = response.data != null ? (response.data['row_completed'] ?? false) : false;
         final orderCompleted = response.data != null ? (response.data['order_completed'] ?? false) : false;
+        
+        // Если в заказе всего один товар и он завершен, сразу переходим на финальный экран
+        if (widget.totalLines == 1 && rowCompleted && orderCompleted) {
+          // Відтворюємо звук успішного завершення
+          _soundService.playSuccessSound();
+          
+          // Заказ завершен - отримуємо дані з order_summary
+          final orderSummary = response.data != null ? (response.data['order_summary'] ?? {}) : {};
+          final totalScannedLines = widget.completedLines + 1;
+          final totalScannedItems = orderSummary['total_items'] ?? totalScannedLines;
+          
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => OrderCompletedScreen(
+                invoiceNumber: widget.invoiceNumber,
+                pickingId: widget.pickingId,
+                totalLines: totalScannedLines,
+                totalItems: totalScannedItems,
+              )),
+            );
+          }
+          return;
+        }
+        
+        // Відтворюємо звук успішного сканування (только если не финальный экран)
+        _soundService.playScanSuccessSound();
         
         // Показываем экран успешного сканирования
         if (mounted) {
@@ -362,6 +472,9 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Получаем высоту клавиатуры
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Column(
@@ -391,7 +504,12 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
           // Основная зона
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+              padding: EdgeInsets.only(
+                left: 15,
+                right: 15,
+                top: 10,
+                bottom: keyboardHeight > 0 ? keyboardHeight + 10 : 10,
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -605,6 +723,8 @@ class _ProductScanScreenState extends State<ProductScanScreen> {
                       Expanded(
                         child: TextField(
                           controller: _scanController,
+                          focusNode: _focusNode,
+                          autofocus: true,
                           decoration: const InputDecoration(
                             hintText: 'Скануйте товар',
                             contentPadding: EdgeInsets.symmetric(

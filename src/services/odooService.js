@@ -697,14 +697,21 @@ class OdooService {
       // Перетворюємо ID товарів на числа для коректного порівняння
       const scannedProductId = Number(productId);
       
-      // Якщо немає незавершених рядків, але відсканований товар є в накладній, дозволяємо його сканувати
+      // Якщо немає незавершених рядків, але відсканований товар є в накладній, перевіряємо чи можна його сканувати
       if (incompleteLines.length === 0) {
-        console.log('No incomplete lines found, but scanned product is in picking, allowing scan');
+        console.log('No incomplete lines found, but scanned product is in picking, checking if it can be scanned');
         // Перевіряємо, чи відсканований товар є в накладній
         const scannedProductInPicking = allMoveLines.find(ml => Number(ml.product_id[0]) === scannedProductId);
         if (scannedProductInPicking) {
-          // Товар є в накладній, обробляємо його без перевірки порядку
-          console.log('Scanned product is in picking, processing without order check');
+          // Перевіряємо, чи товар має кількість > 0
+          if (scannedProductInPicking.product_uom_qty <= 0) {
+            console.log(`Product ${scannedProductId} is in picking but has quantity 0, cannot scan`);
+            throw new ApiError(409, 'ZERO_QUANTITY', false, {
+              message: 'Товар присутній в накладній, але кількість дорівнює 0. Неможливо відсканувати товар з нульовою кількістю.'
+            });
+          }
+          // Товар є в накладній і має кількість > 0, обробляємо його без перевірки порядку
+          console.log('Scanned product is in picking with quantity > 0, processing without order check');
         } else {
           // Товар не в накладній
           throw new ApiError(404, 'NOT_IN_ORDER');
@@ -776,6 +783,15 @@ class OdooService {
       const lineId = Array.isArray(line.id) ? line.id[0] : line.id;
       
       const required = line.product_uom_qty;
+      
+      // Перевіряємо, чи товар має кількість > 0
+      if (required <= 0) {
+        console.log(`Product ${productId} has quantity ${required}, cannot scan`);
+        throw new ApiError(409, 'ZERO_QUANTITY', false, {
+          message: 'Товар присутній в накладній, але кількість дорівнює 0. Неможливо відсканувати товар з нульовою кількістю.'
+        });
+      }
+      
       const done = line.qty_done + 1; // Increment by 1 for this scan
       const remain = required - done;
 

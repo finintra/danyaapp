@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../services/sound_service.dart';
 
 class SuccessScanScreen extends StatefulWidget {
   const SuccessScanScreen({super.key});
@@ -10,14 +9,12 @@ class SuccessScanScreen extends StatefulWidget {
 }
 
 class _SuccessScanScreenState extends State<SuccessScanScreen> {
-  final SoundService _soundService = SoundService();
-  
   @override
   void initState() {
     super.initState();
     
-    // Відтворюємо звук успішного сканування
-    _playSuccessSound();
+    // Звук уже воспроизводится в product_scan_screen перед переходом сюда
+    // Не воспроизводим звук здесь, чтобы избежать двойного воспроизведения
     
     // Автоматически возвращаемся на предыдущий экран через 3000 мс
     Future.delayed(const Duration(milliseconds: 3000), () {
@@ -25,14 +22,6 @@ class _SuccessScanScreenState extends State<SuccessScanScreen> {
         Navigator.of(context).pop();
       }
     });
-  }
-  
-  Future<void> _playSuccessSound() async {
-    try {
-      await _soundService.playScanSuccessSound();
-    } catch (e) {
-      print('Error playing success sound on SuccessScanScreen: $e');
-    }
   }
 
   @override

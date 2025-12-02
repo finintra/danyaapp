@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator');
 const odooService = require('../services/odooService');
 const { ApiError } = require('../middleware/errorHandler');
 const logger = require('../utils/logger');
+const analyticsService = require('../services/analyticsService');
 
 /**
  * @desc    Attach to picking
@@ -128,6 +129,9 @@ const scanItem = async (req, res, next) => {
     const result = await odooService.validateItemScan(picking_id, barcode, userLang, userId);
     console.log(`validateItemScan successful, result:`, result);
 
+    // Track successful item scan
+    analyticsService.trackItemScanned();
+
     // Return success response
     console.log('Sending success response');
     res.status(200).json({
@@ -155,8 +159,19 @@ const scanItem = async (req, res, next) => {
       });
     }
     
+    if (error.message === 'ZERO_QUANTITY') {
+      console.log('Sending ZERO_QUANTITY error response');
+      analyticsService.trackErrorScan('ZERO_QUANTITY');
+      return res.status(409).json({
+        ok: false,
+        error: 'ZERO_QUANTITY',
+        message: error.data?.message || 'Товар присутній в накладній, але кількість дорівнює 0'
+      });
+    }
+    
     if (error.message === 'WRONG_ORDER') {
       console.log('Sending WRONG_ORDER error response');
+      analyticsService.trackErrorScan('WRONG_ORDER');
       return res.status(409).json({
         ok: false,
         error: 'WRONG_ORDER',
@@ -164,6 +179,9 @@ const scanItem = async (req, res, next) => {
         expected_product_name: error.data?.expected_product_name || null
       });
     }
+    
+    // Track other backend errors
+    analyticsService.trackBackendError();
 
     if (error.message === 'Odoo credentials not configured') {
       logger.error('Credentials not found for user, returning CREDENTIALS_NOT_FOUND error');
@@ -196,6 +214,9 @@ const validatePicking = async (req, res, next) => {
     // Validate picking
     const userId = req.user?.id || null;
     const result = await odooService.validatePicking(picking_id, payload, userId);
+
+    // Track successful order scan
+    analyticsService.trackOrderScanned();
 
     // Return success response
     res.status(200).json({

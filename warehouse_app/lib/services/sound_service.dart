@@ -10,10 +10,10 @@ class SoundService {
   final AudioPlayer _player = AudioPlayer();
   bool _isMuted = false;
 
-  /// Відтворює звук успішного сканування (Scanned.wav) - зелений екран
+  /// Відтворює звук успішного сканування (button-46-edit.wav) - зелений екран
   Future<void> playScanSuccessSound() async {
     if (_isMuted) return;
-    await _playSound('Scanned.wav');
+    await _playSound('button-46-edit.wav');
   }
 
   /// Відтворює звук помилки (wrong_product.wav) - товар відсутній в замовленні
@@ -28,10 +28,10 @@ class SoundService {
     await _playSound('more_then_needed.wav');
   }
 
-  /// Відтворює звук завершення товару (productdone.wav) - всі товари відскановані
+  /// Відтворює звук завершення товару (magic-chime-02-edit.wav) - всі товари відскановані, екран підтвердження накладної
   Future<void> playSuccessSound() async {
     if (_isMuted) return;
-    await _playSound('productdone.wav');
+    await _playSound('magic-chime-02-edit.wav');
   }
 
   Future<void> _playSound(String fileName) async {

@@ -9,6 +9,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 const { errorHandler } = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
 const routes = require('./routes');
@@ -24,14 +25,16 @@ app.use(express.json()); // Parse JSON bodies
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } })); // HTTP request logging
 
 // Serve static files (dashboard)
-app.use(express.static('src/public'));
+const publicPath = path.join(__dirname, 'public');
+app.use(express.static(publicPath));
 
 // Routes
 app.use('/flf/api/v1', routes);
 
 // Dashboard route
 app.get('/dashboard', (req, res) => {
-  res.sendFile('dashboard.html', { root: './src/public' });
+  const dashboardPath = path.join(__dirname, 'public', 'dashboard.html');
+  res.sendFile(dashboardPath);
 });
 
 // Health check endpoint

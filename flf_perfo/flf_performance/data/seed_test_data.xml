@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <!-- Test companies (start with 4 out of 6) -->
+    <record id="flf_company_1" model="res.company">
+        <field name="name">FLF Test Co 1</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="manufacturing_lead">0.0</field>
+        <field name="security_lead">0.0</field>
+    </record>
+    <record id="flf_company_2" model="res.company">
+        <field name="name">FLF Test Co 2</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="manufacturing_lead">0.0</field>
+        <field name="security_lead">0.0</field>
+    </record>
+    <record id="flf_company_3" model="res.company">
+        <field name="name">FLF Test Co 3</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="manufacturing_lead">0.0</field>
+        <field name="security_lead">0.0</field>
+    </record>
+    <record id="flf_company_4" model="res.company">
+        <field name="name">FLF Test Co 4</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="manufacturing_lead">0.0</field>
+        <field name="security_lead">0.0</field>
+    </record>
+
+    <record id="flf_company_5" model="res.company">
+        <field name="name">FLF Test Co 5</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="manufacturing_lead">0.0</field>
+        <field name="security_lead">0.0</field>
+    </record>
+    <record id="flf_company_6" model="res.company">
+        <field name="name">FLF Test Co 6</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="manufacturing_lead">0.0</field>
+        <field name="security_lead">0.0</field>
+    </record>
+
+    <!-- company-dependent policy is controlled via Settings (config_parameter) at runtime; no XML params here -->
+
+    <!-- Test users: 2 per company -->
+    <record id="flf_user_c1_1" model="res.users">
+        <field name="name">FLF Worker C1-1</field>
+        <field name="login">c1_worker1@example.com</field>
+        <field name="password">test123</field>
+        <field name="company_id" ref="flf_company_1"/>
+        <field name="company_ids" eval="[(6,0,[ref('flf_company_1')])]"/>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user')])]"/>
+    </record>
+    <record id="flf_user_c1_2" model="res.users">
+        <field name="name">FLF Worker C1-2</field>
+        <field name="login">c1_worker2@example.com</field>
+        <field name="password">test123</field>
+        <field name="company_id" ref="flf_company_1"/>
+        <field name="company_ids" eval="[(6,0,[ref('flf_company_1')])]"/>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user')])]"/>
+    </record>
+
+    <record id="flf_user_c2_1" model="res.users">
+        <field name="name">FLF Worker C2-1</field>
+        <field name="login">c2_worker1@example.com</field>
+        <field name="password">test123</field>
+        <field name="company_id" ref="flf_company_2"/>
+        <field name="company_ids" eval="[(6,0,[ref('flf_company_2')])]"/>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user')])]"/>
+    </record>
+    <record id="flf_user_c2_2" model="res.users">
+        <field name="name">FLF Worker C2-2</field>
+        <field name="login">c2_worker2@example.com</field>
+        <field name="password">test123</field>
+        <field name="company_id" ref="flf_company_2"/>
+        <field name="company_ids" eval="[(6,0,[ref('flf_company_2')])]"/>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user')])]"/>
+    </record>
+
+    <record id="flf_user_c3_1" model="res.users">
+        <field name="name">FLF Worker C3-1</field>
+        <field name="login">c3_worker1@example.com</field>
+        <field name="password">test123</field>
+        <field name="company_id" ref="flf_company_3"/>
+        <field name="company_ids" eval="[(6,0,[ref('flf_company_3')])]"/>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user')])]"/>
+    </record>
+    <record id="flf_user_c3_2" model="res.users">
+        <field name="name">FLF Worker C3-2</field>
+        <field name="login">c3_worker2@example.com</field>
+        <field name="password">test123</field>
+        <field name="company_id" ref="flf_company_3"/>
+        <field name="company_ids" eval="[(6,0,[ref('flf_company_3')])]"/>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user')])]"/>
+    </record>
+
+    <record id="flf_user_c4_1" model="res.users">
+        <field name="name">FLF Worker C4-1</field>
+        <field name="login">c4_worker1@example.com</field>
+        <field name="password">test123</field>
+        <field name="company_id" ref="flf_company_4"/>
+        <field name="company_ids" eval="[(6,0,[ref('flf_company_4')])]"/>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user')])]"/>
+    </record>
+    <record id="flf_user_c4_2" model="res.users">
+        <field name="name">FLF Worker C4-2</field>
+        <field name="login">c4_worker2@example.com</field>
+        <field name="password">test123</field>
+        <field name="company_id" ref="flf_company_4"/>
+        <field name="company_ids" eval="[(6,0,[ref('flf_company_4')])]"/>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user')])]"/>
+    </record>
+
+    <record id="flf_user_c5_1" model="res.users">
+        <field name="name">FLF Worker C5-1</field>
+        <field name="login">c5_worker1@example.com</field>
+        <field name="password">test123</field>
+        <field name="company_id" ref="flf_company_5"/>
+        <field name="company_ids" eval="[(6,0,[ref('flf_company_5')])]"/>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user')])]"/>
+    </record>
+    <record id="flf_user_c5_2" model="res.users">
+        <field name="name">FLF Worker C5-2</field>
+        <field name="login">c5_worker2@example.com</field>
+        <field name="password">test123</field>
+        <field name="company_id" ref="flf_company_5"/>
+        <field name="company_ids" eval="[(6,0,[ref('flf_company_5')])]"/>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user')])]"/>
+    </record>
+
+    <record id="flf_user_c6_1" model="res.users">
+        <field name="name">FLF Worker C6-1</field>
+        <field name="login">c6_worker1@example.com</field>
+        <field name="password">test123</field>
+        <field name="company_id" ref="flf_company_6"/>
+        <field name="company_ids" eval="[(6,0,[ref('flf_company_6')])]"/>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user')])]"/>
+    </record>
+    <record id="flf_user_c6_2" model="res.users">
+        <field name="name">FLF Worker C6-2</field>
+        <field name="login">c6_worker2@example.com</field>
+        <field name="password">test123</field>
+        <field name="company_id" ref="flf_company_6"/>
+        <field name="company_ids" eval="[(6,0,[ref('flf_company_6')])]"/>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user')])]"/>
+    </record>
+
+    <!-- Partners for SLA -->
+    <record id="flf_partner_early" model="res.partner">
+        <field name="name">EarlyBird LLC</field>
+        <field name="company_id" ref="flf_company_1"/>
+        <field name="x_flf_deadline_hour">15.5</field> <!-- 15:30 -->
+        <field name="x_flf_last_shipment_hour">19.0</field>
+        <field name="x_flf_afterhours_credit">1</field>
+        <field name="x_flf_big_order_line_count">50</field>
+        <field name="x_flf_big_order_qty">150</field>
+        <field name="x_flf_use_draft_trigger">1</field>
+        <field name="x_flf_responsible_user_ids" eval="[(6,0,[ref('flf_user_c1_1'), ref('flf_user_c1_2')])]"/>
+    </record>
+
+    <record id="flf_partner_electrinics" model="res.partner">
+        <field name="name">Electrinics LTD</field>
+        <field name="company_id" ref="flf_company_1"/>
+        <field name="x_flf_deadline_hour">17.5</field> <!-- simple orders day-of by 17:30 -->
+        <field name="x_flf_last_shipment_hour">19.0</field>
+        <field name="x_flf_afterhours_credit">1</field>
+        <field name="x_flf_big_order_line_count">80</field>
+        <field name="x_flf_big_order_qty">300</field>
+        <field name="x_flf_use_draft_trigger">1</field>
+        <field name="x_flf_responsible_user_ids" eval="[(6,0,[ref('flf_user_c1_1'), ref('flf_user_c1_2')])]"/>
+    </record>
+
+    <!-- User Assignments (primary partners) -->
+    <record id="flf_user_config_c1_1" model="flf.user_config">
+        <field name="company_id" ref="flf_company_1"/>
+        <field name="user_id" ref="flf_user_c1_1"/>
+        <field name="primary_partner_id" ref="flf_partner_early"/>
+    </record>
+    <record id="flf_user_config_c1_2" model="flf.user_config">
+        <field name="company_id" ref="flf_company_1"/>
+        <field name="user_id" ref="flf_user_c1_2"/>
+        <field name="primary_partner_id" ref="flf_partner_electrinics"/>
+    </record>
+
+    <!-- Truck schedules by weekday -->
+    <record id="flf_sched_mon" model="flf.truck.schedule">
+        <field name="name">Weekday Monday</field>
+        <field name="weekday">mon</field>
+    </record>
+    <record id="flf_sched_tue" model="flf.truck.schedule">
+        <field name="name">Weekday Tuesday</field>
+        <field name="weekday">tue</field>
+    </record>
+    <record id="flf_sched_wed" model="flf.truck.schedule">
+        <field name="name">Weekday Wednesday</field>
+        <field name="weekday">wed</field>
+    </record>
+    <record id="flf_sched_thu" model="flf.truck.schedule">
+        <field name="name">Weekday Thursday</field>
+        <field name="weekday">thu</field>
+    </record>
+    <record id="flf_sched_fri" model="flf.truck.schedule">
+        <field name="name">Weekday Friday</field>
+        <field name="weekday">fri</field>
+    </record>
+    <record id="flf_sched_sat" model="flf.truck.schedule">
+        <field name="name">Saturday</field>
+        <field name="weekday">sat</field>
+    </record>
+    <record id="flf_sched_sun" model="flf.truck.schedule">
+        <field name="name">Sunday (usually off)</field>
+        <field name="weekday">sun</field>
+        <field name="active">0</field>
+        <field name="note">Usually off. Activate for special cases.</field>
+    </record>
+
+    <!-- Weekday slots: 12:30, 15:30, 19:00 -->
+    <record id="flf_slot_mon_1230" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_mon"/>
+        <field name="departure_time">12:30</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="flf_slot_mon_1530" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_mon"/>
+        <field name="departure_time">15:30</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="flf_slot_mon_1900" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_mon"/>
+        <field name="departure_time">19:00</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <!-- Repeat same slots for Tue-Fri -->
+    <record id="flf_slot_tue_1230" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_tue"/>
+        <field name="departure_time">12:30</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="flf_slot_tue_1530" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_tue"/>
+        <field name="departure_time">15:30</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="flf_slot_tue_1900" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_tue"/>
+        <field name="departure_time">19:00</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="flf_slot_wed_1230" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_wed"/>
+        <field name="departure_time">12:30</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="flf_slot_wed_1530" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_wed"/>
+        <field name="departure_time">15:30</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="flf_slot_wed_1900" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_wed"/>
+        <field name="departure_time">19:00</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="flf_slot_thu_1230" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_thu"/>
+        <field name="departure_time">12:30</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="flf_slot_thu_1530" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_thu"/>
+        <field name="departure_time">15:30</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="flf_slot_thu_1900" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_thu"/>
+        <field name="departure_time">19:00</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="flf_slot_fri_1230" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_fri"/>
+        <field name="departure_time">12:30</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="flf_slot_fri_1530" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_fri"/>
+        <field name="departure_time">15:30</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="flf_slot_fri_1900" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_fri"/>
+        <field name="departure_time">19:00</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <!-- Saturday: 14:00, 17:30 -->
+    <record id="flf_slot_sat_1400" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_sat"/>
+        <field name="departure_time">14:00</field>
+        <field name="sequence">10</field>
+        <field name="is_weekend">1</field>
+    </record>
+    <record id="flf_slot_sat_1730" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_sat"/>
+        <field name="departure_time">17:30</field>
+        <field name="sequence">20</field>
+        <field name="is_weekend">1</field>
+    </record>
+
+    <!-- Sunday (usually off): 14:00, 17:30, schedule inactive by default -->
+    <record id="flf_slot_sun_1400" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_sun"/>
+        <field name="departure_time">14:00</field>
+        <field name="sequence">10</field>
+        <field name="is_weekend">1</field>
+    </record>
+    <record id="flf_slot_sun_1730" model="flf.truck.slot">
+        <field name="schedule_id" ref="flf_sched_sun"/>
+        <field name="departure_time">17:30</field>
+        <field name="sequence">20</field>
+        <field name="is_weekend">1</field>
+    </record>
+</odoo>

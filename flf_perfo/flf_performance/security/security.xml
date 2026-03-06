@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- FLF Performance Manager group inherits Stock Manager -->
+    <record id="group_manager" model="res.groups">
+        <field name="name">FLF Performance Manager</field>
+        <field name="category_id" ref="base.module_category_inventory"/>
+        <field name="implied_ids" eval="[(4, ref('stock.group_stock_manager'))]"/>
+    </record>
+</odoo>

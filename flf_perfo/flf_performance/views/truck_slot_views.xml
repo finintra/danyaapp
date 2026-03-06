@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Views for flf.truck.slot -->
+    <record id="view_flf_truck_slot_tree" model="ir.ui.view">
+        <field name="name">flf.truck.slot.tree</field>
+        <field name="model">flf.truck.slot</field>
+        <field name="arch" type="xml">
+            <tree string="Truck Slots" create="true">
+                <field name="name"/>
+                <field name="schedule_id"/>
+                <field name="departure_time"/>
+                <field name="is_weekend"/>
+                <field name="sequence"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_flf_truck_slot_form" model="ir.ui.view">
+        <field name="name">flf.truck.slot.form</field>
+        <field name="model">flf.truck.slot</field>
+        <field name="arch" type="xml">
+            <form string="Truck Slot">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="schedule_id"/>
+                            <field name="departure_time" placeholder="HH:MM"/>
+                            <field name="is_weekend"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action + Menu -->
+    <record id="action_flf_truck_slot" model="ir.actions.act_window">
+        <field name="name">Truck Slots</field>
+        <field name="res_model">flf.truck.slot</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem id="menu_flf_truck_slot" name="Truck Slots" parent="flf_performance.menu_flf_performance_configuration" action="action_flf_truck_slot" sequence="30" groups="flf_performance.group_manager"/>
+</odoo>

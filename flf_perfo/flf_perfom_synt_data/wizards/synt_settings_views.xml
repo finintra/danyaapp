@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data>
+    <record id="view_flf_perf_synt_res_config_settings" model="ir.ui.view">
+      <field name="name">flf.perf.synt.res.config.settings.view.form</field>
+      <field name="model">res.config.settings</field>
+      <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//div[@class='settings']" position="inside">
+          <div class="app_settings_block" data-key="flf_perf_synt" string="Synthetic Data (Dev)" groups="flf_performance.group_manager">
+            <h2>Synthetic Data (Dev)</h2>
+            <div class="row mt16 o_settings_container">
+              <div class="col-12 col-lg-6">
+                <div class="o_setting_box">
+                  <div class="o_setting_left">
+                    <span class="o_form_label">Demo generation</span>
+                    <span class="text-muted">Today seed volumes</span>
+                  </div>
+                  <div class="o_setting_right">
+                    <div class="row mt8">
+                      <field name="flf_per_company_out" class="oe_inline"/>
+                      <field name="flf_per_company_in" class="oe_inline"/>
+                    </div>
+                  </div>
+                </div>
+                <div class="o_setting_box">
+                  <div class="o_setting_left">
+                    <span class="o_form_label">Backfill</span>
+                    <span class="text-muted">Daily items per company</span>
+                  </div>
+                  <div class="o_setting_right">
+                    <div class="row mt8">
+                      <field name="flf_daily_per_company" class="oe_inline"/>
+                    </div>
+                  </div>
+                </div>
+                <div class="o_setting_box">
+                  <div class="o_setting_left">
+                    <span class="o_form_label">Cleanup</span>
+                    <span class="text-muted">Keep days</span>
+                  </div>
+                  <div class="o_setting_right">
+                    <div class="row mt8">
+                      <field name="flf_keep_days" class="oe_inline"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-lg-6">
+                <div class="o_setting_box">
+                  <div class="o_setting_left">
+                    <span class="o_form_label">Slot Waves</span>
+                    <span class="text-muted">Thresholds and ratios</span>
+                  </div>
+                  <div class="o_setting_right">
+                    <div class="row mt8">
+                      <field name="flf_threshold_min" class="oe_inline"/>
+                      <field name="flf_miss_ratio" class="oe_inline"/>
+                      <field name="flf_ship_ratio" class="oe_inline"/>
+                      <field name="flf_sample_limit" class="oe_inline"/>
+                    </div>
+                  </div>
+                </div>
+                <div class="o_setting_box">
+                  <div class="o_setting_left">
+                    <span class="o_form_label">Minute Engine</span>
+                    <span class="text-muted">Live per-minute generation</span>
+                  </div>
+                  <div class="o_setting_right">
+                    <div class="row mt8">
+                      <field name="flf_minute_new_per_company" class="oe_inline"/>
+                      <field name="flf_minute_print_ratio" class="oe_inline"/>
+                      <field name="flf_minute_done_ratio" class="oe_inline"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>

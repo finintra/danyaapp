@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_flf_performance_kpi_tree" model="ir.ui.view">
+        <field name="name">flf.performance.kpi.tree</field>
+        <field name="model">flf.performance.kpi</field>
+        <field name="arch" type="xml">
+            <tree string="FLF Performance KPIs" create="false">
+                <field name="date"/>
+                <field name="flow"/>
+                <field name="pickings_done"/>
+                <field name="lines_done"/>
+                <field name="qty_done"/>
+                <field name="pct_in_deadline"/>
+                <field name="avg_sec_print_to_done"/>
+                <field name="pickings_risk_count"/>
+                <field name="done_in_soft_window"/>
+                <field name="done_in_last_truck"/>
+                <field name="done_afterhours_transfer"/>
+                <field name="all_created_shipped_today"/>
+                <field name="effort_consolidation_score"/>
+                <field name="is_effort_consolidation_day"/>
+                <field name="offday_shipments"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_flf_performance_kpi_search" model="ir.ui.view">
+        <field name="name">flf.performance.kpi.search</field>
+        <field name="model">flf.performance.kpi</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="date"/>
+                <field name="flow"/>
+                <filter name="today" string="Today" domain="[('date','=', context_today())]"/>
+            </search>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Settings form extension for FLF Performance (res.config.settings) -->
+    <record id="view_flf_performance_res_config_settings" model="ir.ui.view">
+        <field name="name">flf.performance.res.config.settings.view.form</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class='settings']" position="inside">
+                <div class="app_settings_block" data-key="flf_performance" data-string="FLF Performance" string="FLF Performance" groups="flf_performance.group_manager">
+                    <h2>FLF Performance</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6">
+                            <div class="o_setting_box">
+                                <div class="o_setting_left">
+                                    <span class="o_form_label">Effort Consolidation</span>
+                                    <span class="text-muted">Thresholds and window</span>
+                                </div>
+                                <div class="o_setting_right">
+                                    <div class="row mt8">
+                                        <field name="flf_consolidation_x_percent" class="oe_inline"/>
+                                        <field name="flf_consolidation_y_percent" class="oe_inline"/>
+                                        <field name="flf_consolidation_window_days" class="oe_inline"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="o_setting_box">
+                                <div class="o_setting_left">
+                                    <span class="o_form_label">Flexible Saturday</span>
+                                    <span class="text-muted">Backlog and surge thresholds</span>
+                                </div>
+                                <div class="o_setting_right">
+                                    <div class="row mt8">
+                                        <field name="flf_sat_backlog_orders_11" class="oe_inline"/>
+                                        <field name="flf_sat_backlog_orders_10" class="oe_inline"/>
+                                        <field name="flf_sat_backlog_orders_09" class="oe_inline"/>
+                                        <field name="flf_sat_backlog_lines_11" class="oe_inline"/>
+                                        <field name="flf_sat_backlog_lines_10" class="oe_inline"/>
+                                        <field name="flf_sat_backlog_lines_09" class="oe_inline"/>
+                                        <field name="flf_sat_created_today_by_10" class="oe_inline"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <div class="o_setting_box">
+                                <div class="o_setting_left">
+                                    <span class="o_form_label">Refresh</span>
+                                    <span class="text-muted">Intervals and offsets</span>
+                                </div>
+                                <div class="o_setting_right">
+                                    <div class="row mt8">
+                                        <field name="flf_refresh_interval_sec" class="oe_inline"/>
+                                        <field name="flf_refresh_offset_base" class="oe_inline"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="o_setting_box">
+                                <div class="o_setting_left">
+                                    <span class="o_form_label">Off‑day Shipments</span>
+                                    <span class="text-muted">Bonus accounting</span>
+                                </div>
+                                <div class="o_setting_right">
+                                    <div class="row mt8">
+                                        <field name="flf_offday_shipments_enabled"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="o_setting_box">
+                                <div class="o_setting_left">
+                                    <span class="o_form_label">Start Event Policy</span>
+                                    <span class="text-muted">Draft vs Ready (per company)</span>
+                                </div>
+                                <div class="o_setting_right">
+                                    <div class="row mt8">
+                                        <field name="flf_use_draft_as_start"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

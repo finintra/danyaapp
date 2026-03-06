@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="flf_performance.Wallboard">
+        <div class="o_flf_wallboard o_flf_compact">
+        </div>
+    </t>
+
+    <t t-name="flf_performance.Wallboard.Body">
+        <div class="o_flf_rows">
+            <div class="o_flf_row o_flf_summary">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr><th>Flow</th><th>Pickings</th><th>Lines</th><th>Qty</th><th>% In Deadline</th><th>Avg Min P→D</th><th>Risk</th><th>Off‑day</th></tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="p.summary" t-as="s" t-key="s.flow">
+                            <tr>
+                                <td><t t-esc="s.flow"/></td>
+                                <td><t t-esc="s.pickings_done"/></td>
+                                <td><t t-esc="s.lines_done"/></td>
+                                <td><t t-esc="s.qty_done"/></td>
+                                <td><t t-esc="utils.fmtPct1(s.pct_in_deadline)"/>%</td>
+                                <td><t t-esc="utils.fmtMin1(s.avg_sec_print_to_done)"/></td>
+                                <td><t t-esc="s.pickings_risk_count"/></td>
+                                <td><t t-esc="s.offday_shipments"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+            <div class="o_flf_row">
+                <div class="o_flf_col o_flf_partners">
+                    <h4>Partners <t t-esc="(p.partners_scope === 'week') ? 'This Week' : ((p.partners_scope === 'month') ? 'This Month' : 'Today')"/> <button type="button" class="btn btn-secondary btn-sm o_flf_refresh" style="margin-left:8px;">Refresh</button></h4>
+                    <table class="table table-sm o_flf_table">
+                        <thead>
+                            <tr>
+                                <th>Flow</th><th>Co</th>
+                                <th>Unprinted</th><th>Printed</th><th>Done</th><th>Overdue</th>
+                                <th>→Deadline(s)</th>
+                                <th>→Print(m)</th>
+                                <th>Waiting (new/total)</th><th>Oldest</th>
+                                <th>Users Today</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="p.partners" t-as="r" t-key="(r.company_id ? (r.company_id + ':' + r.flow) : (r.company_name + ':' + r.flow))">
+                                <tr t-att-class="(r.overdue &gt; 0) and 'o_flf-row o_flf-row--overdue' or ((r.time_to_deadline_sec != null and r.time_to_deadline_sec &lt;= 3600) and 'o_flf-row o_flf-row--risk' or 'o_flf-row o_flf-row--ok')">
+                                    <td><t t-esc="(r.flow === 'out') ? 'OUT' : 'IN'"/></td>
+                                    <td><t t-esc="r.company_name"/></td>
+                                    <td><t t-esc="r.unprinted"/></td>
+                                    <td><t t-esc="r.printed_not_picked"/></td>
+                                    <td><t t-esc="r.done"/></td>
+                                    <td><t t-esc="r.overdue"/></td>
+                                    <td>
+                                        <t t-if="r.time_to_deadline_sec != null">
+                                            <span t-att-title="utils.deadlineHint(r)"><t t-esc="Math.round(r.time_to_deadline_sec/60)"/>m</span>
+                                        </t>
+                                        <t t-if="r.time_to_deadline_sec == null">—</t>
+                                    </td>
+                                    <td><t t-esc="r.print_avg_min"/></td>
+                                    <td><t t-esc="r.waiting_new_today"/>/<t t-esc="r.waiting_count"/></td>
+                                    <td><t t-esc="r.waiting_oldest"/></td>
+                                    <td class="o_flf_users">
+                                        <t t-set="users" t-value="r.users_today || []"/>
+                                        <t t-foreach="users.slice(0,4)" t-as="u" t-key="u.name">
+                                            <span class="badge flf-user-badge"><t t-esc="u.name"/>:<t t-esc="u.count"/></span>
+                                        </t>
+                                        <t t-if="users.length &gt; 4">
+                                            <span class="badge flf-user-badge">+<t t-esc="users.length - 4"/></span>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="o_flf_col o_flf_sidebar">
+                    <h4>At Risk</h4>
+                    <table class="table table-sm o_flf_table">
+                        <thead><tr><th>Partner</th><th>Co</th><th>Deadline</th><th>→(m)</th></tr></thead>
+                        <tbody>
+                            <t t-foreach="p.at_risk" t-as="a" t-key="a.id or a.partner">
+                                <tr t-att-class="(a.time_to_deadline_sec != null and a.time_to_deadline_sec &lt; 0) and 'o_flf-row o_flf-row--overdue' or ((a.time_to_deadline_sec != null and a.time_to_deadline_sec &lt;= 3600) and 'o_flf-row o_flf-row--risk' or 'o_flf-row o_flf-row--ok')">
+                                    <td><t t-esc="a.partner"/></td>
+                                    <td><t t-esc="a.company"/></td>
+                                    <td><t t-esc="a.deadline"/></td>
+                                    <td><t t-esc="(a.time_to_deadline_sec != null) ? Math.round(a.time_to_deadline_sec/60) : ''"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <h4>TOPs</h4>
+                    <div class="o_flf_tops">
+                        <div>
+                            <h5>Day (orders)</h5>
+                            <t t-foreach="(p.tops.day.users.orders || [])" t-as="t"><div><t t-esc="t.name"/> — <t t-esc="t.orders"/></div></t>
+                        </div>
+                        <div>
+                            <h5>Week (orders)</h5>
+                            <t t-foreach="(p.tops.week.users.orders || [])" t-as="t"><div><t t-esc="t.name"/> — <t t-esc="t.orders"/></div></t>
+                        </div>
+                        <div>
+                            <h5>Month (orders)</h5>
+                            <t t-foreach="(p.tops.month.users.orders || [])" t-as="t"><div><t t-esc="t.name"/> — <t t-esc="t.orders"/></div></t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

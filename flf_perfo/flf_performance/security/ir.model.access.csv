@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_flf_truck_schedule_user,flf.truck.schedule user,model_flf_truck_schedule,base.group_user,1,0,0,0
+access_flf_truck_schedule_manager,flf.truck.schedule manager,model_flf_truck_schedule,flf_performance.group_manager,1,1,1,1
+access_flf_truck_slot_user,flf.truck.slot user,model_flf_truck_slot,base.group_user,1,0,0,0
+access_flf_truck_slot_manager,flf.truck.slot manager,model_flf_truck_slot,flf_performance.group_manager,1,1,1,1
+access_flf_performance_kpi_user,flf.performance.kpi user,model_flf_performance_kpi,base.group_user,1,0,0,0
+access_flf_performance_kpi_manager,flf.performance.kpi manager,model_flf_performance_kpi,flf_performance.group_manager,1,1,1,1
+access_flf_performance_truck_slot_kpi_user,flf.performance.truck_slot_kpi user,model_flf_performance_truck_slot_kpi,base.group_user,1,0,0,0
+access_flf_performance_truck_slot_kpi_manager,flf.performance.truck_slot_kpi manager,model_flf_performance_truck_slot_kpi,flf_performance.group_manager,1,1,1,1
+access_flf_user_config_manager,flf.user_config manager,model_flf_user_config,flf_performance.group_manager,1,1,1,1

@@ -1,0 +1,35 @@
+/* FLF Wallboard high-contrast colors and layout (<= 150 lines) */
+.o_flf_wallboard { padding: 8px; }
+.o_flf_rows { display: grid; grid-template-rows: auto 1fr; gap: 8px; }
+.o_flf_row.o_flf_summary table { font-size: 1.1rem; }
+.o_flf_row { width: 100%; }
+.o_flf_col { display: block; }
+.o_flf_partners { width: 68%; float: left; }
+.o_flf_sidebar { width: 30%; float: right; }
+.o_flf_table { width: 100%; table-layout: fixed; }
+.o_flf_table th, .o_flf_table td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Users cell: дозволити перенос і видимість до 4 бейджів */
+.o_flf_table td.o_flf_users { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; }
+
+/* Row states */
+.o_flf-row { transition: background-color 0.2s ease; }
+.o_flf-row--overdue { background:#7a001d !important; color:#fff !important; }
+.o_flf-row--risk { background:#ffcd38 !important; color:#1a1a1a !important; }
+.o_flf-row--ok { background:#e8f5e9 !important; color:#1a1a1a !important; }
+.o_flf-row--overdue a, .o_flf-row--risk a, .o_flf-row--ok a { color: inherit !important; }
+
+/* Big screen scaling */
+:root { --flf-base: 1.0; }
+.o_flf_wallboard { font-size: calc(14px * var(--flf-base)); }
+.o_flf_wallboard h4 { font-size: calc(18px * var(--flf-base)); margin: 6px 0; }
+.o_flf_tops h5 { font-size: calc(16px * var(--flf-base)); margin: 4px 0; }
+
+/* Compact badges */
+.badge.badge-secondary { background:#4b5563; }
+.flf-user-badge { background:#1f2937; color:#f9fafb; border:1px solid #111827; margin-right:4px; padding:2px 6px; border-radius:10px; }
+
+/* Clear floats */
+.o_flf_row:after { content:""; display:block; clear:both; }
+
+/* Reduce padding in compact mode */
+.o_flf_compact .table.table-sm td, .o_flf_compact .table.table-sm th { padding: .25rem .5rem; }

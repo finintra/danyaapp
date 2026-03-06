@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Company-level Draft/Ready policy -->
+    <record id="flf_company_1" model="res.company">
+        <field name="flf_use_draft_as_start">1</field>
+    </record>
+    <record id="flf_company_2" model="res.company">
+        <field name="flf_use_draft_as_start">1</field>
+    </record>
+    <record id="flf_company_3" model="res.company">
+        <field name="flf_use_draft_as_start">1</field>
+    </record>
+    <record id="flf_company_4" model="res.company">
+        <field name="flf_use_draft_as_start">0</field>
+    </record>
+    <record id="flf_company_5" model="res.company">
+        <field name="flf_use_draft_as_start">0</field>
+    </record>
+    <record id="flf_company_6" model="res.company">
+        <field name="flf_use_draft_as_start">0</field>
+    </record>
+</odoo>

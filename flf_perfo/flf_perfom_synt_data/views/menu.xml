@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data>
+    <menuitem id="menu_flf_demo_root"
+              name="Synthetic Data (Dev)"
+              parent="flf_performance.menu_flf_performance_root"
+              action="flf_perfom_synt_data.action_flf_perf_synt_wizard"
+              sequence="15"
+              groups="flf_performance.group_manager"/>
+
+    <menuitem id="menu_flf_demo_generate_today"
+              name="Generate Today Demo Now"
+              parent="menu_flf_demo_root"
+              action="flf_perfom_synt_data.action_flf_demo_generate_today"
+              sequence="1"
+              groups="flf_performance.group_manager"/>
+
+    <menuitem id="menu_flf_demo_tick_now"
+              name="Tick Now"
+              parent="menu_flf_demo_root"
+              action="flf_perfom_synt_data.action_flf_demo_tick_now"
+              sequence="2"
+              groups="flf_performance.group_manager"/>
+
+    <menuitem id="menu_flf_demo_backfill"
+              name="Backfill 30 days"
+              parent="menu_flf_demo_root"
+              action="flf_perfom_synt_data.action_flf_demo_backfill_30"
+              sequence="3"
+              groups="flf_performance.group_manager"/>
+
+    <menuitem id="menu_flf_demo_cleanup"
+              name="Cleanup Old Demo (45 days)"
+              parent="menu_flf_demo_root"
+              action="flf_perfom_synt_data.action_flf_demo_cleanup"
+              sequence="4"
+              groups="flf_performance.group_manager"/>
+
+    <menuitem id="menu_flf_demo_slot_waves"
+              name="Run Slot Waves"
+              parent="menu_flf_demo_root"
+              action="flf_perfom_synt_data.action_flf_demo_slot_waves"
+              sequence="5"
+              groups="flf_performance.group_manager"/>
+  </data>
+</odoo>

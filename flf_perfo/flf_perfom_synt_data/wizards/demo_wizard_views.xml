@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data>
+    <record id="view_flf_perf_synt_wizard_form" model="ir.ui.view">
+      <field name="name">flf.perf.synt.wizard.form</field>
+      <field name="model">flf.perf.synt.wizard</field>
+      <field name="arch" type="xml">
+        <form string="Synthetic Data (Dev)">
+          <group>
+            <separator string="Run demo data utilities"/>
+            <button name="action_generate_today" type="object" string="Generate Today Demo Now" class="oe_highlight"/>
+            <button name="action_tick_now" type="object" string="Tick Now"/>
+            <button name="action_backfill_30" type="object" string="Backfill 30 days"/>
+            <button name="action_cleanup_45" type="object" string="Cleanup Old Demo (45 days)"/>
+            <button name="action_slot_waves" type="object" string="Run Slot Waves"/>
+            <separator string="Temporary Waves (Today)"/>
+            <field name="temp_wave_interval"/>
+            <button name="action_create_temp_waves" type="object" string="Create Temporary Waves" class="btn-primary"/>
+            <button name="action_delete_temp_waves" type="object" string="Delete Temporary Waves" class="btn-secondary"/>
+            <separator string="Danger Zone"/>
+            <button name="action_delete_all_demo" type="object" string="Delete ALL DEMO" class="btn-danger"/>
+          </group>
+        </form>
+      </field>
+    </record>
+
+    <record id="action_flf_perf_synt_wizard" model="ir.actions.act_window">
+      <field name="name">Synthetic Data (Dev)</field>
+      <field name="res_model">flf.perf.synt.wizard</field>
+      <field name="view_mode">form</field>
+      <field name="target">new</field>
+      <field name="view_id" ref="view_flf_perf_synt_wizard_form"/>
+    </record>
+  </data>
+</odoo>

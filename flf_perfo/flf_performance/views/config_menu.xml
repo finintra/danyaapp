@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Configuration parent menu for FLF Performance -->
+    <menuitem id="menu_flf_performance_configuration"
+              name="Configuration"
+              parent="flf_performance.menu_flf_performance_root"
+              sequence="90"
+              groups="flf_performance.group_manager"/>
+
+    <!-- Open Settings (res.config.settings) in a modal, scoped to our module -->
+    <record id="action_flf_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'module': 'flf_performance'}</field>
+        <field name="groups_id" eval="[(6,0,[ref('flf_performance.group_manager')])]"/>
+    </record>
+
+    <menuitem id="menu_flf_settings"
+              name="Settings"
+              parent="flf_performance.menu_flf_performance_configuration"
+              action="action_flf_settings"
+              sequence="1"
+              groups="flf_performance.group_manager"/>
+</odoo>

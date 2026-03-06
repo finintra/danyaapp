@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_flf_performance" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.flf.performance</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="FLF Performance">
+                    <group>
+                        <group>
+                            <field name="x_flf_deadline_hour" widget="float_time"/>
+                            <field name="x_flf_soft_window_minutes"/>
+                            <field name="x_flf_last_shipment_hour" widget="float_time"/>
+                            <field name="x_flf_afterhours_credit"/>
+                            <field name="x_flf_use_draft_trigger"/>
+                        </group>
+                        <group>
+                            <field name="x_flf_big_order_line_count"/>
+                            <field name="x_flf_big_order_qty"/>
+                            <field name="x_flf_responsible_user_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Record rules per company for flf.user_config -->
+    <record id="rule_flf_user_config_company" model="ir.rule">
+        <field name="name">FLF User Config: company scope</field>
+        <field name="model_id" ref="model_flf_user_config"/>
+        <field name="groups" eval="[(4, ref('flf_performance.group_manager'))]"/>
+        <field name="domain_force">[("company_id", "in", user.company_ids.ids)]</field>
+    </record>
+</odoo>

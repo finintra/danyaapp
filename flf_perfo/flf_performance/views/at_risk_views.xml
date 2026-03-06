@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_flf_at_risk_pickings_today" model="ir.actions.act_window">
+        <field name="name">At Risk Pickings Today</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[("x_flf_risk_today", "=", True)]</field>
+        <field name="context">{"search_default_outgoing": 1}</field>
+    </record>
+
+    <menuitem id="menu_flf_at_risk_pickings_today"
+              name="At Risk Pickings Today"
+              parent="flf_performance.menu_flf_performance_root"
+              action="action_flf_at_risk_pickings_today"
+              sequence="15"/>
+
+    <record id="action_flf_my_at_risk_pickings_today" model="ir.actions.act_window">
+        <field name="name">My At Risk Pickings</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[("x_flf_risk_today","=",True), ("partner_id.x_flf_responsible_user_ids","in", [uid])]</field>
+        <field name="context">{"search_default_outgoing": 1}</field>
+    </record>
+
+    <menuitem id="menu_flf_my_at_risk_pickings_today"
+              name="My At Risk Pickings"
+              parent="flf_performance.menu_flf_performance_root"
+              action="action_flf_my_at_risk_pickings_today"
+              sequence="16"/>
+</odoo>

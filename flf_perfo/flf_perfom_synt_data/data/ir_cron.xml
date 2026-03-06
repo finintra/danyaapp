@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data noupdate="1">
+    <!-- Daily init at 06:00 local time (first run covered by seed-once) -->
+    <record id="ir_cron_flf_demo_daily_init" model="ir.cron">
+      <field name="name">FLF Demo: Daily Init</field>
+      <field name="model_id" ref="model_flf_perf_synt_data"/>
+      <field name="state">code</field>
+      <field name="code">model.demo_daily_init()</field>
+      <field name="user_id" ref="base.user_root"/>
+      <field name="interval_number">1</field>
+      <field name="interval_type">days</field>
+      <field name="numbercall">-1</field>
+      <field name="active">True</field>
+    </record>
+
+    <!-- Tick every 15 minutes to keep data alive -->
+    <record id="ir_cron_flf_demo_tick" model="ir.cron">
+      <field name="name">FLF Demo: Tick</field>
+      <field name="model_id" ref="model_flf_perf_synt_data"/>
+      <field name="state">code</field>
+      <field name="code">model.demo_tick()</field>
+      <field name="user_id" ref="base.user_root"/>
+      <field name="interval_number">15</field>
+      <field name="interval_type">minutes</field>
+      <field name="numbercall">-1</field>
+      <field name="active">True</field>
+    </record>
+
+    <!-- One-time seed right after install/update -->
+    <record id="ir_cron_flf_demo_seed_once" model="ir.cron">
+      <field name="name">FLF Demo: Seed Once Now</field>
+      <field name="model_id" ref="model_flf_perf_synt_data"/>
+      <field name="state">code</field>
+      <field name="code">model.demo_daily_init()</field>
+      <field name="user_id" ref="base.user_root"/>
+      <field name="interval_number">1</field>
+      <field name="interval_type">minutes</field>
+      <field name="numbercall">1</field>
+      <field name="active">True</field>
+    </record>
+
+    <!-- Cleanup old demo daily (time anchored by first run) -->
+    <record id="ir_cron_flf_demo_cleanup" model="ir.cron">
+      <field name="name">FLF Demo: Cleanup Old</field>
+      <field name="model_id" ref="model_flf_perf_synt_data"/>
+      <field name="state">code</field>
+      <field name="code">model.demo_cleanup(keep_days=45)</field>
+      <field name="user_id" ref="base.user_root"/>
+      <field name="interval_number">1</field>
+      <field name="interval_type">days</field>
+      <field name="numbercall">-1</field>
+      <field name="active">True</field>
+    </record>
+
+    <!-- Slot waves: check every 5 minutes around configured slots -->
+    <record id="ir_cron_flf_demo_slot_waves" model="ir.cron">
+      <field name="name">FLF Demo: Slot Waves</field>
+      <field name="model_id" ref="model_flf_perf_synt_slot"/>
+      <field name="state">code</field>
+      <field name="code">model.run_slot_waves()</field>
+      <field name="user_id" ref="base.user_root"/>
+      <field name="interval_number">5</field>
+      <field name="interval_type">minutes</field>
+      <field name="numbercall">-1</field>
+      <field name="active">True</field>
+    </record>
+
+    <!-- Minute engine: live generation/print/done every minute -->
+    <record id="ir_cron_flf_demo_minute_tick" model="ir.cron">
+      <field name="name">FLF Demo: Minute Tick</field>
+      <field name="model_id" ref="model_flf_perf_synt_minute"/>
+      <field name="state">code</field>
+      <field name="code">model.minute_tick()</field>
+      <field name="user_id" ref="base.user_root"/>
+      <field name="interval_number">1</field>
+      <field name="interval_type">minutes</field>
+      <field name="numbercall">-1</field>
+      <field name="active">True</field>
+    </record>
+  </data>
+</odoo>

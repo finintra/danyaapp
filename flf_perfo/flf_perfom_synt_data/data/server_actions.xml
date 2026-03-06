@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data noupdate="0">
+    <record id="action_flf_demo_generate_today" model="ir.actions.server">
+      <field name="name">Generate Today Demo Now</field>
+      <field name="model_id" ref="model_flf_perf_synt_data"/>
+      <field name="state">code</field>
+      <field name="code">env["flf.perf.synt.data"].demo_daily_init(force=True); action = {"type": "ir.actions.client", "tag": "reload"}</field>
+    </record>
+
+    <record id="action_flf_demo_tick_now" model="ir.actions.server">
+      <field name="name">Tick Now</field>
+      <field name="model_id" ref="model_flf_perf_synt_data"/>
+      <field name="state">code</field>
+      <field name="code">env["flf.perf.synt.data"].demo_tick(); action = {"type": "ir.actions.client", "tag": "reload"}</field>
+    </record>
+
+    <record id="action_flf_demo_backfill_30" model="ir.actions.server">
+      <field name="name">Backfill 30 days</field>
+      <field name="model_id" ref="model_flf_perf_synt_data"/>
+      <field name="state">code</field>
+      <field name="code">env["flf.perf.synt.data"].demo_backfill(days=30); action = {"type": "ir.actions.client", "tag": "reload"}</field>
+    </record>
+
+    <record id="action_flf_demo_cleanup" model="ir.actions.server">
+      <field name="name">Cleanup Old Demo (45 days)</field>
+      <field name="model_id" ref="model_flf_perf_synt_data"/>
+      <field name="state">code</field>
+      <field name="code">env["flf.perf.synt.data"].demo_cleanup(keep_days=45); action = {"type": "ir.actions.client", "tag": "reload"}</field>
+    </record>
+
+    <record id="action_flf_demo_slot_waves" model="ir.actions.server">
+      <field name="name">Run Slot Waves</field>
+      <field name="model_id" ref="model_flf_perf_synt_slot"/>
+      <field name="state">code</field>
+      <field name="code">env["flf.perf.synt.slot"].run_slot_waves(); action = {"type": "ir.actions.client", "tag": "reload"}</field>
+    </record>
+  </data>
+</odoo>

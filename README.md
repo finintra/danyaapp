@@ -83,3 +83,83 @@ npm run dev
 ```bash
 npm test
 ```
+
+## Backend2 - Другий бекенд для веб-додатку
+
+Проект містить другий окремий бекенд сервіс (`backend2/`), який призначений для веб-додатку і підключається до зовнішнього Odoo сервера.
+
+### Відмінності від основного бекенду
+
+- **Порт**: 3002 (основний бекенд працює на 3001)
+- **Odoo сервер**: Підключається до зовнішнього сервера `https://dev.odoo15.emuaport.com/`
+- **Логи**: Окремі логи в директорії `backend2/logs2/`
+- **Конфігурація**: Окремі змінні оточення з префіксом `BACKEND2_`
+
+### Запуск Backend2 через Docker Compose
+
+1. Налаштуйте змінні оточення в `.env` файлі або в `docker-compose.yml`:
+
+```bash
+BACKEND2_ODOO_URL=https://dev.odoo15.emuaport.com/
+BACKEND2_ODOO_DB=your_database_name
+BACKEND2_ODOO_USERNAME=your_odoo_username
+BACKEND2_ODOO_PASSWORD=your_odoo_password
+BACKEND2_JWT_SECRET=your-jwt-secret-key
+BACKEND2_CREDENTIALS_ENCRYPTION_KEY=your-encryption-key-32-characters-long!!
+```
+
+2. Запустіть Backend2:
+
+```bash
+docker-compose up -d backend2
+```
+
+3. Backend2 буде доступний за адресою: `http://localhost:3002`
+
+### Запуск Backend2 локально (без Docker)
+
+1. Перейдіть в директорію `backend2/`:
+
+```bash
+cd backend2
+```
+
+2. Встановіть залежності:
+
+```bash
+npm install
+```
+
+3. Створіть файл `.env` на основі `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+4. Налаштуйте змінні оточення в `.env` файлі
+
+5. Запустіть сервер:
+
+```bash
+npm start
+```
+
+Для розробки:
+
+```bash
+npm run dev
+```
+
+### Перегляд логів Backend2
+
+Через Docker Compose:
+
+```bash
+docker-compose logs -f backend2
+```
+
+Або безпосередньо з файлів:
+- `backend2/logs2/error.log` - помилки
+- `backend2/logs2/combined.log` - всі логи
+
+Детальніша інформація про налаштування Docker знаходиться в [DOCKER_SETUP.md](DOCKER_SETUP.md)

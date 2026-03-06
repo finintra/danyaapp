@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Partner SLA Registry: editable list over res.partner FLF fields -->
+    <record id="view_partner_sla_tree" model="ir.ui.view">
+        <field name="name">res.partner.flf_sla.tree</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <tree string="Partner SLA Registry" editable="bottom">
+                <field name="name"/>
+                <field name="company_type"/>
+                <field name="x_flf_deadline_hour" widget="float_time"/>
+                <field name="x_flf_soft_window_minutes"/>
+                <field name="x_flf_last_shipment_hour" widget="float_time"/>
+                <field name="x_flf_afterhours_credit"/>
+                <field name="x_flf_big_order_line_count"/>
+                <field name="x_flf_big_order_qty"/>
+                <field name="x_flf_use_draft_trigger"/>
+                <field name="x_flf_inbound_max_days"/>
+                <field name="x_flf_responsible_user_ids" widget="many2many_tags"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_partner_sla_search" model="ir.ui.view">
+        <field name="name">res.partner.flf_sla.search</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <search string="Partner SLA Registry">
+                <filter name="res_companies_only" string="Res Companies only" domain="[('x_flf_is_res_company_partner','=',True)]"/>
+                <field name="name"/>
+                <filter name="group_company" string="Group by Company" context="{'group_by':'company_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_flf_partner_sla_registry" model="ir.actions.act_window">
+        <field name="name">Partner SLA Registry</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_partner_sla_tree"/>
+        <field name="search_view_id" ref="view_partner_sla_search"/>
+        <field name="context">{"search_default_res_companies_only": 1}</field>
+        <field name="domain">[("x_flf_is_res_company_partner","=",True)]</field>
+        <field name="groups_id" eval="[(6,0,[ref('flf_performance.group_manager')])]"/>
+    </record>
+
+    <menuitem id="menu_flf_partner_sla_registry"
+              name="Partner SLA Registry"
+              parent="flf_performance.menu_flf_performance_configuration"
+              action="action_flf_partner_sla_registry"
+              sequence="10"
+              groups="flf_performance.group_manager"/>
+</odoo>

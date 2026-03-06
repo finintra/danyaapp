@@ -459,6 +459,18 @@ class OdooService {
     try {
       console.log(`Validating item scan: pickingId=${pickingId}, code=${code}, userLang=${userLang}`);
       
+      // Do not allow scanning/updating quantity for already approved (done) or cancelled orders
+      const pickings = await this.execute('stock.picking', 'search_read', [
+        [['id', '=', pickingId]]
+      ], { fields: ['id', 'state'] });
+
+      if (pickings && pickings.length > 0) {
+        const picking = pickings[0];
+        if (picking.state === 'done' || picking.state === 'cancel') {
+          throw new ApiError(409, 'ORDER_LOCKED');
+        }
+      }
+
       // Find product by default_code or barcode with user language
       const context = { lang: userLang };
       console.log(`Using language context for product scan: ${userLang}`);
@@ -732,6 +744,20 @@ class OdooService {
    */
   async resetPickingProgress(pickingId) {
     try {
+      // Check picking state - do not allow reset for approved (done) or cancelled orders
+      const pickings = await this.execute('stock.picking', 'search_read', [
+        [['id', '=', pickingId]]
+      ], { fields: ['id', 'state'] });
+
+      if (!pickings || pickings.length === 0) {
+        throw new ApiError(404, 'PICKING_NOT_FOUND');
+      }
+
+      const picking = pickings[0];
+      if (picking.state === 'done' || picking.state === 'cancel') {
+        throw new ApiError(409, 'ORDER_LOCKED');
+      }
+
       // Find all move lines for this picking
       const moveLines = await this.execute('stock.move.line', 'search_read', [
         [['picking_id', '=', pickingId]]

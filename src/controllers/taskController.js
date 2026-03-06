@@ -138,6 +138,14 @@ const scanItem = async (req, res, next) => {
       });
     }
 
+    if (error.message === 'ORDER_LOCKED') {
+      return res.status(409).json({
+        ok: false,
+        error: 'ORDER_LOCKED',
+        message: 'Не можна змінювати вже затверджене замовлення'
+      });
+    }
+
     next(error);
   }
 };
@@ -201,7 +209,7 @@ const cancelLocalPicking = async (req, res, next) => {
       });
     }
     
-    // Reset progress for this picking
+    // Reset progress for this picking (blocked if picking is already approved/done in Odoo)
     await odooService.resetPickingProgress(picking_id);
     
     res.status(200).json({
@@ -209,6 +217,13 @@ const cancelLocalPicking = async (req, res, next) => {
       message: 'Picking progress reset successfully'
     });
   } catch (error) {
+    if (error.message === 'ORDER_LOCKED') {
+      return res.status(409).json({
+        ok: false,
+        error: 'ORDER_LOCKED',
+        message: 'Не можна скасувати вже затверджене замовлення'
+      });
+    }
     next(error);
   }
 };

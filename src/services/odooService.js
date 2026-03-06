@@ -6,22 +6,56 @@ class OdooService {
   constructor() {
     this.url = process.env.ODOO_URL;
     this.db = process.env.ODOO_DB;
-    this.username = process.env.ODOO_USERNAME;
-    this.password = process.env.ODOO_PASSWORD;
-    this.uid = null;
-    this.session = null;
+    // Default credentials from env (for backward compatibility)
+    this.defaultUsername = process.env.ODOO_USERNAME;
+    this.defaultPassword = process.env.ODOO_PASSWORD;
+    // Per-user credentials (userId -> {username, password, uid})
+    this.userCredentials = new Map();
     this.apiKey = process.env.ODOO_API_KEY;
   }
 
   /**
-   * Initialize connection to Odoo
+   * Set credentials for a specific user
+   * @param {number} userId - User ID
+   * @param {string} username - Username
+   * @param {string} password - Password
    */
-  async init() {
+  setUserCredentials(userId, username, password) {
+    this.userCredentials.set(userId, {
+      username,
+      password,
+      uid: null
+    });
+  }
+
+  /**
+   * Get credentials for a user or use defaults
+   * @param {number|null} userId - User ID (null for default)
+   * @returns {Object} - {username, password, uid}
+   */
+  getCredentials(userId = null) {
+    if (userId && this.userCredentials.has(userId)) {
+      return this.userCredentials.get(userId);
+    }
+    return {
+      username: this.defaultUsername,
+      password: this.defaultPassword,
+      uid: null
+    };
+  }
+
+  /**
+   * Initialize connection to Odoo for a specific user
+   * @param {number|null} userId - User ID (null for default credentials)
+   */
+  async init(userId = null) {
     try {
+      const creds = this.getCredentials(userId);
+      
       // Debug connection parameters
       console.log('Connecting to Odoo with URL:', this.url);
       console.log('Database:', this.db);
-      console.log('Username:', this.username);
+      console.log('Username:', creds.username);
       
       const requestUrl = `${this.url}/jsonrpc`;
       console.log('Request URL:', requestUrl);
@@ -33,9 +67,14 @@ class OdooService {
         params: {
           service: 'common',
           method: 'authenticate',
-          args: [this.db, this.username, this.password, {}]
+          args: [this.db, creds.username, creds.password, {}]
         },
         id: Math.floor(Math.random() * 1000000)
+      }, {
+        headers: {
+          'X-db-name': this.db
+        },
+        timeout: 30000 // 30 seconds timeout
       });
 
       console.log('Odoo response status:', response.status);
@@ -46,9 +85,32 @@ class OdooService {
         throw new ApiError(500, `Odoo authentication error: ${response.data.error.message}`);
       }
 
-      this.uid = response.data.result;
-      logger.info(`Connected to Odoo with UID: ${this.uid}`);
-      return true;
+      const uid = response.data.result;
+      
+      // Check if authentication failed (Odoo returns false on auth failure)
+      if (uid === false || uid === null || uid === undefined) {
+        console.error('Odoo authentication returned false/null/undefined');
+        console.error('Username used:', creds.username);
+        console.error('Database:', this.db);
+        throw new ApiError(500, 'Odoo authentication failed: Invalid credentials');
+      }
+      
+      // Ensure uid is a number
+      const numericUid = typeof uid === 'number' ? uid : parseInt(uid, 10);
+      if (isNaN(numericUid) || numericUid <= 0) {
+        console.error('Invalid UID received from Odoo:', uid);
+        throw new ApiError(500, 'Odoo authentication failed: Invalid UID received');
+      }
+      
+      if (userId && this.userCredentials.has(userId)) {
+        this.userCredentials.get(userId).uid = numericUid;
+      } else {
+        // For backward compatibility, store in old location
+        this.defaultUid = numericUid;
+      }
+      
+      logger.info(`Connected to Odoo with UID: ${numericUid} for user ${userId || 'default'}`);
+      return numericUid;
     } catch (error) {
       console.error('Failed to connect to Odoo:', error.message);
       if (error.response) {
@@ -66,33 +128,103 @@ class OdooService {
    * @param {string} method - Method to call
    * @param {Array} args - Arguments for the method
    * @param {Object} kwargs - Keyword arguments
+   * @param {number|null} userId - User ID (null for default credentials)
    * @returns {Promise<any>} - Response from Odoo
    */
-  async execute(model, method, args = [], kwargs = {}) {
+  async execute(model, method, args = [], kwargs = {}, userId = null) {
     try {
-      if (!this.uid) {
-        await this.init();
+      const creds = this.getCredentials(userId);
+      
+      // Check if credentials exist
+      if (!creds || !creds.username || !creds.password) {
+        logger.error(`Missing credentials for user ${userId || 'default'}`);
+        logger.error(`Credentials object:`, creds ? JSON.stringify({ hasUsername: !!creds.username, hasPassword: !!creds.password }) : 'null');
+        throw new ApiError(500, 'Odoo credentials not configured');
+      }
+      
+      // Initialize connection if needed
+      let uid = creds.uid;
+      if (!uid || uid === false) {
+        uid = await this.init(userId);
+      }
+      
+      // Validate UID after initialization
+      if (!uid || uid === false || typeof uid !== 'number' || uid <= 0) {
+        logger.error(`Invalid UID after initialization: ${uid} for user ${userId || 'default'}`);
+        throw new ApiError(500, 'Failed to authenticate with Odoo: Invalid UID');
       }
 
-      const response = await axios.post(`${this.url}/jsonrpc`, {
+      const requestPayload = {
         jsonrpc: '2.0',
         method: 'call',
         params: {
           service: 'object',
           method: 'execute_kw',
-          args: [this.db, this.uid, this.password, model, method, args, kwargs]
+          args: [this.db, uid, creds.password, model, method, args, kwargs]
         },
         id: Math.floor(Math.random() * 1000000)
+      };
+      
+      // Log request details for debugging
+      console.log(`Executing ${model}.${method}:`, {
+        db: this.db,
+        uid: uid,
+        args: args,
+        kwargs: kwargs
+      });
+      
+      const response = await axios.post(`${this.url}/jsonrpc`, requestPayload, {
+        headers: {
+          'X-db-name': this.db
+        },
+        timeout: 30000, // 30 seconds timeout
+        validateStatus: function (status) {
+          return status >= 200 && status < 500; // Accept 2xx and 4xx status codes
+        }
+      });
+
+      // Log full response for debugging
+      console.log(`Odoo response for ${model}.${method}:`, {
+        status: response.status,
+        data: JSON.stringify(response.data, null, 2)
       });
 
       if (response.data.error) {
-        throw new ApiError(500, `Odoo execution error: ${response.data.error.message}`);
+        const errorDetails = response.data.error;
+        const errorInfo = {
+          message: errorDetails.message,
+          code: errorDetails.code,
+          data: errorDetails.data,
+          name: errorDetails.name,
+          debug: errorDetails.debug,
+          fullError: JSON.stringify(errorDetails, null, 2)
+        };
+        console.error(`Odoo execution error for ${model}.${method}:`, errorInfo);
+        logger.error(`Odoo execution error for ${model}.${method}:`, errorInfo);
+        throw new ApiError(500, `Odoo execution error: ${errorDetails.message || JSON.stringify(errorDetails)}`);
       }
 
       return response.data.result;
     } catch (error) {
       logger.error(`Error executing ${model}.${method}:`, error);
-      throw new ApiError(500, `Error executing ${model}.${method}`);
+      
+      // Handle connection errors
+      if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.message === 'socket hang up' || error.message.includes('timeout')) {
+        logger.error(`Connection error: ${error.code || error.message}`);
+        throw new ApiError(503, 'CONNECTION_ERROR', false, { 
+          message: 'Помилка з\'єднання з сервером. Спробуйте ще раз.',
+          originalError: error.message 
+        });
+      }
+      
+      if (error.response) {
+        logger.error(`Response status: ${error.response.status}`);
+        logger.error(`Response data: ${JSON.stringify(error.response.data, null, 2)}`);
+      }
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(500, `Error executing ${model}.${method}: ${error.message}`);
     }
   }
 
@@ -122,6 +254,11 @@ class OdooService {
           password: password
         },
         id: Math.floor(Math.random() * 1000000)
+      }, {
+        headers: {
+          'X-db-name': this.db
+        },
+        timeout: 30000 // 30 seconds timeout
       });
 
       console.log('Authentication response status:', response.status);
@@ -138,10 +275,13 @@ class OdooService {
         throw new ApiError(401, 'INVALID_CREDENTIALS');
       }
 
+      // Set credentials for this user for future requests
+      this.setUserCredentials(result.uid, login, password);
+
       // Get user details with employee_id and language
       const users = await this.execute('res.users', 'read', [
         [result.uid]
-      ], { fields: ['id', 'name', 'login', 'active', 'employee_id', 'lang'] });
+      ], { fields: ['id', 'name', 'login', 'active', 'employee_id', 'lang'] }, result.uid);
 
       if (!users || users.length === 0) {
         throw new ApiError(401, 'INVALID_CREDENTIALS');
@@ -169,7 +309,7 @@ class OdooService {
         try {
           const employees = await this.execute('hr.employee', 'read', [
             [user.employee_id[0]]
-          ], { fields: ['id', 'name', 'pin', 'active', 'lang'] });
+          ], { fields: ['id', 'name', 'pin', 'active', 'lang'] }, result.uid);
           
           if (employees && employees.length > 0) {
             const employee = employees[0];
@@ -197,7 +337,10 @@ class OdooService {
           // Don't fail if we can't get employee data, just continue without it
         }
       } else {
-        console.log(`User ${user.login} does not have an associated employee`);
+        console.log(`User ${user.login} does not have an associated employee - this is OK, PIN will be stored on backend`);
+        // Ensure employee is null/undefined, not missing
+        userObject.employee_id = null;
+        userObject.employee = null;
       }
 
       return userObject;
@@ -217,10 +360,10 @@ class OdooService {
 
   async validateBadgeAndPin(badgeBarcode, pin) {
     try {
-      // Find employee by badge barcode
+      // Find employee by badge barcode (using default credentials as we don't have user yet)
       const employees = await this.execute('hr.employee', 'search_read', [
         [['barcode', '=', badgeBarcode]]
-      ], { fields: ['id', 'name', 'user_id', 'active', 'pin', 'lang'] });
+      ], { fields: ['id', 'name', 'user_id', 'active', 'pin', 'lang'] }, null);
 
       if (!employees || employees.length === 0) {
         throw new ApiError(401, 'BADGE_OR_PIN');
@@ -247,7 +390,7 @@ class OdooService {
       // Get user info to check if user is active and get language
       const users = await this.execute('res.users', 'read', [
         [userId]
-      ], { fields: ['active', 'lang'] });
+      ], { fields: ['active', 'lang'] }, null);
       
       if (!users || users.length === 0 || !users[0].active) {
         throw new ApiError(403, 'ARCHIVED');
@@ -289,22 +432,41 @@ class OdooService {
    * Get picking by barcode and reset progress
    * @param {string} pickingBarcode - Picking barcode
    * @param {string} [userLang='uk_UA'] - User language code
+   * @param {number|null} [userId=null] - User ID for credentials
    * @returns {Promise<Object>} - Picking info
    */
-  async getPickingByBarcode(pickingBarcode, userLang = 'uk_UA') {
+  async getPickingByBarcode(pickingBarcode, userLang = 'uk_UA', userId = null) {
     try {
-      // Find picking by barcode
+      // Find picking by barcode (either name or carrier_tracking_ref)
+      console.log(`Searching for picking by barcode: "${pickingBarcode}" (will search by name OR carrier_tracking_ref)`);
       const pickings = await this.execute('stock.picking', 'search_read', [
-        [['name', '=', pickingBarcode]]
-      ], { fields: ['id', 'name', 'state', 'move_line_ids'] });
-
+        ['|', ['name', '=', pickingBarcode], ['carrier_tracking_ref', '=', pickingBarcode]]
+      ], { fields: ['id', 'name', 'state', 'move_line_ids', 'carrier_tracking_ref'] }, userId);
+      
       if (!pickings || pickings.length === 0) {
         throw new ApiError(404, 'PICKING_NOT_FOUND');
       }
 
-      const picking = pickings[0];
+      // Log all found pickings
+      console.log(`Found ${pickings.length} picking(s) matching "${pickingBarcode}":`);
+      pickings.forEach((p, idx) => {
+        console.log(`  ${idx + 1}. ID=${p.id}, name="${p.name}", state="${p.state}", carrier_tracking_ref="${p.carrier_tracking_ref || 'N/A'}"`);
+      });
+
+      // Prioritize pickings in "assigned" state, then "waiting", then others (excluding "done" and "cancel")
+      // This ensures we select an active picking if multiple exist with the same name/tracking ref
+      let picking = pickings.find(p => p.state === 'assigned') ||
+                    pickings.find(p => p.state === 'waiting') ||
+                    pickings.find(p => p.state !== 'done' && p.state !== 'cancel') ||
+                    pickings[0]; // Fallback to first if all are done/cancel
       
-      if (picking.state === 'done' || picking.state === 'cancel') {
+      console.log(`Selected picking: ID=${picking.id}, name="${picking.name}", state="${picking.state}"`);
+      
+      if (picking.state === 'done') {
+        throw new ApiError(409, 'ORDER_ALREADY_DONE');
+      }
+      
+      if (picking.state === 'cancel') {
         throw new ApiError(409, 'ORDER_LOCKED');
       }
 
@@ -313,7 +475,7 @@ class OdooService {
         await this.execute('stock.move.line', 'write', [
           [moveLineId],
           { qty_done: 0 }
-        ]);
+        ], {}, userId);
       }
       
       // Get move lines with reset progress and location information
@@ -324,9 +486,17 @@ class OdooService {
           'id', 'product_id', 'product_uom_qty', 'qty_done', 
           'product_uom_id', 'state', 'location_id'
         ] 
-      });
+      }, userId);
       
       console.log('Reset progress for picking:', pickingBarcode);
+
+      // Check if there are any move lines
+      if (!moveLines || moveLines.length === 0) {
+        console.log(`No move lines found for picking ${picking.id} (${picking.name})`);
+        throw new ApiError(404, 'NO_MOVE_LINES', false, {
+          message: 'Накладна не містить товарів для збірки'
+        });
+      }
 
       // Get product info for each move line with translations based on user language
       const productIds = moveLines.map(line => line.product_id[0]);
@@ -340,7 +510,7 @@ class OdooService {
       ], { 
         fields: ['id', 'name', 'barcode', 'default_code', 'list_price', 'uom_id'],
         context: context // Pass the language context
-      });
+      }, userId);
 
       // Create a map of product info
       const productMap = {};
@@ -354,7 +524,7 @@ class OdooService {
         [['id', 'in', locationIds]]
       ], { 
         fields: ['id', 'name', 'complete_name'] 
-      });
+      }, userId);
       
       // Create a map of location info
       const locationMap = {};
@@ -397,8 +567,19 @@ class OdooService {
         };
       });
 
-      // Get first line that needs work
+      // Сортуємо рядки за ID, щоб забезпечити правильний порядок
+      formattedLines.sort((a, b) => a.line_id - b.line_id);
+      
+      // Get first line that needs work (перший незавершений рядок за порядком ID)
       const firstLine = formattedLines.find(line => line.remain > 0) || formattedLines[0];
+
+      // Ensure we have a valid line
+      if (!firstLine) {
+        console.log(`No valid line found for picking ${picking.id} (${picking.name})`);
+        throw new ApiError(404, 'NO_MOVE_LINES', false, {
+          message: 'Накладна не містить товарів для збірки'
+        });
+      }
 
       return {
         picking: {
@@ -424,24 +605,27 @@ class OdooService {
    * Find product by barcode or default_code
    * @param {string} code - Scanned code (default_code or barcode)
    * @param {string} [userLang='uk_UA'] - User language code
+   * @param {number|null} [userId=null] - User ID for credentials
    * @returns {Promise<Array>} - Array of products
    */
-  async findProductByBarcode(code, userLang = 'uk_UA') {
+  async findProductByBarcode(code, userLang = 'uk_UA', userId = null) {
     try {
       console.log(`Finding product with code: ${code}, userLang=${userLang}`);
       
-      // Find product by default_code or barcode with user language
+      // Find product by default_code or barcode
+      // The barcode field exists directly on product.product model
       const context = { lang: userLang };
       
+      // Search product by default_code and barcode (direct fields on product.product)
       const products = await this.execute('product.product', 'search_read', [
         ['|', ['default_code', '=', code], ['barcode', '=', code]]
       ], { 
         fields: ['id', 'name', 'default_code', 'barcode'],
-        context: context // Pass the language context
-      });
+        context: context
+      }, userId);
       
-      console.log(`Found ${products.length} products with code ${code}`);
-      return products;
+      console.log(`Found ${products ? products.length : 0} products with code ${code}`);
+      return products || [];
     } catch (error) {
       console.error(`Error finding product by barcode: ${error.message}`);
       throw error;
@@ -453,16 +637,17 @@ class OdooService {
    * @param {number} pickingId - Picking ID
    * @param {string} code - Scanned code (default_code or barcode)
    * @param {string} [userLang='uk_UA'] - User language code
+   * @param {number|null} [userId=null] - User ID for credentials
    * @returns {Promise<Object>} - Scan result
    */
-  async validateItemScan(pickingId, code, userLang = 'uk_UA') {
+  async validateItemScan(pickingId, code, userLang = 'uk_UA', userId = null) {
     try {
       console.log(`Validating item scan: pickingId=${pickingId}, code=${code}, userLang=${userLang}`);
       
       // Do not allow scanning/updating quantity for already approved (done) or cancelled orders
       const pickings = await this.execute('stock.picking', 'search_read', [
         [['id', '=', pickingId]]
-      ], { fields: ['id', 'state'] });
+      ], { fields: ['id', 'state'] }, userId);
 
       if (pickings && pickings.length > 0) {
         const picking = pickings[0];
@@ -471,16 +656,10 @@ class OdooService {
         }
       }
 
-      // Find product by default_code or barcode with user language
       const context = { lang: userLang };
       console.log(`Using language context for product scan: ${userLang}`);
       
-      const products = await this.execute('product.product', 'search_read', [
-        ['|', ['default_code', '=', code], ['barcode', '=', code]]
-      ], { 
-        fields: ['id', 'name', 'default_code'],
-        context: context // Pass the language context
-      });
+      const products = await this.findProductByBarcode(code, userLang, userId);
 
       if (!products || products.length === 0) {
         console.log(`No product found with code: ${code}`);
@@ -497,8 +676,8 @@ class OdooService {
           ['product_id', '=', productId]
         ]
       ], { 
-        fields: ['id', 'product_uom_qty', 'qty_done', 'location_id'] 
-      });
+        fields: ['id', 'product_uom_qty', 'qty_done', 'location_id', 'state', 'picking_id'] 
+      }, userId);
 
       if (!moveLines || moveLines.length === 0) {
         console.log(`Product ${productId} is not in picking ${pickingId}`);
@@ -510,7 +689,7 @@ class OdooService {
         [['picking_id', '=', pickingId]]
       ], { 
         fields: ['id', 'product_id', 'product_uom_qty', 'qty_done'] 
-      });
+      }, userId);
       
       console.log(`All move lines for picking ${pickingId}: ${JSON.stringify(allMoveLines)}`);
       
@@ -526,31 +705,46 @@ class OdooService {
       // Знаходимо перший незавершений рядок
       const incompleteLines = allMoveLines.filter(ml => ml.product_uom_qty > ml.qty_done && ml.product_uom_qty > 0);
       
-      // Якщо немає незавершених рядків, дозволяємо сканувати будь-який товар
-      if (incompleteLines.length === 0) {
-        console.log('No incomplete lines found, allowing any product to be scanned');
-        return;
-      }
-      
-      // Сортуємо незавершені рядки за ID
-      incompleteLines.sort((a, b) => a.id - b.id);
-      
-      // Перший незавершений рядок - це той, який повинен бути відсканований наступним
-      const firstIncompleteLine = incompleteLines[0];
-      
-      console.log('First incomplete line:', firstIncompleteLine ? 
-        `id=${firstIncompleteLine.id}, product_id=${firstIncompleteLine.product_id[0]}, qty_done=${firstIncompleteLine.qty_done}, product_uom_qty=${firstIncompleteLine.product_uom_qty}` : 
-        'No incomplete lines found');
-      console.log(`Scanned product ID: ${productId}`);
-      
       // Перетворюємо ID товарів на числа для коректного порівняння
-      const expectedProductId = firstIncompleteLine ? Number(firstIncompleteLine.product_id[0]) : null;
       const scannedProductId = Number(productId);
       
-      console.log(`Comparing product IDs: expected=${expectedProductId}, scanned=${scannedProductId}, equal=${expectedProductId === scannedProductId}`);
-      
-      // Якщо відсканований товар не відповідає очікуваному, визначаємо причину
-      if (expectedProductId !== scannedProductId) {
+      // Якщо немає незавершених рядків, але відсканований товар є в накладній, перевіряємо чи можна його сканувати
+      if (incompleteLines.length === 0) {
+        console.log('No incomplete lines found, but scanned product is in picking, checking if it can be scanned');
+        // Перевіряємо, чи відсканований товар є в накладній
+        const scannedProductInPicking = allMoveLines.find(ml => Number(ml.product_id[0]) === scannedProductId);
+        if (scannedProductInPicking) {
+          // Перевіряємо, чи товар має кількість > 0
+          if (scannedProductInPicking.product_uom_qty <= 0) {
+            console.log(`Product ${scannedProductId} is in picking but has quantity 0, cannot scan`);
+            throw new ApiError(409, 'ZERO_QUANTITY', false, {
+              message: 'Товар присутній в накладній, але кількість дорівнює 0. Неможливо відсканувати товар з нульовою кількістю.'
+            });
+          }
+          // Товар є в накладній і має кількість > 0, обробляємо його без перевірки порядку
+          console.log('Scanned product is in picking with quantity > 0, processing without order check');
+        } else {
+          // Товар не в накладній
+          throw new ApiError(404, 'NOT_IN_ORDER');
+        }
+      } else {
+        // Сортуємо незавершені рядки за ID
+        incompleteLines.sort((a, b) => a.id - b.id);
+        
+        // Перший незавершений рядок - це той, який повинен бути відсканований наступним
+        const firstIncompleteLine = incompleteLines[0];
+        
+        console.log('First incomplete line:', firstIncompleteLine ? 
+          `id=${firstIncompleteLine.id}, product_id=${firstIncompleteLine.product_id[0]}, qty_done=${firstIncompleteLine.qty_done}, product_uom_qty=${firstIncompleteLine.product_uom_qty}` : 
+          'No incomplete lines found');
+        console.log(`Scanned product ID: ${productId}`);
+        
+        const expectedProductId = Number(firstIncompleteLine.product_id[0]);
+        
+        console.log(`Comparing product IDs: expected=${expectedProductId}, scanned=${scannedProductId}, equal=${expectedProductId === scannedProductId}`);
+        
+        // Якщо відсканований товар не відповідає очікуваному, визначаємо причину
+        if (expectedProductId !== scannedProductId) {
         // Перевіряємо, чи вже відскановано весь обсяг для цього товару
         try {
           const scannedProductLines = await this.execute('stock.move.line', 'search_read', [
@@ -560,7 +754,7 @@ class OdooService {
             ]
           ], { 
             fields: ['id', 'product_uom_qty', 'qty_done'] 
-          });
+          }, userId);
 
           const totalRequired = scannedProductLines.reduce((sum, l) => sum + (l.product_uom_qty || 0), 0);
           const totalDone = scannedProductLines.reduce((sum, l) => sum + (l.qty_done || 0), 0);
@@ -579,17 +773,36 @@ class OdooService {
         ], { 
           fields: ['id', 'name', 'default_code'],
           context: context
-        });
+        }, userId);
         
         const expectedProductName = firstIncompleteProduct.length > 0 ? firstIncompleteProduct[0].name : 'Unknown';
         const scannedProductName = products[0].name;
         
         console.log(`Wrong order: Expected product ${expectedProductName} (ID: ${expectedProductId}) but scanned ${scannedProductName} (ID: ${scannedProductId})`);
-        throw new ApiError(409, 'WRONG_ORDER');
+        throw new ApiError(409, 'WRONG_ORDER', false, {
+          expected_product_id: expectedProductId,
+          expected_product_name: expectedProductName,
+          scanned_product_id: scannedProductId,
+          scanned_product_name: scannedProductName
+        });
+        }
       }
 
       const line = moveLines[0];
+      
+      // Extract line ID - it might be a number or an array [id, name]
+      const lineId = Array.isArray(line.id) ? line.id[0] : line.id;
+      
       const required = line.product_uom_qty;
+      
+      // Перевіряємо, чи товар має кількість > 0
+      if (required <= 0) {
+        console.log(`Product ${productId} has quantity ${required}, cannot scan`);
+        throw new ApiError(409, 'ZERO_QUANTITY', false, {
+          message: 'Товар присутній в накладній, але кількість дорівнює 0. Неможливо відсканувати товар з нульовою кількістю.'
+        });
+      }
+      
       const done = line.qty_done + 1; // Increment by 1 for this scan
       const remain = required - done;
 
@@ -598,16 +811,40 @@ class OdooService {
         throw new ApiError(409, 'OVERPICK');
       }
       
+      // Log the write operation details
+      console.log(`Updating stock.move.line with ID: ${lineId}, setting qty_done to: ${done}`);
+      console.log(`Line details:`, {
+        id: line.id,
+        lineId: lineId,
+        required: required,
+        current_qty_done: line.qty_done,
+        new_qty_done: done,
+        state: line.state,
+        picking_id: line.picking_id
+      });
+      
+      // Check if line is in a state that allows writing
+      if (line.state && line.state !== 'assigned' && line.state !== 'partially_available') {
+        console.warn(`Warning: Move line state is ${line.state}, might not allow writing`);
+      }
+      
       // Update the quantity in Odoo
-      await this.execute('stock.move.line', 'write', [
-        [line.id],
-        { qty_done: done }
-      ]);
+      try {
+        await this.execute('stock.move.line', 'write', [
+          [lineId],
+          { qty_done: done }
+        ], {}, userId);
+        console.log(`Successfully updated stock.move.line ${lineId} with qty_done=${done}`);
+      } catch (writeError) {
+        console.error(`Failed to write to stock.move.line ${lineId}:`, writeError);
+        console.error(`Line state: ${line.state}, picking_id: ${line.picking_id}`);
+        throw writeError;
+      }
       
       // Get updated line data
       const updatedLines = await this.execute('stock.move.line', 'search_read', [
-        [['id', '=', line.id]]
-      ], { fields: ['id', 'product_uom_qty', 'qty_done', 'location_id'] });
+        [['id', '=', lineId]]
+      ], { fields: ['id', 'product_uom_qty', 'qty_done', 'location_id'] }, userId);
       
       const updatedLine = updatedLines[0];
       const updatedDone = updatedLine.qty_done;
@@ -628,7 +865,7 @@ class OdooService {
           [['id', '=', updatedLine.location_id[0]]]
         ], { 
           fields: ['id', 'name', 'complete_name'] 
-        });
+        }, userId);
         
         if (locations && locations.length > 0) {
           locationInfo = {
@@ -660,7 +897,7 @@ class OdooService {
             [['picking_id', '=', pickingId]]
           ], { 
             fields: ['id', 'product_id', 'product_uom_qty', 'qty_done', 'location_id'] 
-          });
+          }, userId);
           
           // Find a line that still has work to do
           const nextLine = allMoveLines.find(ml => ml.product_uom_qty > ml.qty_done && ml.id !== line.id);
@@ -671,7 +908,7 @@ class OdooService {
               [['id', '=', nextLine.product_id[0]]]
             ], { 
               fields: ['id', 'name', 'barcode', 'default_code', 'list_price', 'uom_id'] 
-            });
+            }, userId);
             
             if (nextProduct && nextProduct.length > 0) {
               // Get location information for next line
@@ -681,7 +918,7 @@ class OdooService {
                   [['id', '=', nextLine.location_id[0]]]
                 ], { 
                   fields: ['id', 'name', 'complete_name'] 
-                });
+                }, userId);
                 
                 if (nextLocations && nextLocations.length > 0) {
                   nextLocationInfo = {
@@ -715,7 +952,11 @@ class OdooService {
               result.order_completed = true;
               try {
                 const totalItems = allMoveLines.reduce((sum, ml) => sum + (ml.product_uom_qty || 0), 0);
-                result.order_summary = Object.assign({}, result.order_summary, { total_items: totalItems });
+                const totalLines = allMoveLines.length;
+                result.order_summary = {
+                  total_items: totalItems,
+                  total_lines: totalLines
+                };
               } catch (e) {
                 // ignore
               }
@@ -740,9 +981,10 @@ class OdooService {
   /**
    * Reset picking progress
    * @param {number} pickingId - Picking ID
+   * @param {number|null} [userId=null] - User ID for credentials
    * @returns {Promise<Object>} - Reset result
    */
-  async resetPickingProgress(pickingId) {
+  async resetPickingProgress(pickingId, userId = null) {
     try {
       // Check picking state - do not allow reset for approved (done) or cancelled orders
       const pickings = await this.execute('stock.picking', 'search_read', [
@@ -761,14 +1003,14 @@ class OdooService {
       // Find all move lines for this picking
       const moveLines = await this.execute('stock.move.line', 'search_read', [
         [['picking_id', '=', pickingId]]
-      ], { fields: ['id', 'qty_done'] });
+      ], { fields: ['id', 'qty_done'] }, userId);
       
       // Reset qty_done to 0 for all lines
       for (const line of moveLines) {
         await this.execute('stock.move.line', 'write', [
           [line.id],
           { qty_done: 0 }
-        ]);
+        ], {}, userId);
       }
       
       return { success: true };
@@ -782,14 +1024,15 @@ class OdooService {
    * Validate picking
    * @param {number} pickingId - Picking ID
    * @param {Array} payload - Array of line items with quantities
+   * @param {number|null} [userId=null] - User ID for credentials
    * @returns {Promise<Object>} - Validation result
    */
-  async validatePicking(pickingId, payload) {
+  async validatePicking(pickingId, payload, userId = null) {
     try {
       // Get current state of the picking
       const pickings = await this.execute('stock.picking', 'search_read', [
         [['id', '=', pickingId]]
-      ], { fields: ['id', 'name', 'state', 'move_line_ids'] });
+      ], { fields: ['id', 'name', 'state', 'move_line_ids'] }, userId);
 
       if (!pickings || pickings.length === 0) {
         throw new ApiError(404, 'PICKING_NOT_FOUND');
@@ -806,7 +1049,7 @@ class OdooService {
         [['id', 'in', picking.move_line_ids]]
       ], { 
         fields: ['id', 'product_id', 'product_uom_qty', 'qty_done'] 
-      });
+      }, userId);
 
       // Check for mismatches
       const diffs = [];
@@ -840,7 +1083,37 @@ class OdooService {
         await this.execute('stock.move.line', 'write', [
           [item.line_id],
           { qty_done: item.qty }
-        ]);
+        ], {}, userId);
+      }
+
+      // Set picking state to 'done' using button_validate method
+      // Note: We use button_validate() directly as it's the method that works reliably.
+      // action_done() often fails due to lot/serial tracking requirements that the scanner doesn't provide.
+      try {
+        await this.execute('stock.picking', 'button_validate', [
+          [pickingId]
+        ], {}, userId);
+        
+        logger.info(`Picking ${pickingId} validated successfully using button_validate`);
+        
+        // Verify that picking is actually done
+        const verifyPickings = await this.execute('stock.picking', 'search_read', [
+          [['id', '=', pickingId]]
+        ], { fields: ['id', 'name', 'state'] }, userId);
+        
+        if (verifyPickings && verifyPickings.length > 0) {
+          const verifyPicking = verifyPickings[0];
+          logger.info(`Picking ${pickingId} state after validation: ${verifyPicking.state}`);
+          
+          if (verifyPicking.state !== 'done') {
+            logger.warn(`Picking ${pickingId} state is ${verifyPicking.state}, expected 'done'`);
+          }
+        }
+      } catch (error) {
+        logger.error(`Failed to validate picking ${pickingId}: ${error.message}`);
+        throw new ApiError(500, 'Failed to validate picking', false, {
+          message: `Не вдалося підтвердити накладну: ${error.message}`
+        });
       }
 
       // Count how many labels are needed (one per line)

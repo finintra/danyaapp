@@ -25,6 +25,26 @@ class AuthService {
   }
 
   /**
+   * Generate long-term JWT token (30 days)
+   * @param {Object} user - User object
+   * @param {string} deviceId - Device ID
+   * @returns {string} - JWT token
+   */
+  generateLongTermToken(user, deviceId) {
+    return jwt.sign(
+      { 
+        id: user.id, 
+        name: user.name,
+        deviceId,
+        lang: user.lang || 'uk_UA',
+        type: 'long_term' // Mark as long-term token
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '30d' } // 30 days
+    );
+  }
+
+  /**
    * Verify JWT token
    * @param {string} token - JWT token
    * @returns {Object} - Decoded token

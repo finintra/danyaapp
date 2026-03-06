@@ -62,6 +62,9 @@ dist
 # Gatsby files
 .cache/
 public
+# But allow src/public for dashboard
+!src/public/
+!src/public/**
 
 # vuepress build output
 .vuepress/dist

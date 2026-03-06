@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator');
 const odooService = require('../services/odooService');
 const { ApiError } = require('../middleware/errorHandler');
 const logger = require('../utils/logger');
+const analyticsService = require('../services/analyticsService');
 
 /**
  * @desc    Attach to picking
@@ -26,8 +27,9 @@ const attachToPicking = async (req, res, next) => {
     const userLang = req.user?.lang || 'uk_UA';
     console.log(`Using user language: ${userLang}`);
 
-    // Get picking by barcode with user language
-    const result = await odooService.getPickingByBarcode(picking_barcode, userLang);
+    // Get picking by barcode with user language and user ID
+    const userId = req.user?.id || null;
+    const result = await odooService.getPickingByBarcode(picking_barcode, userLang, userId);
 
     // Return success response
     res.status(200).json({
@@ -42,10 +44,34 @@ const attachToPicking = async (req, res, next) => {
       });
     }
 
+    if (error.message === 'ORDER_ALREADY_DONE') {
+      return res.status(409).json({
+        ok: false,
+        error: 'ORDER_ALREADY_DONE'
+      });
+    }
+
     if (error.message === 'ORDER_LOCKED') {
       return res.status(409).json({
         ok: false,
         error: 'ORDER_LOCKED'
+      });
+    }
+
+    if (error.message === 'NO_MOVE_LINES') {
+      return res.status(404).json({
+        ok: false,
+        error: 'NO_MOVE_LINES',
+        message: error.data?.message || 'Накладна не містить товарів для збірки'
+      });
+    }
+
+    if (error.message === 'Odoo credentials not configured') {
+      logger.error('Credentials not found for user in attachToPicking, returning CREDENTIALS_NOT_FOUND error');
+      return res.status(401).json({
+        ok: false,
+        error: 'CREDENTIALS_NOT_FOUND',
+        message: 'Збережені облікові дані не знайдено. Будь ласка, увійдіть знову через логін/пароль.'
       });
     }
 
@@ -76,7 +102,8 @@ const scanItem = async (req, res, next) => {
     console.log(`Using user language for item scan: ${userLang}`);
 
     // Перш ніж валідувати сканування, знайдемо товар за штрих-кодом
-    const products = await odooService.findProductByBarcode(barcode, userLang);
+    const userId = req.user?.id || null;
+    const products = await odooService.findProductByBarcode(barcode, userLang, userId);
     
     if (!products || products.length === 0) {
       console.log(`No product found with barcode: ${barcode}`);
@@ -89,19 +116,21 @@ const scanItem = async (req, res, next) => {
     const scannedProductId = products[0].id;
     console.log(`Found product: ${products[0].name} (ID: ${scannedProductId})`);
     
-    // Перевіряємо, чи відсканований товар відповідає очікуваному
+    // Перевіряємо, чи відсканований товар відповідає очікуваному (якщо вказано)
+    // Але дозволяємо validateItemScan визначити правильний товар на основі реального стану в Odoo
+    // Це важливо, якщо expected_product_id неправильний через помилку в getPickingByBarcode
     if (expected_product_id && Number(scannedProductId) !== Number(expected_product_id)) {
-      console.log(`Wrong product scanned: expected ${expected_product_id}, got ${scannedProductId}`);
-      return res.status(409).json({
-        ok: false,
-        error: 'WRONG_ORDER'
-      });
+      console.log(`Warning: expected_product_id (${expected_product_id}) doesn't match scanned product (${scannedProductId}). Will let validateItemScan determine the correct product.`);
     }
     
-    // Якщо товар відповідає очікуваному, валідуємо сканування
+    // Валідуємо сканування - validateItemScan сам визначить правильний очікуваний товар
+    // на основі реального стану в Odoo і поверне WRONG_ORDER, якщо потрібно
     console.log(`Calling odooService.validateItemScan with picking_id=${picking_id}, barcode="${barcode}", userLang=${userLang}`);
-    const result = await odooService.validateItemScan(picking_id, barcode, userLang);
+    const result = await odooService.validateItemScan(picking_id, barcode, userLang, userId);
     console.log(`validateItemScan successful, result:`, result);
+
+    // Track successful item scan
+    analyticsService.trackItemScanned();
 
     // Return success response
     console.log('Sending success response');
@@ -130,11 +159,36 @@ const scanItem = async (req, res, next) => {
       });
     }
     
-    if (error.message === 'WRONG_ORDER') {
-      console.log('Sending WRONG_ORDER error response');
+    if (error.message === 'ZERO_QUANTITY') {
+      console.log('Sending ZERO_QUANTITY error response');
+      analyticsService.trackErrorScan('ZERO_QUANTITY');
       return res.status(409).json({
         ok: false,
-        error: 'WRONG_ORDER'
+        error: 'ZERO_QUANTITY',
+        message: error.data?.message || 'Товар присутній в накладній, але кількість дорівнює 0'
+      });
+    }
+    
+    if (error.message === 'WRONG_ORDER') {
+      console.log('Sending WRONG_ORDER error response');
+      analyticsService.trackErrorScan('WRONG_ORDER');
+      return res.status(409).json({
+        ok: false,
+        error: 'WRONG_ORDER',
+        expected_product_id: error.data?.expected_product_id || null,
+        expected_product_name: error.data?.expected_product_name || null
+      });
+    }
+    
+    // Track other backend errors
+    analyticsService.trackBackendError();
+
+    if (error.message === 'Odoo credentials not configured') {
+      logger.error('Credentials not found for user, returning CREDENTIALS_NOT_FOUND error');
+      return res.status(401).json({
+        ok: false,
+        error: 'CREDENTIALS_NOT_FOUND',
+        message: 'Збережені облікові дані не знайдено. Будь ласка, увійдіть знову через логін/пароль.'
       });
     }
 
@@ -166,7 +220,11 @@ const validatePicking = async (req, res, next) => {
     const { picking_id, payload } = req.body;
 
     // Validate picking
-    const result = await odooService.validatePicking(picking_id, payload);
+    const userId = req.user?.id || null;
+    const result = await odooService.validatePicking(picking_id, payload, userId);
+
+    // Track successful order scan
+    analyticsService.trackOrderScanned();
 
     // Return success response
     res.status(200).json({
@@ -186,6 +244,15 @@ const validatePicking = async (req, res, next) => {
       return res.status(409).json({
         ok: false,
         error: 'ORDER_LOCKED'
+      });
+    }
+
+    if (error.message === 'Odoo credentials not configured') {
+      logger.error('Credentials not found for user in validatePicking, returning CREDENTIALS_NOT_FOUND error');
+      return res.status(401).json({
+        ok: false,
+        error: 'CREDENTIALS_NOT_FOUND',
+        message: 'Збережені облікові дані не знайдено. Будь ласка, увійдіть знову через логін/пароль.'
       });
     }
 
@@ -210,7 +277,8 @@ const cancelLocalPicking = async (req, res, next) => {
     }
     
     // Reset progress for this picking (blocked if picking is already approved/done in Odoo)
-    await odooService.resetPickingProgress(picking_id);
+    const userId = req.user?.id || null;
+    await odooService.resetPickingProgress(picking_id, userId);
     
     res.status(200).json({
       ok: true,
@@ -236,11 +304,12 @@ const cancelLocalPicking = async (req, res, next) => {
 const getAvailableTasks = async (req, res, next) => {
   try {
     // Get available pickings from Odoo
+    const userId = req.user?.id || null;
     const pickings = await odooService.execute('stock.picking', 'search_read', [
       [['state', '=', 'assigned']]
     ], { 
       fields: ['id', 'name', 'date', 'partner_id', 'move_line_ids'] 
-    });
+    }, userId);
 
     // Format response
     const formattedPickings = pickings.map(picking => ({
@@ -257,6 +326,14 @@ const getAvailableTasks = async (req, res, next) => {
       pickings: formattedPickings
     });
   } catch (error) {
+    if (error.message === 'Odoo credentials not configured') {
+      logger.error('Credentials not found for user in getAvailableTasks, returning CREDENTIALS_NOT_FOUND error');
+      return res.status(401).json({
+        ok: false,
+        error: 'CREDENTIALS_NOT_FOUND',
+        message: 'Збережені облікові дані не знайдено. Будь ласка, увійдіть знову через логін/пароль.'
+      });
+    }
     next(error);
   }
 };
@@ -278,12 +355,13 @@ const getTaskDetails = async (req, res, next) => {
     const context = { lang: userLang };
 
     // Get picking details
+    const userId = req.user?.id || null;
     const pickings = await odooService.execute('stock.picking', 'search_read', [
       [['id', '=', pickingId]]
     ], { 
       fields: ['id', 'name', 'date', 'partner_id', 'move_line_ids'],
       context: context // Pass the language context
-    });
+    }, userId);
 
     if (!pickings || pickings.length === 0) {
       return next(new ApiError(404, 'PICKING_NOT_FOUND'));
@@ -299,7 +377,7 @@ const getTaskDetails = async (req, res, next) => {
         'id', 'product_id', 'product_uom_qty', 'qty_done', 
         'product_uom_id', 'state'
       ] 
-    });
+    }, userId);
 
     // Get product info for each move line with user language
     const productIds = moveLines.map(line => line.product_id[0]);
@@ -308,7 +386,7 @@ const getTaskDetails = async (req, res, next) => {
     ], { 
       fields: ['id', 'name', 'barcode', 'default_code', 'list_price', 'uom_id'],
       context: context // Pass the language context
-    });
+    }, userId);
 
     // Create a map of product info
     const productMap = {};
@@ -345,6 +423,14 @@ const getTaskDetails = async (req, res, next) => {
       lines: formattedLines
     });
   } catch (error) {
+    if (error.message === 'Odoo credentials not configured') {
+      logger.error('Credentials not found for user in getTaskDetails, returning CREDENTIALS_NOT_FOUND error');
+      return res.status(401).json({
+        ok: false,
+        error: 'CREDENTIALS_NOT_FOUND',
+        message: 'Збережені облікові дані не знайдено. Будь ласка, увійдіть знову через логін/пароль.'
+      });
+    }
     next(error);
   }
 };

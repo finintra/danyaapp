@@ -4,7 +4,10 @@ import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import '../services/storage_service.dart';
 import '../models/picking_model.dart';
+import '../services/storage_service.dart';
 import 'product_scan_screen.dart';
+import 'error_order_locked_screen.dart';
+import 'error_already_done_screen.dart';
 import 'login_screen.dart';
 
 class InvoiceScanScreen extends StatefulWidget {
@@ -16,54 +19,144 @@ class InvoiceScanScreen extends StatefulWidget {
 
 class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
   final _invoiceController = TextEditingController();
+  final _focusNode = FocusNode();
   bool _isLoading = false;
   String? _errorMessage;
+  final StorageService _storageService = StorageService();
+
+  @override
+  void initState() {
+    super.initState();
+    // Автофокус на поле ввода после загрузки экрана
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
+  }
 
   @override
   void dispose() {
     _invoiceController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   Future<void> _scanBarcode() async {
     try {
+      // Отримуємо збережений стан спалаху
+      final savedTorchState = await _storageService.getTorchState();
+      
+      // Створюємо контролер для сканера
+      final scannerController = MobileScannerController(
+        detectionSpeed: DetectionSpeed.noDuplicates,
+        facing: CameraFacing.back,
+      );
+      
+      // Якщо спалах був увімкнений, увімкнемо його при ініціалізації
+      if (savedTorchState) {
+        // Невелика затримка, щоб камера встигла ініціалізуватися
+        Future.delayed(const Duration(milliseconds: 300), () async {
+          try {
+            await scannerController.toggleTorch();
+          } catch (e) {
+            print('Error turning on torch on init: $e');
+          }
+        });
+      }
+      
       // Відкриваємо діалог зі сканером
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        builder: (context) => Container(
-          height: MediaQuery.of(context).size.height * 0.7,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'Скануйте штрих-код',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
-              Expanded(
-                child: MobileScanner(
-                  controller: MobileScannerController(),
-                  onDetect: (capture) {
-                    final List<Barcode> barcodes = capture.barcodes;
-                    if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
-                      String barcodeScanRes = barcodes.first.rawValue!;
-                      Navigator.pop(context); // Закриваємо сканер
-                      setState(() {
-                        _invoiceController.text = barcodeScanRes;
-                      });
-                      _processInvoice(barcodeScanRes);
-                    }
-                  },
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Відміна'),
-              ),
-            ],
-          ),
+        builder: (context) => StatefulBuilder(
+          builder: (context, setModalState) {
+            // Слухаємо зміни стану спалаху
+            return ValueListenableBuilder<TorchState>(
+              valueListenable: scannerController.torchState,
+              builder: (context, torchState, child) {
+                final isTorchOn = torchState == TorchState.on;
+                
+                return Container(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Скануйте штрих-код або QR-код',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            // Кнопка для увімкнення/вимкнення спалаху
+                            // Завжди показуємо кнопку, але обробляємо помилки
+                            Container(
+                              margin: EdgeInsets.only(left: 8),
+                              decoration: BoxDecoration(
+                                color: isTorchOn ? Colors.amber.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: isTorchOn ? Colors.amber : Colors.grey,
+                                  width: 2,
+                                ),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  isTorchOn ? Icons.flash_on : Icons.flash_off,
+                                  size: 28,
+                                  color: isTorchOn ? Colors.amber : Colors.grey[700],
+                                ),
+                                onPressed: () async {
+                                  try {
+                                    await scannerController.toggleTorch();
+                                    // Зберігаємо новий стан спалаху
+                                    final newState = torchState == TorchState.off;
+                                    await _storageService.saveTorchState(newState);
+                                  } catch (e) {
+                                    print('Error toggling torch: $e');
+                                    // Якщо спалах недоступний, просто ігноруємо помилку
+                                    // Кнопка залишиться видимою, але не працюватиме
+                                  }
+                                },
+                                tooltip: isTorchOn ? 'Вимкнути спалах' : 'Увімкнути спалах',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: MobileScanner(
+                          controller: scannerController,
+                          onDetect: (capture) {
+                            final List<Barcode> barcodes = capture.barcodes;
+                            if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
+                              String barcodeScanRes = barcodes.first.rawValue!;
+                              scannerController.dispose(); // Закриваємо контролер перед закриттям
+                              Navigator.pop(context); // Закриваємо сканер
+                              setState(() {
+                                _invoiceController.text = barcodeScanRes;
+                              });
+                              _processInvoice(barcodeScanRes);
+                            }
+                          },
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          scannerController.dispose();
+                          Navigator.pop(context);
+                        },
+                        child: Text('Відміна'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
         ),
       );
     } catch (e) {
@@ -74,13 +167,6 @@ class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
   }
 
   Future<void> _processInvoice(String invoice) async {
-    if (!invoice.startsWith('OUT/') && !invoice.startsWith('WH/OUT')) {
-      setState(() {
-        _errorMessage = 'Неверный формат накладной. Должен начинаться с OUT/ или WH/OUT';
-      });
-      return;
-    }
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -124,17 +210,76 @@ class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
           return;
         }
         
-        // Звичайна помилка, показуємо повідомлення
+        // Обробка помилки ORDER_ALREADY_DONE
+        if (response.error == 'ORDER_ALREADY_DONE') {
+          if (mounted) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const ErrorAlreadyDoneScreen()),
+            );
+          }
+          return;
+        }
+        
+        // Обробка помилки ORDER_LOCKED
+        if (response.error == 'ORDER_LOCKED') {
+          if (mounted) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const ErrorOrderLockedScreen()),
+            );
+          }
+          return;
+        }
+        
+        // Обробка помилки NO_MOVE_LINES
+        if (response.error == 'NO_MOVE_LINES') {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = response.message ?? 'Накладна не містить товарів для збірки';
+          });
+          return;
+        }
+        
+        // Обробка помилки CREDENTIALS_NOT_FOUND
+        if (response.error == 'CREDENTIALS_NOT_FOUND') {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(response.message ?? 'Збережені облікові дані не знайдено. Будь ласка, увійдіть знову.'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+              (route) => false,
+            );
+          }
+          return;
+        }
+        
         setState(() {
           _isLoading = false;
-          _errorMessage = errorMessage;
+          _errorMessage = response.error ?? 'Ошибка при обработке накладной';
         });
         return;
       }
       
-      // Детальне логування відповіді API
-      print('API response data: ${response.data}');
-      print('API response data type: ${response.data.runtimeType}');
+      // Перевірка відповіді API
+      if (response.data == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Ошибка: Пустой ответ от сервера';
+        });
+        return;
+      }
+      
+      if (response.data is! Map<String, dynamic>) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Ошибка: Неверный формат ответа от сервера';
+        });
+        return;
+      }
       
       // Перевірка наявності необхідних полів
       if (response.data['picking'] == null) {
@@ -286,16 +431,29 @@ class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Получаем высоту клавиатуры
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            left: 20.0,
+            right: 20.0,
+            top: 20.0,
+            bottom: keyboardHeight > 0 ? keyboardHeight + 20 : 20.0,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: screenHeight - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom - (keyboardHeight > 0 ? keyboardHeight : 0),
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'СКАНУЙ НАКЛАДНУ',
+                  'СКАНУЙ НАКЛАДНУ\nАБО ТТН',
                   style: Theme.of(context).textTheme.displayMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -306,7 +464,7 @@ class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Піднесіть сканер до накладної OUT/... або WH/OUT...',
+                  'Піднесіть сканер до накладної OUT/... або WH/OUT...\nабо до номера ТТН',
                   style: Theme.of(context).textTheme.bodyLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -316,8 +474,10 @@ class _InvoiceScanScreenState extends State<InvoiceScanScreen> {
                     Expanded(
                       child: TextField(
                         controller: _invoiceController,
+                        focusNode: _focusNode,
+                        autofocus: true,
                         decoration: const InputDecoration(
-                          hintText: 'OUT/... або WH/OUT...',
+                          hintText: 'OUT/... або ТТН',
                         ),
                         textAlign: TextAlign.center,
                         style: const TextStyle(

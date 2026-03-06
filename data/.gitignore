@@ -1,0 +1,2 @@
+# Ignore persisted credential data
+*.json

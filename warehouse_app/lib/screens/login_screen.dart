@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import 'pin_entry_screen.dart';
+import 'create_pin_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -40,8 +41,19 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
 
-      if (success) {
-        if (mounted) {
+      if (success && mounted) {
+        // Перевіряємо, чи потрібно створити PIN
+        final requiresPinSetup = await authProvider.requiresPinSetup();
+        
+        if (!mounted) return;
+        
+        if (requiresPinSetup) {
+          // Переходимо на екран створення PIN
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const CreatePinScreen()),
+          );
+        } else {
+          // Переходимо на екран введення PIN
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const PinEntryScreen()),
           );

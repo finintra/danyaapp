@@ -1,11 +1,13 @@
 class AppConstants {
   // API URLs
-  static const String baseUrl = 'http://192.168.31.6:3000';
+  static const String baseUrl = 'https://danyaapp-production.up.railway.app';
   static const String apiPrefix = '/flf/api/v1';
   
   // API Endpoints
   static const String loginEndpoint = '$apiPrefix/login';
   static const String loginBadgeEndpoint = '$apiPrefix/login_badge';
+  static const String loginPinEndpoint = '$apiPrefix/login_pin';
+  static const String createPinEndpoint = '$apiPrefix/create_pin';
   static const String deviceStatusEndpoint = '$apiPrefix/device/status';
   static const String logoutEndpoint = '$apiPrefix/logout';
   static const String taskAttachEndpoint = '$apiPrefix/task/attach';

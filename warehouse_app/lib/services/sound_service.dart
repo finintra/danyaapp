@@ -1,196 +1,82 @@
-import 'package:audioplayers/audioplayers.dart';
-import 'dart:io' show File, Platform;
-import 'package:flutter/services.dart' show rootBundle;
 import 'dart:typed_data';
-import 'package:path_provider/path_provider.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/services.dart';
 
 class SoundService {
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  bool _isMuted = false;
-  bool _isInitialized = false;
-
-  // Singleton pattern
   static final SoundService _instance = SoundService._internal();
-  
-  factory SoundService() {
-    return _instance;
-  }
-  
-  SoundService._internal() {
-    _initialize();
-  }
-  
-  Future<void> _initialize() async {
-    try {
-      // Встановлюємо гучність на максимум
-      await _audioPlayer.setVolume(1.0);
-      print('AudioPlayer initialized with volume 1.0');
-      _isInitialized = true;
-    } catch (e) {
-      print('Error initializing AudioPlayer: $e');
-    }
-  }
+  factory SoundService() => _instance;
+  SoundService._internal();
 
-  /// Відтворює звук успішного сканування
+  final AudioPlayer _player = AudioPlayer();
+  bool _isMuted = false;
+
+  /// Відтворює звук успішного сканування (button-46-edit.wav) - зелений екран
   Future<void> playScanSuccessSound() async {
     if (_isMuted) return;
-    
-    try {
-      print('Playing scan success sound: mp3.mp3');
-      print('AudioPlayer initialized: $_isInitialized');
-      
-      // Спробуємо відтворити звук з різних місць
-      bool soundPlayed = false;
-      
-      // Спосіб 1: Використання звуку з assets/sounds
-      try {
-        await _audioPlayer.play(AssetSource('sounds/mp3.mp3'));
-        print('Sound played using AssetSource from assets/sounds');
-        soundPlayed = true;
-      } catch (e) {
-        print('Error playing with AssetSource from assets/sounds: $e');
-      }
-      
-      // Якщо не вдалося, спробуємо використати звук з папки sounds
-      if (!soundPlayed) {
-        try {
-          // Використовуємо прямий шлях до файлу
-          final soundPath = 'C:/Users/finbe/Downloads/MOBILE APP/warehouse_app/sounds/mp3.mp3';
-          await _audioPlayer.play(DeviceFileSource(soundPath));
-          print('Sound played using DeviceFileSource from direct path: $soundPath');
-          soundPlayed = true;
-        } catch (e) {
-          print('Error playing with DeviceFileSource from direct path: $e');
-        }
-      }
-      
-      // Якщо все ще не вдалося, спробуємо завантажити файл в тимчасову папку
-      if (!soundPlayed) {
-        try {
-          final file = await _loadSoundFile('sounds/mp3.mp3');
-          if (file != null) {
-            await _audioPlayer.play(DeviceFileSource(file.path));
-            print('Sound played using DeviceFileSource from temp file: ${file.path}');
-            soundPlayed = true;
-          }
-        } catch (e) {
-          print('Error playing with DeviceFileSource from temp file: $e');
-        }
-      }
-      
-      if (!soundPlayed) {
-        print('FAILED TO PLAY SOUND: All methods failed');
-      }
-    } catch (e) {
-      print('Error playing scan success sound: $e');
-    }
-  }
-  
-  /// Завантажує звуковий файл як масив байтів
-  Future<Uint8List?> _loadSoundBytes(String assetPath) async {
-    try {
-      final byteData = await rootBundle.load(assetPath);
-      return byteData.buffer.asUint8List();
-    } catch (e) {
-      print('Error loading sound bytes: $e');
-      return null;
-    }
-  }
-  
-  /// Завантажує звуковий файл на пристрій
-  Future<File?> _loadSoundFile(String assetPath) async {
-    try {
-      final bytes = await rootBundle.load(assetPath);
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/temp_sound.mp3');
-      await tempFile.writeAsBytes(bytes.buffer.asUint8List());
-      print('Sound file saved to: ${tempFile.path}');
-      return tempFile;
-    } catch (e) {
-      print('Error loading sound file: $e');
-      return null;
-    }
+    await _playSound('button-46-edit.wav');
   }
 
-  /// Відтворює звук помилки (wrong.mp3)
+  /// Відтворює звук помилки (wrong_product.wav) - товар відсутній в замовленні
   Future<void> playErrorSound() async {
     if (_isMuted) return;
-    
-    try {
-      print('Playing error sound: wrong.mp3');
-      bool played = false;
-      // 1) Try bundled asset first (works on Android reliably)
-      try {
-        await _audioPlayer.play(AssetSource('sounds/wrong.mp3'));
-        print('Error sound played using AssetSource');
-        played = true;
-      } catch (e) {
-        print('Error playing error sound with AssetSource: $e');
-      }
-      // 2) Fallback to temp file method if needed
-      if (!played) {
-        try {
-          final file = await _loadSoundFile('sounds/wrong.mp3');
-          if (file != null) {
-            await _audioPlayer.play(DeviceFileSource(file.path));
-            print('Error sound played using DeviceFileSource from temp file');
-            played = true;
-          }
-        } catch (e) {
-          print('Error playing error sound from temp file: $e');
-        }
-      }
-      if (!played) {
-        print('FAILED TO PLAY ERROR SOUND');
-      }
-    } catch (e) {
-      print('Error playing error sound: $e');
-    }
+    await _playSound('wrong_product.wav');
   }
 
-  /// Відтворює звук успішного завершення
+  /// Відтворює звук для додаткового товару (more_then_needed.wav) - лишній товар
+  Future<void> playExtraItemSound() async {
+    if (_isMuted) return;
+    await _playSound('more_then_needed.wav');
+  }
+
+  /// Відтворює звук завершення товару (magic-chime-02-edit.wav) - всі товари відскановані, екран підтвердження накладної
   Future<void> playSuccessSound() async {
     if (_isMuted) return;
-    
+    await _playSound('magic-chime-02-edit.wav');
+  }
+
+  Future<void> _playSound(String fileName) async {
+    final assetSourcePath = 'assets/sounds/' + fileName;
+    final bundlePath = 'assets/sounds/' + fileName;
+
     try {
-      print('Playing success sound: mp3.mp3');
+      // Зупиняємо попередній звук
+      await _player.stop();
       
-      try {
-        // Спробуємо відтворити звук з прямого шляху
-        final soundPath = 'C:/Users/finbe/Downloads/MOBILE APP/warehouse_app/sounds/mp3.mp3';
-        await _audioPlayer.play(DeviceFileSource(soundPath));
-        print('Success sound played using DeviceFileSource from direct path');
-      } catch (e) {
-        print('Error playing with DeviceFileSource: $e');
-        
-        // Якщо не вдалося, спробуємо з AssetSource
-        try {
-          await _audioPlayer.play(AssetSource('sounds/mp3.mp3'));
-          print('Success sound played using AssetSource');
-        } catch (e) {
-          print('Error playing with AssetSource: $e');
-        }
-      }
+      // Встановлюємо режим відтворення
+      await _player.setReleaseMode(ReleaseMode.release);
+      await _player.setPlayerMode(PlayerMode.lowLatency);
+      await _player.setVolume(1.0);
+      
+      // Відтворюємо звук з assets через AssetSource (працює з pubspec шляхом без префіксу assets/)
+      await _player.play(AssetSource(assetSourcePath));
+      
+      print('Sound played: $bundlePath');
     } catch (e) {
-      print('Error playing success sound: $e');
+      print('Error playing sound $bundlePath: $e');
+      // Спробуємо альтернативний метод через rootBundle
+      try {
+        final ByteData data = await rootBundle.load(bundlePath);
+        final Uint8List bytes = data.buffer.asUint8List();
+        await _player.setPlayerMode(PlayerMode.mediaPlayer);
+        await _player.play(BytesSource(bytes));
+        print('Sound played via BytesSource: $bundlePath');
+      } catch (e2) {
+        print('Error playing sound via BytesSource: $e2');
+      }
     }
   }
 
-  /// Вмикає або вимикає звуки
   void setMuted(bool muted) {
     _isMuted = muted;
   }
 
-  /// Повертає поточний стан звуку (увімкнено/вимкнено)
   bool get isMuted => _isMuted;
 
-  /// Перемикає стан звуку (увімкнено/вимкнено)
   void toggleMute() {
     _isMuted = !_isMuted;
   }
 
-  /// Звільняє ресурси
   void dispose() {
-    _audioPlayer.dispose();
+    _player.dispose();
   }
 }

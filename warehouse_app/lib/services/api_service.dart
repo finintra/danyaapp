@@ -158,26 +158,25 @@ class ApiService {
         final user = User.fromJson(data['user']);
         await _storageService.saveUser(user);
         
-        // Перевіряємо, чи отримано PIN-код
-        if (user.pin != null && user.pin!.isNotEmpty) {
-          print('Saving PIN from hr.employee: ${user.pin}');
-          await _storageService.savePin(user.pin!);
-          print('PIN code saved successfully: ${user.pin}');
-        } else {
-          print('ERROR: No PIN code found in hr.employee');
-          // Якщо PIN-код не отримано, повертаємо помилку
-          return ApiResponse(
-            success: false,
-            error: 'NO_PIN_CODE',
-            message: 'Не вдалося отримати PIN-код. Зверніться до адміністратора.',
-          );
-        }
-        print('Data and PIN saved successfully');
+        // Перевіряємо, чи потрібно створити PIN
+        final requiresPinSetup = data['requires_pin_setup'] ?? false;
+        print('Login successful. Requires PIN setup: $requiresPinSetup');
+        
+        // Зберігаємо інформацію про те, чи потрібно створити PIN
+        await _storageService.saveRequiresPinSetup(requiresPinSetup);
+        
+        // Повертаємо ApiResponse з requires_pin_setup
+        return ApiResponse(
+          success: true,
+          data: {
+            ...data,
+            'requires_pin_setup': requiresPinSetup,
+          },
+        );
       } else {
         print('Login failed: ${apiResponse.error} - ${apiResponse.message}');
+        return apiResponse;
       }
-      
-      return apiResponse;
     } catch (e) {
       print('Exception during login: ${e.toString()}');
       return ApiResponse(
@@ -213,21 +212,11 @@ class ApiService {
         final user = User.fromJson(data['user']);
         await _storageService.saveUser(user);
         
-        // Перевіряємо, чи отримано PIN-код
-        if (user.pin != null && user.pin!.isNotEmpty) {
-          print('Saving PIN from hr.employee: ${user.pin}');
-          await _storageService.savePin(user.pin!);
-          print('PIN code saved successfully: ${user.pin}');
-        } else {
-          print('ERROR: No PIN code found in hr.employee');
-          // Якщо PIN-код не отримано, повертаємо помилку
-          return ApiResponse(
-            success: false,
-            error: 'NO_PIN_CODE',
-            message: 'Не вдалося отримати PIN-код. Зверніться до адміністратора.',
-          );
-        }
-        print('Data and PIN saved successfully');
+        // Для входу по бейджу також перевіряємо requires_pin_setup
+        final requiresPinSetup = data['requires_pin_setup'] ?? false;
+        await _storageService.saveRequiresPinSetup(requiresPinSetup);
+        
+        print('Badge login successful. Requires PIN setup: $requiresPinSetup');
       } else {
         print('Badge login failed: ${apiResponse.error} - ${apiResponse.message}');
       }
@@ -242,12 +231,120 @@ class ApiService {
     }
   }
   
+  // Створення PIN коду
+  Future<ApiResponse> createPin(String pin, String pinConfirm) async {
+    try {
+      final token = await _storageService.getToken();
+      if (token == null) {
+        return ApiResponse(
+          success: false,
+          error: 'NO_TOKEN',
+          message: 'Токен не знайдено. Будь ласка, увійдіть знову.',
+        );
+      }
+
+      final response = await http.post(
+        Uri.parse(AppConstants.baseUrl + AppConstants.createPinEndpoint),
+        headers: await _getHeaders(),
+        body: json.encode({
+          'pin': pin,
+          'pin_confirm': pinConfirm,
+          'token': token,
+        }),
+      );
+
+      final apiResponse = _handleResponse(response);
+
+      if (apiResponse.success) {
+        // Зберігаємо, що PIN вже налаштовано
+        await _storageService.saveRequiresPinSetup(false);
+        print('PIN created successfully');
+      }
+
+      return apiResponse;
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        error: 'CONNECTION_ERROR',
+        message: e.toString(),
+      );
+    }
+  }
+
+  // Вхід по PIN коду
+  Future<ApiResponse> loginWithPin(String pin) async {
+    try {
+      final token = await _storageService.getToken();
+      if (token == null) {
+        return ApiResponse(
+          success: false,
+          error: 'NO_TOKEN',
+          message: 'Токен не знайдено. Будь ласка, увійдіть знову.',
+        );
+      }
+
+      final response = await http.post(
+        Uri.parse(AppConstants.baseUrl + AppConstants.loginPinEndpoint),
+        headers: await _getHeaders(),
+        body: json.encode({
+          'pin': pin,
+          'token': token,
+        }),
+      );
+
+      final apiResponse = _handleResponse(response);
+
+      if (apiResponse.success) {
+        print('PIN login successful, saving data');
+        final data = apiResponse.data;
+        await _storageService.saveToken(data['token']);
+        await _storageService.saveDeviceId(data['device_id']);
+
+        // Отримуємо користувача з даних відповіді та зберігаємо його
+        final user = User.fromJson(data['user']);
+        await _storageService.saveUser(user);
+
+        print('PIN login data saved successfully');
+      }
+
+      return apiResponse;
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        error: 'CONNECTION_ERROR',
+        message: e.toString(),
+      );
+    }
+  }
+
   // Получение статуса устройства
   Future<ApiResponse> getDeviceStatus() async {
     try {
       final response = await http.get(
         Uri.parse(AppConstants.baseUrl + AppConstants.deviceStatusEndpoint),
         headers: await _getHeaders(withAuth: true),
+      );
+      
+      return _handleResponse(response);
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        error: 'CONNECTION_ERROR',
+        message: e.toString(),
+      );
+    }
+  }
+
+  // Підтвердження накладної (validate picking)
+  Future<ApiResponse> validatePicking(int pickingId, List<Map<String, dynamic>> payload) async {
+    try {
+      final response = await http.post(
+        Uri.parse(AppConstants.baseUrl + AppConstants.validateEndpoint),
+        headers: await _getHeaders(withAuth: true),
+        body: json.encode({
+          'picking_id': pickingId,
+          'payload': payload,
+        }),
       );
       
       return _handleResponse(response);

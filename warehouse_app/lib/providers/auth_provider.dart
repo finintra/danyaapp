@@ -128,36 +128,22 @@ class AuthProvider with ChangeNotifier {
     }
   }
   
-  // Проверка PIN-кода (для входа с сохраненным токеном)
-  Future<bool> checkPin(String pin) async {
+  // Створення PIN коду
+  Future<bool> createPin(String pin, String pinConfirm) async {
     _status = AuthStatus.authenticating;
     _errorMessage = null;
     notifyListeners();
     
     try {
-      // Спочатку перевіряємо термін дії токена
-      final isTokenValid = await _storageService.isTokenValid();
+      final response = await _apiService.createPin(pin, pinConfirm);
       
-      if (!isTokenValid) {
-        // Якщо термін дії токена закінчився, повертаємо помилку
-        _status = AuthStatus.unauthenticated;
-        _errorMessage = 'Термін дії сесії закінчився. Будь ласка, увійдіть знову.';
-        notifyListeners();
-        return false;
-      }
-      
-      // Якщо токен валідний, перевіряємо PIN-код
-      final isPinValid = await _storageService.checkPin(pin);
-      
-      if (isPinValid) {
+      if (response.success) {
         _status = AuthStatus.authenticated;
-        _user = await _storageService.getUser();
-        _deviceId = await _storageService.getDeviceId();
         notifyListeners();
         return true;
       } else {
         _status = AuthStatus.error;
-        _errorMessage = 'Невірний PIN-код';
+        _errorMessage = response.message ?? response.error ?? 'Помилка створення PIN-коду';
         notifyListeners();
         return false;
       }
@@ -167,6 +153,41 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  // Перевірка PIN-кода (використовує loginWithPin з бекенду)
+  Future<bool> checkPin(String pin) async {
+    _status = AuthStatus.authenticating;
+    _errorMessage = null;
+    notifyListeners();
+    
+    try {
+      // Використовуємо loginWithPin для перевірки PIN з бекенду
+      final response = await _apiService.loginWithPin(pin);
+      
+      if (response.success) {
+        _user = await _storageService.getUser();
+        _deviceId = await _storageService.getDeviceId();
+        _status = AuthStatus.authenticated;
+        notifyListeners();
+        return true;
+      } else {
+        _status = AuthStatus.error;
+        _errorMessage = response.message ?? response.error ?? 'Невірний PIN-код';
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _status = AuthStatus.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+  
+  // Отримання прапорця про необхідність створення PIN
+  Future<bool> requiresPinSetup() async {
+    return await _storageService.getRequiresPinSetup();
   }
   
   // Проверка валидности токена

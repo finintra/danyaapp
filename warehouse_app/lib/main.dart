@@ -7,7 +7,6 @@ import 'screens/login_screen.dart';
 import 'screens/pin_entry_screen.dart';
 import 'screens/invoice_scan_screen.dart';
 import 'services/storage_service.dart';
-import 'services/sound_service.dart';
 
 void main() async {
   // Важливо ініціалізувати Flutter перед використанням SharedPreferences
@@ -44,116 +43,33 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   final StorageService _storageService = StorageService();
-  final SoundService _soundService = SoundService();
-  bool _isLoading = true;
-  String _debugInfo = '';
   
   @override
   void initState() {
     super.initState();
     _checkAuthStatus();
-    _testSound();
-  }
-  
-  Future<void> _testSound() async {
-    try {
-      print('Testing sound playback...');
-      await Future.delayed(const Duration(seconds: 2));
-      await _soundService.playScanSuccessSound();
-      setState(() {
-        _debugInfo += '\nТест звуку: Запущено';
-      });
-    } catch (e) {
-      print('Error testing sound: $e');
-      setState(() {
-        _debugInfo += '\nПомилка тесту звуку: $e';
-      });
-    }
   }
 
   Future<void> _checkAuthStatus() async {
     try {
-      setState(() {
-        _debugInfo = 'Перевірка статусу авторизації...';
-      });
-      
-      print('DEBUG: SplashScreen: Checking auth status...');
-      
-      // Перевіряємо прапорець авторизації
-      final prefs = await SharedPreferences.getInstance();
-      final isLoggedInFlag = prefs.getBool('is_logged_in') ?? false;
-      
-      // Перевіряємо, чи є валідний токен
-      final token = await _storageService.getToken();
-      setState(() {
-        _debugInfo += '\nТокен: ${token != null ? "Існує" : "Відсутній"}';
-        _debugInfo += '\nПрапорець авторизації: $isLoggedInFlag';
-      });
-      
-      // Перевіряємо спеціальний прапорець для навігації
-      final navigateToInvoiceScan = prefs.getBool('navigate_to_invoice_scan') ?? false;
-      
-      if (navigateToInvoiceScan || token == 'temporary_token_for_navigation') {
-        print('DEBUG: SplashScreen: Navigate directly to InvoiceScanScreen');
-        setState(() {
-          _debugInfo += '\nПерехід на екран сканування накладної';
-        });
-        
-        // Після переходу скидаємо прапорець, щоб не переходити автоматично при наступному запуску
-        await prefs.setBool('navigate_to_invoice_scan', false);
-        
-        if (mounted) {
-          await Future.delayed(const Duration(milliseconds: 500));
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => InvoiceScanScreen()),
-          );
-          return;
-        }
-      }
-      
-      // Перевіряємо термін дії токена
-      bool isTokenValid = false;
-      if (token != null) {
-        isTokenValid = await _storageService.isTokenValid();
-        setState(() {
-          _debugInfo += '\nТокен валідний: $isTokenValid';
-        });
-      }
-      
-      // Перевіряємо загальний стан авторизації
-      final isLoggedIn = isLoggedInFlag && (token != null) && (isTokenValid || token == 'temporary_token_for_navigation');
-      print('DEBUG: SplashScreen: Is logged in: $isLoggedIn');
-      
-      setState(() {
-        _debugInfo += '\nКористувач авторизований: $isLoggedIn';
-      });
+      final isLoggedIn = await _storageService.isLoggedIn();
       
       if (!mounted) return;
       
-      await Future.delayed(const Duration(seconds: 2)); // Затримка для відображення дебаг-інформації
+      await Future.delayed(const Duration(seconds: 1));
       
       if (isLoggedIn) {
-        // Якщо токен валідний, переходимо на екран введення PIN-коду
-        print('DEBUG: SplashScreen: Token is valid, navigating to PIN entry screen');
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const PinEntryScreen()),
         );
       } else {
-        // Якщо токен невалідний або відсутній, переходимо на екран входу
-        print('DEBUG: SplashScreen: Token is invalid or missing, navigating to login screen');
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       }
     } catch (e) {
-      print('DEBUG: SplashScreen: Error checking auth status: $e');
-      setState(() {
-        _debugInfo += '\nПомилка: $e';
-      });
-      
       if (mounted) {
-        await Future.delayed(const Duration(seconds: 2)); // Затримка для відображення помилки
-        // У разі помилки також переходимо на екран входу
+        await Future.delayed(const Duration(seconds: 1));
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
@@ -182,29 +98,6 @@ class _SplashScreenState extends State<SplashScreen> {
             const SizedBox(height: 30),
             // Індикатор завантаження
             const CircularProgressIndicator(),
-            const SizedBox(height: 20),
-            // Версія додатку
-            Text(
-              'Версія 1.0.0',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Дебаг-інформація
-            Container(
-              padding: const EdgeInsets.all(10),
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                _debugInfo,
-                style: const TextStyle(fontSize: 12),
-              ),
-            ),
           ],
         ),
       ),

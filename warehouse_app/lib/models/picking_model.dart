@@ -142,19 +142,29 @@ class PickingLine {
         }
       }
       
-      // Використовуємо функції для отримання всіх полів
+      // Parse uom safely - can be String, bool (false), or null
+      String uom;
+      if (json['uom'] is String) {
+        uom = json['uom'] as String;
+      } else if (json['uom'] is bool && json['uom'] == false) {
+        uom = 'Units';
+      } else {
+        uom = 'Units';
+      }
+      
+      // Parse productCode, barcode, location safely - can be String, bool (false), or null
+      String? productCode = (json['product_code'] is String) ? json['product_code'] as String : null;
+      String? barcode = (json['barcode'] is String) ? json['barcode'] as String : null;
+      String? location = (json['location'] is String) ? json['location'] as String : null;
+      String? locationComplete = (json['location_complete'] is String) ? json['location_complete'] as String : null;
+      
       final lineId = safeInt(json['line_id'], 'line_id');
       final productId = safeInt(json['product_id'], 'product_id');
       final productName = safeString(json['product_name'], 'product_name', defaultValue: 'Unknown Product');
-      final productCode = safeNullableString(json['product_code'], 'product_code');
       final price = safeDouble(json['price'], 'price');
-      final uom = safeString(json['uom'], 'uom', defaultValue: 'Units');
       final required = safeDouble(json['required'], 'required');
       final done = safeDouble(json['done'], 'done');
       final remain = safeDouble(json['remain'], 'remain');
-      final barcode = safeNullableString(json['barcode'], 'barcode');
-      final location = safeNullableString(json['location'], 'location');
-      final locationComplete = safeNullableString(json['location_complete'], 'location_complete');
       
       return PickingLine(
         lineId: lineId,
@@ -197,10 +207,16 @@ class PickingAttachResponse {
     try {
       print('Parsing PickingAttachResponse from: $json');
       
-      // Детальне логування типів даних
-      print('picking type: ${json['picking']?.runtimeType}');
-      print('line type: ${json['line']?.runtimeType}');
-      print('order_summary type: ${json['order_summary']?.runtimeType}');
+      // Check for null values
+      if (json['picking'] == null) {
+        throw Exception('Missing "picking" field in response');
+      }
+      if (json['line'] == null) {
+        throw Exception('Missing "line" field in response. The picking may not have any items to pick.');
+      }
+      if (json['order_summary'] == null) {
+        throw Exception('Missing "order_summary" field in response');
+      }
       
       // Функція для безпечного отримання об'єкта Map
       Map<String, dynamic> safeMap(dynamic value, String fieldName) {

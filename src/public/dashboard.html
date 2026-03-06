@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Scanner Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .period-selector {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .period-selector h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.1em;
+            margin-right: 10px;
+        }
+
+        .period-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .period-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .period-btn:hover {
+            background: #f0f0ff;
+        }
+
+        .period-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .custom-date-range {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .custom-date-range.active {
+            display: flex;
+        }
+
+        .custom-date-range label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .custom-date-range input[type="date"] {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        .custom-date-range input[type="date"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .apply-btn {
+            padding: 8px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .apply-btn:hover {
+            background: #5568d3;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-card.error .value {
+            color: #e74c3c;
+        }
+
+        .stat-card.success .value {
+            color: #27ae60;
+        }
+
+        .error-breakdown {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .error-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .error-item span:first-child {
+            color: #666;
+        }
+
+        .error-item span:last-child {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .chart-container h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .chart-label {
+            width: 120px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .chart-bar-container {
+            flex: 1;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chart-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            font-size: 1.5em;
+            color: #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: rotate(180deg);
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            padding: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Warehouse Scanner Analytics</h1>
+        
+        <div class="period-selector">
+            <h3>Period:</h3>
+            <div class="period-buttons">
+                <button class="period-btn active" data-period="today" onclick="selectPeriod('today')">Today</button>
+                <button class="period-btn" data-period="week" onclick="selectPeriod('week')">This Week</button>
+                <button class="period-btn" data-period="custom" onclick="selectPeriod('custom')">Custom</button>
+            </div>
+            <div class="custom-date-range" id="customDateRange">
+                <label>From:</label>
+                <input type="date" id="startDate" value="">
+                <label>To:</label>
+                <input type="date" id="endDate" value="">
+                <button class="apply-btn" onclick="applyCustomDate()">Apply</button>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading">Loading data...</div>
+        
+        <div id="dashboard" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card success">
+                    <h3>Orders Scanned</h3>
+                    <div class="value" id="ordersScanned">0</div>
+                </div>
+                
+                <div class="stat-card success">
+                    <h3>Goods Scanned</h3>
+                    <div class="value" id="goodsScanned">0</div>
+                </div>
+                
+                <div class="stat-card error">
+                    <h3>Error Scans</h3>
+                    <div class="value" id="errorScans">0</div>
+                    <div class="error-breakdown">
+                        <div class="error-item">
+                            <span>Wrong Product:</span>
+                            <span id="wrongProduct">0</span>
+                        </div>
+                        <div class="error-item">
+                            <span>Wrong Time:</span>
+                            <span id="wrongTime">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card error">
+                    <h3>Backend Errors</h3>
+                    <div class="value" id="backendErrors">0</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h2>Last 7 Days Activity</h2>
+                <div id="dailyChart"></div>
+            </div>
+
+            <div class="last-updated">
+                Last updated: <span id="lastUpdated">-</span>
+            </div>
+        </div>
+    </div>
+
+    <button class="refresh-btn" onclick="loadData()" title="Refresh">🔄</button>
+
+    <script>
+        const API_URL = '/flf/api/v1/analytics';
+        let currentPeriod = 'today';
+        let customStartDate = null;
+        let customEndDate = null;
+
+        // Initialize date inputs with today's date
+        function initializeDates() {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            document.getElementById('startDate').value = todayStr;
+            document.getElementById('endDate').value = todayStr;
+            customStartDate = todayStr;
+            customEndDate = todayStr;
+        }
+
+        function selectPeriod(period) {
+            currentPeriod = period;
+            
+            // Update button states
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-period="${period}"]`).classList.add('active');
+            
+            // Show/hide custom date range
+            const customRange = document.getElementById('customDateRange');
+            if (period === 'custom') {
+                customRange.classList.add('active');
+            } else {
+                customRange.classList.remove('active');
+                loadData();
+            }
+        }
+
+        function applyCustomDate() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates');
+                return;
+            }
+            
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('Start date must be before or equal to end date');
+                return;
+            }
+            
+            customStartDate = startDate;
+            customEndDate = endDate;
+            loadData();
+        }
+
+        async function loadData() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('dashboard').style.display = 'none';
+                
+                // Build query string
+                let url = API_URL;
+                const params = new URLSearchParams();
+                params.append('period', currentPeriod);
+                
+                if (currentPeriod === 'custom' && customStartDate && customEndDate) {
+                    params.append('startDate', customStartDate);
+                    params.append('endDate', customEndDate);
+                }
+                
+                url += '?' + params.toString();
+                
+                console.log('Fetching analytics from:', url);
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Analytics response:', result);
+                
+                if (result.ok && result.data) {
+                    updateDashboard(result.data);
+                } else {
+                    console.error('Failed to load analytics:', result);
+                    const errorMsg = result.error || result.message || 'Failed to load analytics data';
+                    alert('Failed to load analytics: ' + errorMsg);
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                alert('Error loading analytics: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+            }
+        }
+
+        function updateDashboard(data) {
+            console.log('Updating dashboard with data:', data);
+            
+            // Update main stats - ensure we handle null/undefined properly
+            const ordersScanned = data.ordersScanned || 0;
+            const goodsScanned = data.goodsScanned || 0;
+            const errorScansTotal = (data.errorScans && data.errorScans.total) || 0;
+            const wrongProduct = (data.errorScans && data.errorScans.wrongProduct) || 0;
+            const wrongTime = (data.errorScans && data.errorScans.wrongTime) || 0;
+            const backendErrors = data.backendErrors || 0;
+            
+            document.getElementById('ordersScanned').textContent = ordersScanned;
+            document.getElementById('goodsScanned').textContent = goodsScanned;
+            document.getElementById('errorScans').textContent = errorScansTotal;
+            document.getElementById('wrongProduct').textContent = wrongProduct;
+            document.getElementById('wrongTime').textContent = wrongTime;
+            document.getElementById('backendErrors').textContent = backendErrors;
+            
+            // Update last updated time
+            if (data.lastUpdated) {
+                try {
+                    const date = new Date(data.lastUpdated);
+                    document.getElementById('lastUpdated').textContent = date.toLocaleString();
+                } catch (e) {
+                    console.error('Error parsing date:', e);
+                    document.getElementById('lastUpdated').textContent = data.lastUpdated;
+                }
+            }
+            
+            // Update daily chart
+            updateDailyChart(data.dailyStats || []);
+        }
+
+        function updateDailyChart(dailyStats) {
+            const chartContainer = document.getElementById('dailyChart');
+            chartContainer.innerHTML = '';
+            
+            if (!dailyStats || dailyStats.length === 0) {
+                chartContainer.innerHTML = '<p style="color: #666; text-align: center;">No data available</p>';
+                return;
+            }
+            
+            // Find max value for scaling - handle nested errorScans properly
+            const maxValue = Math.max(
+                ...dailyStats.map(d => {
+                    const orders = d.ordersScanned || 0;
+                    const goods = d.goodsScanned || 0;
+                    const errors = (d.errorScans && d.errorScans.total) || 0;
+                    const backend = d.backendErrors || 0;
+                    return orders + goods + errors + backend;
+                }),
+                1
+            );
+            
+            dailyStats.forEach(day => {
+                const date = new Date(day.date);
+                const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                const orders = day.ordersScanned || 0;
+                const goods = day.goodsScanned || 0;
+                const errors = (day.errorScans && day.errorScans.total) || 0;
+                const backend = day.backendErrors || 0;
+                const total = orders + goods + errors + backend;
+                const percentage = (total / maxValue) * 100;
+                
+                const barDiv = document.createElement('div');
+                barDiv.className = 'chart-bar';
+                barDiv.innerHTML = `
+                    <div class="chart-label">${dateStr}</div>
+                    <div class="chart-bar-container">
+                        <div class="chart-bar-fill" style="width: ${percentage}%">
+                            ${total > 0 ? total : ''}
+                        </div>
+                    </div>
+                `;
+                chartContainer.appendChild(barDiv);
+            });
+        }
+
+        // Initialize dates and load data on page load
+        initializeDates();
+        loadData();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>
+

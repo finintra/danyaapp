@@ -19,12 +19,14 @@ class OdooService {
    * @param {number} userId - User ID
    * @param {string} username - Username
    * @param {string} password - Password
+   * @param {string} [sessionCookie] - Session cookie from /web/session/authenticate (for /web/dataset/call_kw when /jsonrpc returns 404)
    */
-  setUserCredentials(userId, username, password) {
+  setUserCredentials(userId, username, password, sessionCookie = null) {
     this.userCredentials.set(userId, {
       username,
       password,
-      uid: null
+      uid: userId, // Session auth already gives us uid
+      sessionCookie
     });
   }
 
@@ -123,6 +125,41 @@ class OdooService {
   }
 
   /**
+   * Execute RPC via /web/dataset/call_kw (session-based, used when /jsonrpc returns 404)
+   */
+  async executeViaSession(model, method, args, kwargs, sessionCookie) {
+    const callKwUrl = `${this.url.replace(/\/$/, '')}/web/dataset/call_kw`;
+    const requestPayload = {
+      jsonrpc: '2.0',
+      method: 'call',
+      params: {
+        model,
+        method,
+        args,
+        kwargs
+      },
+      id: Math.floor(Math.random() * 1000000)
+    };
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-db-name': this.db
+    };
+    if (sessionCookie) {
+      headers['Cookie'] = sessionCookie;
+    }
+    const response = await axios.post(callKwUrl, requestPayload, {
+      headers,
+      timeout: 30000,
+      validateStatus: (status) => status >= 200 && status < 500
+    });
+    if (response.data.error) {
+      const err = response.data.error;
+      throw new ApiError(500, err.message || JSON.stringify(err));
+    }
+    return response.data.result;
+  }
+
+  /**
    * Execute RPC call to Odoo
    * @param {string} model - Odoo model name
    * @param {string} method - Method to call
@@ -135,7 +172,17 @@ class OdooService {
     try {
       const creds = this.getCredentials(userId);
       
-      // Check if credentials exist
+      // Prefer session-based call_kw when available (works when /jsonrpc returns 404)
+      if (creds?.sessionCookie && creds?.uid) {
+        try {
+          return await this.executeViaSession(model, method, args, kwargs, creds.sessionCookie);
+        } catch (sessionErr) {
+          logger.warn(`Session-based call_kw failed for ${model}.${method}, will not retry: ${sessionErr.message}`);
+          throw sessionErr;
+        }
+      }
+      
+      // Check if credentials exist for jsonrpc
       if (!creds || !creds.username || !creds.password) {
         logger.error(`Missing credentials for user ${userId || 'default'}`);
         logger.error(`Credentials object:`, creds ? JSON.stringify({ hasUsername: !!creds.username, hasPassword: !!creds.password }) : 'null');
@@ -275,10 +322,16 @@ class OdooService {
         throw new ApiError(401, 'INVALID_CREDENTIALS');
       }
 
-      // Set credentials for this user for future requests
-      this.setUserCredentials(result.uid, login, password);
+      // Extract session cookie for /web/dataset/call_kw (when /jsonrpc returns 404)
+      const setCookie = response.headers['set-cookie'] || response.headers['Set-Cookie'];
+      const sessionCookieStr = Array.isArray(setCookie) ? setCookie.join('; ') : (setCookie || '');
+      const sessionIdMatch = sessionCookieStr.match(/session_id=([^;\s]+)/);
+      const sessionId = sessionIdMatch ? sessionIdMatch[1].trim() : null;
 
-      // Get user details with employee_id and language
+      // Set credentials for this user for future requests (include session for call_kw fallback)
+      this.setUserCredentials(result.uid, login, password, sessionId ? `session_id=${sessionId}` : null);
+
+      // Get user details with employee_id and language (uses session-based call_kw when jsonrpc unavailable)
       const users = await this.execute('res.users', 'read', [
         [result.uid]
       ], { fields: ['id', 'name', 'login', 'active', 'employee_id', 'lang'] }, result.uid);

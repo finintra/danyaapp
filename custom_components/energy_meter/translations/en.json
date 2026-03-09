@@ -1,0 +1,80 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Energy Meter Setup",
+        "description": "Configure your energy meter",
+        "data": {
+          "tariff_type": "Tariff type",
+          "phase_count": "Number of phases"
+        }
+      },
+      "entities": {
+        "title": "Source Entities",
+        "description": "Select the Zigbee2MQTT entities from your energy meter",
+        "data": {
+          "energy_entity": "Energy sensor (kWh)",
+          "power_entity": "Total power sensor (W)",
+          "voltage_a_entity": "Voltage Phase A (V)",
+          "voltage_b_entity": "Voltage Phase B (V)",
+          "voltage_c_entity": "Voltage Phase C (V)"
+        }
+      },
+      "dual_tariff": {
+        "title": "Dual Tariff Settings",
+        "description": "Configure day/night tariff rates and schedule",
+        "data": {
+          "day_rate": "Day rate (UAH/kWh)",
+          "night_rate": "Night rate (UAH/kWh)",
+          "night_start_hour": "Night tariff start (hour)",
+          "night_start_minute": "Night tariff start (minute)",
+          "night_end_hour": "Night tariff end (hour)",
+          "night_end_minute": "Night tariff end (minute)"
+        }
+      },
+      "single_tariff": {
+        "title": "Single Tariff Settings",
+        "description": "Configure the tariff rate",
+        "data": {
+          "single_rate": "Rate (UAH/kWh)"
+        }
+      },
+      "initial_readings": {
+        "title": "Initial Meter Readings",
+        "description": "Enter the current readings from your physical meter",
+        "data": {
+          "initial_day": "Day reading (kWh)",
+          "initial_night": "Night reading (kWh)",
+          "initial_total": "Total reading (kWh)"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Update Tariff Rates",
+        "data": {
+          "day_rate": "Day rate (UAH/kWh)",
+          "night_rate": "Night rate (UAH/kWh)",
+          "single_rate": "Rate (UAH/kWh)"
+        }
+      }
+    }
+  },
+  "selector": {
+    "tariff_type": {
+      "options": {
+        "single_tariff": "Single tariff",
+        "dual_tariff": "Dual tariff (Day/Night)"
+      }
+    },
+    "phase_count": {
+      "options": {
+        "1_phase": "1 Phase",
+        "2_phases": "2 Phases",
+        "3_phases": "3 Phases"
+      }
+    }
+  }
+}

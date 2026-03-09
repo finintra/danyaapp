@@ -1,0 +1,7 @@
+reset_readings:
+  name: Reset readings
+  description: Save current readings as snapshot and start new billing period.
+
+take_snapshot:
+  name: Take snapshot
+  description: Take a snapshot of current readings for delta calculation.

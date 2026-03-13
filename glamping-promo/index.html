@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- Glamping Promo Site v1.0 -->
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
@@ -8,16 +7,19 @@
     <meta name="description" content="Комфортний відпочинок у глемпінгу біля Нанашкової Хати. Будиночки та глемпи з харчуванням. Весняний сезон березень-квітень.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Cursor glow -->
+    <div class="cursor-glow" id="cursorGlow"></div>
+
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <div class="container nav-container">
             <a href="#hero" class="logo">
-                <span class="logo-icon">&#9978;</span>
-                <span class="logo-text">Нанашкова Хата</span>
+                <div class="logo-mark">NH</div>
+                <span class="logo-text">Нанашкова<br>Хата</span>
             </a>
             <button class="nav-toggle" id="navToggle" aria-label="Меню">
                 <span></span><span></span><span></span>
@@ -25,9 +27,9 @@
             <ul class="nav-links" id="navLinks">
                 <li><a href="#about">Про нас</a></li>
                 <li><a href="#accommodations">Проживання</a></li>
-                <li><a href="#food">Харчування</a></li>
+                <li><a href="#food">Кухня</a></li>
                 <li><a href="#spring">Весна</a></li>
-                <li><a href="#pricing">Ціни</a></li>
+                <li><a href="#pricing">Тарифи</a></li>
                 <li><a href="#gallery">Галерея</a></li>
                 <li><a href="#booking" class="btn-nav">Забронювати</a></li>
             </ul>
@@ -36,154 +38,214 @@
 
     <!-- Hero Section -->
     <section class="hero" id="hero">
-        <div class="hero-overlay"></div>
-        <div class="hero-particles" id="particles"></div>
-        <div class="container hero-content">
-            <p class="hero-tag">Весняний сезон 2026</p>
-            <h1 class="hero-title">Глемпінг біля<br><em>Нанашкової Хати</em></h1>
-            <p class="hero-subtitle">Комфортний відпочинок серед карпатської природи.<br>Будиночки та глемпи з повним харчуванням.</p>
-            <div class="hero-cta">
-                <a href="#booking" class="btn btn-primary btn-lg">Забронювати відпочинок</a>
-                <a href="#about" class="btn btn-outline btn-lg">Дізнатись більше</a>
+        <div class="hero-bg">
+            <div class="hero-gradient"></div>
+            <div class="hero-grain"></div>
+            <div class="hero-orbs">
+                <div class="orb orb-1"></div>
+                <div class="orb orb-2"></div>
+                <div class="orb orb-3"></div>
             </div>
-            <div class="hero-stats">
-                <div class="stat">
-                    <span class="stat-number">5+</span>
-                    <span class="stat-label">Будиночків</span>
+        </div>
+        <div class="container hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                Весна 2026 &mdash; бронювання відкрито
+            </div>
+            <h1 class="hero-title">
+                <span class="title-line">Глемпінг</span>
+                <span class="title-line title-accent">Нанашкова Хата</span>
+                <span class="title-line title-small">Карпати, Україна</span>
+            </h1>
+            <p class="hero-subtitle">Природа. Комфорт. Смак. Будиночки та глемпінг-намети з триразовим харчуванням серед карпатських гір.</p>
+            <div class="hero-cta">
+                <a href="#booking" class="btn btn-primary btn-lg">
+                    <span>Забронювати</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+                <a href="#about" class="btn btn-ghost btn-lg">Дізнатись більше</a>
+            </div>
+            <div class="hero-metrics">
+                <div class="metric">
+                    <div class="metric-value" data-count="5">5+</div>
+                    <div class="metric-label">будиночків</div>
                 </div>
-                <div class="stat">
-                    <span class="stat-number">3x</span>
-                    <span class="stat-label">Харчування</span>
+                <div class="metric-divider"></div>
+                <div class="metric">
+                    <div class="metric-value">3&times;</div>
+                    <div class="metric-label">харчування</div>
                 </div>
-                <div class="stat">
-                    <span class="stat-number">100%</span>
-                    <span class="stat-label">Комфорт</span>
+                <div class="metric-divider"></div>
+                <div class="metric">
+                    <div class="metric-value">&#8722;25%</div>
+                    <div class="metric-label">весняна ціна</div>
                 </div>
             </div>
         </div>
-        <a href="#about" class="scroll-down" aria-label="Прокрутити вниз">
-            <span class="scroll-arrow"></span>
-        </a>
+        <div class="hero-scroll">
+            <div class="scroll-line"></div>
+            <span>scroll</span>
+        </div>
     </section>
 
     <!-- About Section -->
-    <section class="section about" id="about">
+    <section class="section" id="about">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">Про нас</span>
-                <h2 class="section-title">Відпочинок, який ви заслуговуєте</h2>
-                <p class="section-desc">Нанашкова Хата — це місце, де карпатська автентичність поєднується з сучасним комфортом. Ми створили простір для тих, хто хоче втекти від міського шуму та насолодитись природою.</p>
+                <div class="section-label">01 &mdash; Про нас</div>
+                <h2 class="section-title">Відпочинок,<br>який ви <em>заслуговуєте</em></h2>
+                <p class="section-desc">Нанашкова Хата — це місце, де карпатська автентичність поєднується з сучасним комфортом. Простір для тих, хто хоче втекти від міського шуму.</p>
             </div>
             <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">&#127968;</div>
+                <div class="feature-card" data-hover>
+                    <div class="feature-number">01</div>
+                    <div class="feature-icon-wrap"><span>&#127968;</span></div>
                     <h3>Затишні будиночки</h3>
                     <p>Дерев'яні будиночки з опаленням, м'якими ліжками та панорамними вікнами на гори.</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#9978;</div>
+                <div class="feature-card" data-hover>
+                    <div class="feature-number">02</div>
+                    <div class="feature-icon-wrap"><span>&#9978;</span></div>
                     <h3>Глемпінг-намети</h3>
-                    <p>Просторі утеплені намети з усіма зручностями для романтичного та незвичного відпочинку.</p>
+                    <p>Просторі утеплені намети з усіма зручностями для романтичного відпочинку.</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#127860;</div>
+                <div class="feature-card" data-hover>
+                    <div class="feature-number">03</div>
+                    <div class="feature-icon-wrap"><span>&#127860;</span></div>
                     <h3>Домашня кухня</h3>
                     <p>Триразове харчування з локальних продуктів. Карпатські страви та домашня випічка.</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#127795;</div>
+                <div class="feature-card" data-hover>
+                    <div class="feature-number">04</div>
+                    <div class="feature-icon-wrap"><span>&#127795;</span></div>
                     <h3>Жива природа</h3>
-                    <p>Ліси, потічки, гірські стежки — все в пішій доступності від вашого помешкання.</p>
+                    <p>Ліси, потічки, гірські стежки — все в пішій доступності від помешкання.</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#128293;</div>
-                    <h3>Вогнище та баня</h3>
-                    <p>Вечірні посиденьки біля вогнища, карпатська баня на дровах та чан.</p>
+                <div class="feature-card" data-hover>
+                    <div class="feature-number">05</div>
+                    <div class="feature-icon-wrap"><span>&#128293;</span></div>
+                    <h3>Баня та чан</h3>
+                    <p>Вечірні посиденьки біля вогнища, карпатська баня на дровах та гарячий чан.</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#128247;</div>
-                    <h3>Інстаграмні локації</h3>
+                <div class="feature-card" data-hover>
+                    <div class="feature-number">06</div>
+                    <div class="feature-icon-wrap"><span>&#128247;</span></div>
+                    <h3>Інста-локації</h3>
                     <p>Фотогенічні куточки для ваших найкращих весняних фото та сторіс.</p>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Marquee -->
+    <div class="marquee-section">
+        <div class="marquee-track">
+            <div class="marquee-content">
+                <span>Карпати</span><span class="marquee-dot"></span>
+                <span>Глемпінг</span><span class="marquee-dot"></span>
+                <span>Природа</span><span class="marquee-dot"></span>
+                <span>Комфорт</span><span class="marquee-dot"></span>
+                <span>Баня</span><span class="marquee-dot"></span>
+                <span>Домашня кухня</span><span class="marquee-dot"></span>
+                <span>Крокуси</span><span class="marquee-dot"></span>
+                <span>Тиша</span><span class="marquee-dot"></span>
+                <span>Карпати</span><span class="marquee-dot"></span>
+                <span>Глемпінг</span><span class="marquee-dot"></span>
+                <span>Природа</span><span class="marquee-dot"></span>
+                <span>Комфорт</span><span class="marquee-dot"></span>
+                <span>Баня</span><span class="marquee-dot"></span>
+                <span>Домашня кухня</span><span class="marquee-dot"></span>
+                <span>Крокуси</span><span class="marquee-dot"></span>
+                <span>Тиша</span><span class="marquee-dot"></span>
+            </div>
+        </div>
+    </div>
+
     <!-- Accommodations Section -->
-    <section class="section accommodations" id="accommodations">
+    <section class="section section-dark" id="accommodations">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">Проживання</span>
-                <h2 class="section-title">Оберіть свій ідеальний відпочинок</h2>
+                <div class="section-label section-label-light">02 &mdash; Проживання</div>
+                <h2 class="section-title section-title-light">Оберіть свій<br><em>ідеальний</em> відпочинок</h2>
             </div>
             <div class="acc-grid">
-                <div class="acc-card">
+                <div class="acc-card glass-card" data-hover>
                     <div class="acc-image acc-image-cabin">
-                        <div class="acc-badge">Хіт продажів</div>
+                        <div class="acc-badge">Хіт</div>
+                        <div class="acc-image-overlay"></div>
                     </div>
                     <div class="acc-content">
                         <h3>Дерев'яний будиночок</h3>
                         <p class="acc-desc">Класичний карпатський будиночок з усіма зручностями. Ідеальний для сім'ї або пари.</p>
-                        <ul class="acc-features">
-                            <li>&#10003; Опалення</li>
-                            <li>&#10003; Санвузол</li>
-                            <li>&#10003; Wi-Fi</li>
-                            <li>&#10003; Міні-кухня</li>
-                            <li>&#10003; Тераса з видом</li>
-                            <li>&#10003; До 4 гостей</li>
-                        </ul>
-                        <div class="acc-price">
-                            <span class="price-from">від</span>
-                            <span class="price-amount">1 800 грн</span>
-                            <span class="price-per">/ніч</span>
+                        <div class="acc-tags">
+                            <span class="tag">Опалення</span>
+                            <span class="tag">Санвузол</span>
+                            <span class="tag">Wi-Fi</span>
+                            <span class="tag">Міні-кухня</span>
+                            <span class="tag">Тераса</span>
+                            <span class="tag">4 гості</span>
                         </div>
-                        <a href="#booking" class="btn btn-primary btn-block">Забронювати</a>
+                        <div class="acc-bottom">
+                            <div class="acc-price">
+                                <span class="price-label">від</span>
+                                <span class="price-value">1 800</span>
+                                <span class="price-currency">грн/ніч</span>
+                            </div>
+                            <a href="#booking" class="btn btn-outline-light btn-sm">Обрати</a>
+                        </div>
                     </div>
                 </div>
-                <div class="acc-card featured">
+                <div class="acc-card glass-card acc-featured" data-hover>
+                    <div class="acc-popular-badge">Popular choice</div>
                     <div class="acc-image acc-image-glamping">
                         <div class="acc-badge">Романтика</div>
+                        <div class="acc-image-overlay"></div>
                     </div>
                     <div class="acc-content">
                         <h3>Глемпінг-намет Люкс</h3>
                         <p class="acc-desc">Панорамний намет з прозорим дахом для споглядання зірок. Незабутній досвід!</p>
-                        <ul class="acc-features">
-                            <li>&#10003; Утеплений</li>
-                            <li>&#10003; King-size ліжко</li>
-                            <li>&#10003; Панорамний вид</li>
-                            <li>&#10003; Гірлянди та декор</li>
-                            <li>&#10003; Сніданок у ліжко</li>
-                            <li>&#10003; До 2 гостей</li>
-                        </ul>
-                        <div class="acc-price">
-                            <span class="price-from">від</span>
-                            <span class="price-amount">2 200 грн</span>
-                            <span class="price-per">/ніч</span>
+                        <div class="acc-tags">
+                            <span class="tag">Утеплений</span>
+                            <span class="tag">King-size</span>
+                            <span class="tag">Панорама</span>
+                            <span class="tag">Декор</span>
+                            <span class="tag">Сніданок в ліжко</span>
+                            <span class="tag">2 гості</span>
                         </div>
-                        <a href="#booking" class="btn btn-primary btn-block">Забронювати</a>
+                        <div class="acc-bottom">
+                            <div class="acc-price">
+                                <span class="price-label">від</span>
+                                <span class="price-value">2 200</span>
+                                <span class="price-currency">грн/ніч</span>
+                            </div>
+                            <a href="#booking" class="btn btn-primary btn-sm">Обрати</a>
+                        </div>
                     </div>
                 </div>
-                <div class="acc-card">
+                <div class="acc-card glass-card" data-hover>
                     <div class="acc-image acc-image-family">
-                        <div class="acc-badge">Для компаній</div>
+                        <div class="acc-badge">Компанії</div>
+                        <div class="acc-image-overlay"></div>
                     </div>
                     <div class="acc-content">
                         <h3>Сімейний котедж</h3>
                         <p class="acc-desc">Просторий котедж для великої компанії або сім'ї з дітьми. Два поверхи комфорту.</p>
-                        <ul class="acc-features">
-                            <li>&#10003; 2 спальні</li>
-                            <li>&#10003; Камін</li>
-                            <li>&#10003; Повна кухня</li>
-                            <li>&#10003; Дитячий куточок</li>
-                            <li>&#10003; Мангальна зона</li>
-                            <li>&#10003; До 8 гостей</li>
-                        </ul>
-                        <div class="acc-price">
-                            <span class="price-from">від</span>
-                            <span class="price-amount">3 500 грн</span>
-                            <span class="price-per">/ніч</span>
+                        <div class="acc-tags">
+                            <span class="tag">2 спальні</span>
+                            <span class="tag">Камін</span>
+                            <span class="tag">Кухня</span>
+                            <span class="tag">Дітям</span>
+                            <span class="tag">Мангал</span>
+                            <span class="tag">8 гостей</span>
                         </div>
-                        <a href="#booking" class="btn btn-primary btn-block">Забронювати</a>
+                        <div class="acc-bottom">
+                            <div class="acc-price">
+                                <span class="price-label">від</span>
+                                <span class="price-value">3 500</span>
+                                <span class="price-currency">грн/ніч</span>
+                            </div>
+                            <a href="#booking" class="btn btn-outline-light btn-sm">Обрати</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -191,166 +253,192 @@
     </section>
 
     <!-- Food Section -->
-    <section class="section food" id="food">
+    <section class="section" id="food">
         <div class="container">
             <div class="food-layout">
                 <div class="food-info">
-                    <span class="section-tag">Харчування</span>
-                    <h2 class="section-title text-left">Смакуйте Карпати</h2>
-                    <p class="food-desc">Ми готуємо з любов'ю та з локальних продуктів. Триразове харчування включене у вартість проживання.</p>
-                    <div class="food-meals">
-                        <div class="meal">
-                            <div class="meal-icon">&#127749;</div>
-                            <div>
+                    <div class="section-label">03 &mdash; Кухня</div>
+                    <h2 class="section-title text-left">Смакуйте<br><em>Карпати</em></h2>
+                    <p class="food-desc">Готуємо з любов'ю та локальних продуктів. Триразове харчування включене у вартість.</p>
+                    <div class="food-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-time">08:00</div>
+                            <div class="timeline-content">
                                 <h4>Сніданок</h4>
                                 <p>Домашній сир, млинці, каші, яйця від місцевих курочок, свіжа випічка, трав'яний чай.</p>
                             </div>
                         </div>
-                        <div class="meal">
-                            <div class="meal-icon">&#9728;</div>
-                            <div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">13:00</div>
+                            <div class="timeline-content">
                                 <h4>Обід</h4>
                                 <p>Домашній борщ, карпатський банош, печена форель, деруни, свіжі салати.</p>
                             </div>
                         </div>
-                        <div class="meal">
-                            <div class="meal-icon">&#127769;</div>
-                            <div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">19:00</div>
+                            <div class="timeline-content">
                                 <h4>Вечеря</h4>
                                 <p>Гриль-меню, карпатські ковбаски, бринза, теплі напої, домашні десерти.</p>
                             </div>
                         </div>
                     </div>
                     <div class="food-note">
-                        <strong>&#127807; Вегетаріанське меню</strong> — доступне за попереднім замовленням
+                        <span class="note-icon">&#127807;</span>
+                        <span>Вегетаріанське меню доступне за попереднім замовленням</span>
                     </div>
                 </div>
-                <div class="food-images">
-                    <div class="food-img food-img-1"></div>
-                    <div class="food-img food-img-2"></div>
-                    <div class="food-img food-img-3"></div>
+                <div class="food-visual">
+                    <div class="food-card food-card-1">
+                        <div class="food-card-inner">Сніданок</div>
+                    </div>
+                    <div class="food-card food-card-2">
+                        <div class="food-card-inner">Обід</div>
+                    </div>
+                    <div class="food-card food-card-3">
+                        <div class="food-card-inner">Вечеря</div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Spring Season Section -->
-    <section class="section spring" id="spring">
+    <section class="section section-spring" id="spring">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">Весняний сезон</span>
-                <h2 class="section-title">Чому варто приїхати весною?</h2>
-                <p class="section-desc">Березень-квітень — це магічний час у Карпатах. Природа прокидається, а ціни ще не кусаються.</p>
+                <div class="section-label">04 &mdash; Сезон</div>
+                <h2 class="section-title">Чому варто приїхати<br><em>весною</em>?</h2>
+                <p class="section-desc">Березень-квітень — магічний час у Карпатах. Природа прокидається, а ціни ще не кусаються.</p>
             </div>
-            <div class="spring-grid">
-                <div class="spring-card spring-card-wide">
-                    <div class="spring-card-icon">&#127800;</div>
-                    <h3>Цвітіння крокусів</h3>
-                    <p>У квітні гірські полонини вкриваються килимом з диких крокусів. Це незабутнє видовище, яке можна побачити лише раз на рік. Організовуємо пішохідні екскурсії до найкращих локацій.</p>
+            <div class="spring-bento">
+                <div class="bento-item bento-hero" data-hover>
+                    <div class="bento-bg" style="background: linear-gradient(160deg, #1a472a, #2d6b3f, #4a9c5e);"></div>
+                    <div class="bento-content">
+                        <span class="bento-icon">&#127800;</span>
+                        <h3>Цвітіння крокусів</h3>
+                        <p>У квітні гірські полонини вкриваються килимом з диких крокусів. Незабутнє видовище раз на рік. Організовуємо екскурсії до найкращих локацій.</p>
+                    </div>
                 </div>
-                <div class="spring-card">
-                    <div class="spring-card-icon">&#128176;</div>
+                <div class="bento-item" data-hover>
+                    <span class="bento-icon">&#128176;</span>
                     <h3>Найкращі ціни</h3>
-                    <p>Весняний сезон — це можливість відпочити з комфортом за найнижчими цінами року. Знижки до 30%!</p>
+                    <p>Комфорт за найнижчими цінами року. Знижки до 30%!</p>
                 </div>
-                <div class="spring-card">
-                    <div class="spring-card-icon">&#128101;</div>
+                <div class="bento-item" data-hover>
+                    <span class="bento-icon">&#128101;</span>
                     <h3>Без натовпів</h3>
-                    <p>Насолоджуйтесь тишею та спокоєм. Весною у нас мало гостей — вся природа лише для вас.</p>
+                    <p>Тиша та спокій. Вся природа лише для вас.</p>
                 </div>
-                <div class="spring-card">
-                    <div class="spring-card-icon">&#127784;</div>
-                    <h3>Гірське повітря</h3>
-                    <p>Весняне повітря у Карпатах цілюще. Ідеально для відновлення після зимових холодів.</p>
+                <div class="bento-item" data-hover>
+                    <span class="bento-icon">&#127784;</span>
+                    <h3>Цілюще повітря</h3>
+                    <p>Весняне гірське повітря для відновлення сил.</p>
                 </div>
-                <div class="spring-card">
-                    <div class="spring-card-icon">&#128694;</div>
-                    <h3>Весняні маршрути</h3>
-                    <p>Легкі та середні пішохідні маршрути з гідом. Водоспади набирають силу від танення снігу.</p>
+                <div class="bento-item" data-hover>
+                    <span class="bento-icon">&#128694;</span>
+                    <h3>Маршрути</h3>
+                    <p>Водоспади набирають силу від танення снігу.</p>
                 </div>
             </div>
-            <div class="spring-promo">
-                <div class="promo-badge">&#128293; Акція</div>
-                <h3>Весняна знижка -25%</h3>
-                <p>Бронюйте від 3 ночей у березні-квітні та отримайте знижку 25%. Кількість місць обмежена!</p>
-                <a href="#booking" class="btn btn-primary btn-lg">Скористатись акцією</a>
+
+            <!-- Promo Banner -->
+            <div class="promo-banner" data-hover>
+                <div class="promo-glow"></div>
+                <div class="promo-content">
+                    <div class="promo-left">
+                        <div class="promo-chip">Limited offer</div>
+                        <h3>Весняна знижка <span class="promo-highlight">-25%</span></h3>
+                        <p>Бронюйте від 3 ночей у березні-квітні. Кількість місць обмежена.</p>
+                    </div>
+                    <a href="#booking" class="btn btn-primary btn-lg promo-btn">
+                        <span>Скористатись</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </a>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Pricing Section -->
-    <section class="section pricing" id="pricing">
+    <section class="section section-dark" id="pricing">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">Ціни</span>
-                <h2 class="section-title">Прозорі ціни без прихованих платежів</h2>
-                <p class="section-desc">Усі ціни включають проживання, триразове харчування та базові розваги.</p>
+                <div class="section-label section-label-light">05 &mdash; Тарифи</div>
+                <h2 class="section-title section-title-light">Прозорі ціни.<br><em>Без сюрпризів.</em></h2>
+                <p class="section-desc section-desc-light">Все включено: проживання, триразове харчування, базові розваги.</p>
             </div>
             <div class="pricing-grid">
-                <div class="pricing-card">
+                <div class="pricing-card glass-card" data-hover>
                     <div class="pricing-header">
-                        <h3>Вікенд</h3>
-                        <p>2 ночі / 3 дні</p>
+                        <span class="pricing-type">Вікенд</span>
+                        <span class="pricing-duration">2 ночі / 3 дні</span>
                     </div>
                     <div class="pricing-body">
                         <div class="pricing-amount">
-                            <span class="old-price">4 800 грн</span>
-                            <span class="new-price">3 600 грн</span>
-                            <span class="per-person">за особу</span>
+                            <span class="price-old">4 800 грн</span>
+                            <div class="price-current">
+                                <span class="price-num">3 600</span>
+                                <span class="price-info">грн<br>за особу</span>
+                            </div>
                         </div>
-                        <ul class="pricing-includes">
-                            <li>&#10003; 2 ночі проживання</li>
-                            <li>&#10003; 3-разове харчування</li>
-                            <li>&#10003; Баня на дровах</li>
-                            <li>&#10003; Вечір біля вогнища</li>
-                            <li>&#10003; Wi-Fi</li>
+                        <ul class="pricing-list">
+                            <li><span class="check">&#10003;</span> 2 ночі проживання</li>
+                            <li><span class="check">&#10003;</span> 3-разове харчування</li>
+                            <li><span class="check">&#10003;</span> Баня на дровах</li>
+                            <li><span class="check">&#10003;</span> Вечір біля вогнища</li>
+                            <li><span class="check">&#10003;</span> Wi-Fi</li>
                         </ul>
-                        <a href="#booking" class="btn btn-outline btn-block">Обрати</a>
+                        <a href="#booking" class="btn btn-outline-light btn-block">Обрати пакет</a>
                     </div>
                 </div>
-                <div class="pricing-card pricing-featured">
-                    <div class="pricing-ribbon">Популярний</div>
+                <div class="pricing-card glass-card pricing-popular" data-hover>
+                    <div class="popular-tag">Most popular</div>
                     <div class="pricing-header">
-                        <h3>Міні-відпустка</h3>
-                        <p>4 ночі / 5 днів</p>
+                        <span class="pricing-type">Міні-відпустка</span>
+                        <span class="pricing-duration">4 ночі / 5 днів</span>
                     </div>
                     <div class="pricing-body">
                         <div class="pricing-amount">
-                            <span class="old-price">9 600 грн</span>
-                            <span class="new-price">6 400 грн</span>
-                            <span class="per-person">за особу</span>
+                            <span class="price-old">9 600 грн</span>
+                            <div class="price-current">
+                                <span class="price-num">6 400</span>
+                                <span class="price-info">грн<br>за особу</span>
+                            </div>
                         </div>
-                        <ul class="pricing-includes">
-                            <li>&#10003; 4 ночі проживання</li>
-                            <li>&#10003; 3-разове харчування</li>
-                            <li>&#10003; Баня + чан</li>
-                            <li>&#10003; Екскурсія з гідом</li>
-                            <li>&#10003; Вечір біля вогнища</li>
-                            <li>&#10003; Трансфер від станції</li>
+                        <ul class="pricing-list">
+                            <li><span class="check">&#10003;</span> 4 ночі проживання</li>
+                            <li><span class="check">&#10003;</span> 3-разове харчування</li>
+                            <li><span class="check">&#10003;</span> Баня + чан</li>
+                            <li><span class="check">&#10003;</span> Екскурсія з гідом</li>
+                            <li><span class="check">&#10003;</span> Вечір біля вогнища</li>
+                            <li><span class="check">&#10003;</span> Трансфер від станції</li>
                         </ul>
-                        <a href="#booking" class="btn btn-primary btn-block">Обрати</a>
+                        <a href="#booking" class="btn btn-primary btn-block">Обрати пакет</a>
                     </div>
                 </div>
-                <div class="pricing-card">
+                <div class="pricing-card glass-card" data-hover>
                     <div class="pricing-header">
-                        <h3>Тиждень релаксу</h3>
-                        <p>7 ночей / 8 днів</p>
+                        <span class="pricing-type">Тиждень релаксу</span>
+                        <span class="pricing-duration">7 ночей / 8 днів</span>
                     </div>
                     <div class="pricing-body">
                         <div class="pricing-amount">
-                            <span class="old-price">16 800 грн</span>
-                            <span class="new-price">10 500 грн</span>
-                            <span class="per-person">за особу</span>
+                            <span class="price-old">16 800 грн</span>
+                            <div class="price-current">
+                                <span class="price-num">10 500</span>
+                                <span class="price-info">грн<br>за особу</span>
+                            </div>
                         </div>
-                        <ul class="pricing-includes">
-                            <li>&#10003; 7 ночей проживання</li>
-                            <li>&#10003; 3-разове харчування</li>
-                            <li>&#10003; Баня + чан щодня</li>
-                            <li>&#10003; 2 екскурсії з гідом</li>
-                            <li>&#10003; Масаж (1 сеанс)</li>
-                            <li>&#10003; Трансфер туди-назад</li>
+                        <ul class="pricing-list">
+                            <li><span class="check">&#10003;</span> 7 ночей проживання</li>
+                            <li><span class="check">&#10003;</span> 3-разове харчування</li>
+                            <li><span class="check">&#10003;</span> Баня + чан щодня</li>
+                            <li><span class="check">&#10003;</span> 2 екскурсії з гідом</li>
+                            <li><span class="check">&#10003;</span> Масаж (1 сеанс)</li>
+                            <li><span class="check">&#10003;</span> Трансфер туди-назад</li>
                         </ul>
-                        <a href="#booking" class="btn btn-outline btn-block">Обрати</a>
+                        <a href="#booking" class="btn btn-outline-light btn-block">Обрати пакет</a>
                     </div>
                 </div>
             </div>
@@ -358,41 +446,53 @@
     </section>
 
     <!-- Gallery Section -->
-    <section class="section gallery" id="gallery">
+    <section class="section" id="gallery">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">Галерея</span>
-                <h2 class="section-title">Як виглядає ваш майбутній відпочинок</h2>
+                <div class="section-label">06 &mdash; Галерея</div>
+                <h2 class="section-title">Ваш майбутній<br><em>відпочинок</em></h2>
             </div>
-            <div class="gallery-grid">
-                <div class="gallery-item gallery-item-lg">
-                    <div class="gallery-placeholder" style="background: linear-gradient(135deg, #2d5016, #4a7c28);">
-                        <span>&#127968; Будиночки серед лісу</span>
+            <div class="gallery-masonry">
+                <div class="gallery-item gi-tall" data-hover>
+                    <div class="gi-bg" style="background: linear-gradient(160deg, #1a3d1a, #3d7a2e);"></div>
+                    <div class="gi-content">
+                        <span class="gi-tag">Проживання</span>
+                        <h4>Будиночки серед лісу</h4>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <div class="gallery-placeholder" style="background: linear-gradient(135deg, #5c3d1e, #8b6914);">
-                        <span>&#128293; Вечір біля вогнища</span>
+                <div class="gallery-item" data-hover>
+                    <div class="gi-bg" style="background: linear-gradient(160deg, #5c2d0e, #c47a2a);"></div>
+                    <div class="gi-content">
+                        <span class="gi-tag">Атмосфера</span>
+                        <h4>Вечір біля вогнища</h4>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <div class="gallery-placeholder" style="background: linear-gradient(135deg, #1a3a5c, #2980b9);">
-                        <span>&#127786; Гірський ранок</span>
+                <div class="gallery-item" data-hover>
+                    <div class="gi-bg" style="background: linear-gradient(160deg, #1a3a5c, #4a90c4);"></div>
+                    <div class="gi-content">
+                        <span class="gi-tag">Ранок</span>
+                        <h4>Гірський світанок</h4>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <div class="gallery-placeholder" style="background: linear-gradient(135deg, #6b2d5b, #d4548e);">
-                        <span>&#127800; Крокуси у квітні</span>
+                <div class="gallery-item" data-hover>
+                    <div class="gi-bg" style="background: linear-gradient(160deg, #6b2d5b, #c44a8e);"></div>
+                    <div class="gi-content">
+                        <span class="gi-tag">Весна</span>
+                        <h4>Крокуси у квітні</h4>
                     </div>
                 </div>
-                <div class="gallery-item gallery-item-lg">
-                    <div class="gallery-placeholder" style="background: linear-gradient(135deg, #1e3d2f, #27ae60);">
-                        <span>&#9978; Глемпінг-намет</span>
+                <div class="gallery-item gi-tall" data-hover>
+                    <div class="gi-bg" style="background: linear-gradient(160deg, #1e3d2f, #3daa6f);"></div>
+                    <div class="gi-content">
+                        <span class="gi-tag">Глемпінг</span>
+                        <h4>Намет під зорями</h4>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <div class="gallery-placeholder" style="background: linear-gradient(135deg, #7c3b12, #d4780a);">
-                        <span>&#127860; Карпатська кухня</span>
+                <div class="gallery-item" data-hover>
+                    <div class="gi-bg" style="background: linear-gradient(160deg, #7c3b12, #d4780a);"></div>
+                    <div class="gi-content">
+                        <span class="gi-tag">Кухня</span>
+                        <h4>Карпатські страви</h4>
                     </div>
                 </div>
             </div>
@@ -400,40 +500,40 @@
     </section>
 
     <!-- Testimonials Section -->
-    <section class="section testimonials">
+    <section class="section section-muted">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">Відгуки</span>
-                <h2 class="section-title">Що кажуть наші гості</h2>
+                <div class="section-label">07 &mdash; Відгуки</div>
+                <h2 class="section-title">Що кажуть<br><em>наші гості</em></h2>
             </div>
-            <div class="testimonials-grid">
-                <div class="testimonial-card">
-                    <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p class="testimonial-text">"Неймовірне місце! Приїхали з чоловіком на вікенд у березні — тиша, краса, смачна їжа. Будемо повертатись!"</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">ОК</div>
+            <div class="testimonials-slider" id="testimonials">
+                <div class="testimonial-card glass-light" data-hover>
+                    <div class="tc-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <blockquote>"Неймовірне місце! Приїхали з чоловіком на вікенд у березні — тиша, краса, смачна їжа. Будемо повертатись!"</blockquote>
+                    <div class="tc-author">
+                        <div class="tc-avatar" style="background: linear-gradient(135deg, #4a9c5e, #2d6b3f);">ОК</div>
                         <div>
                             <strong>Оксана К.</strong>
                             <span>Березень 2025</span>
                         </div>
                     </div>
                 </div>
-                <div class="testimonial-card">
-                    <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p class="testimonial-text">"Глемпінг — це щось! Засинати під зорями і прокидатись від співу пташок. А сніданок у ліжко — окремий кайф."</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">АМ</div>
+                <div class="testimonial-card glass-light" data-hover>
+                    <div class="tc-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <blockquote>"Глемпінг — це щось! Засинати під зорями і прокидатись від співу пташок. Сніданок у ліжко — окремий кайф."</blockquote>
+                    <div class="tc-author">
+                        <div class="tc-avatar" style="background: linear-gradient(135deg, #4a90c4, #1a3a5c);">АМ</div>
                         <div>
                             <strong>Андрій М.</strong>
                             <span>Квітень 2025</span>
                         </div>
                     </div>
                 </div>
-                <div class="testimonial-card">
-                    <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p class="testimonial-text">"Їхали з дітьми на тиждень. Діти в захваті від природи, а ми нарешті відпочили. Харчування на вищому рівні!"</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">ІТ</div>
+                <div class="testimonial-card glass-light" data-hover>
+                    <div class="tc-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <blockquote>"Їхали з дітьми на тиждень. Діти в захваті від природи, а ми нарешті відпочили. Харчування на вищому рівні!"</blockquote>
+                    <div class="tc-author">
+                        <div class="tc-avatar" style="background: linear-gradient(135deg, #c44a8e, #6b2d5b);">ІТ</div>
                         <div>
                             <strong>Ірина Т.</strong>
                             <span>Квітень 2025</span>
@@ -445,38 +545,38 @@
     </section>
 
     <!-- Booking Section -->
-    <section class="section booking" id="booking">
+    <section class="section" id="booking">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">Бронювання</span>
-                <h2 class="section-title">Забронюйте свій відпочинок</h2>
-                <p class="section-desc">Заповніть форму і ми зв'яжемось з вами протягом години для підтвердження.</p>
+                <div class="section-label">08 &mdash; Бронювання</div>
+                <h2 class="section-title">Забронюйте<br><em>свій відпочинок</em></h2>
+                <p class="section-desc">Заповніть форму і ми зв'яжемось з вами протягом години.</p>
             </div>
             <div class="booking-layout">
-                <form class="booking-form" id="bookingForm">
+                <form class="booking-form glass-light" id="bookingForm">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="name">Ваше ім'я *</label>
+                            <label for="name">Ваше ім'я</label>
                             <input type="text" id="name" name="name" required placeholder="Олександр">
                         </div>
                         <div class="form-group">
-                            <label for="phone">Телефон *</label>
+                            <label for="phone">Телефон</label>
                             <input type="tel" id="phone" name="phone" required placeholder="+380 XX XXX XX XX">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="checkin">Дата заїзду *</label>
+                            <label for="checkin">Дата заїзду</label>
                             <input type="date" id="checkin" name="checkin" required>
                         </div>
                         <div class="form-group">
-                            <label for="checkout">Дата виїзду *</label>
+                            <label for="checkout">Дата виїзду</label>
                             <input type="date" id="checkout" name="checkout" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="guests">Кількість гостей</label>
+                            <label for="guests">Гості</label>
                             <select id="guests" name="guests">
                                 <option value="1">1 гість</option>
                                 <option value="2" selected>2 гості</option>
@@ -489,41 +589,46 @@
                         <div class="form-group">
                             <label for="accommodation">Тип проживання</label>
                             <select id="accommodation" name="accommodation">
-                                <option value="cabin">Дерев'яний будиночок</option>
-                                <option value="glamping">Глемпінг-намет Люкс</option>
+                                <option value="cabin">Будиночок</option>
+                                <option value="glamping">Глемпінг Люкс</option>
                                 <option value="cottage">Сімейний котедж</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="message">Побажання</label>
-                        <textarea id="message" name="message" rows="3" placeholder="Вегетаріанське меню, святкування дня народження, тощо..."></textarea>
+                        <textarea id="message" name="message" rows="3" placeholder="Вегетаріанське меню, святкування..."></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg btn-block">
-                        Надіслати заявку
+                        <span>Надіслати заявку</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </button>
-                    <p class="form-note">* Бронювання безкоштовне. Оплата при заселенні.</p>
+                    <p class="form-note">Бронювання безкоштовне. Оплата при заселенні.</p>
                 </form>
-                <div class="booking-info">
-                    <div class="info-card">
-                        <h4>&#128222; Зателефонуйте нам</h4>
-                        <a href="tel:+380XXXXXXXXX" class="info-link">+380 XX XXX XX XX</a>
-                        <p>Щодня з 9:00 до 21:00</p>
+                <div class="booking-sidebar">
+                    <div class="sidebar-card glass-light" data-hover>
+                        <div class="sc-icon">&#128222;</div>
+                        <h4>Зателефонуйте</h4>
+                        <a href="tel:+380XXXXXXXXX" class="sc-link">+380 XX XXX XX XX</a>
+                        <p>Щодня 9:00 — 21:00</p>
                     </div>
-                    <div class="info-card">
-                        <h4>&#128172; Напишіть у месенджер</h4>
-                        <div class="messenger-links">
-                            <a href="#" class="messenger-btn viber">Viber</a>
-                            <a href="#" class="messenger-btn telegram">Telegram</a>
+                    <div class="sidebar-card glass-light" data-hover>
+                        <div class="sc-icon">&#128172;</div>
+                        <h4>Месенджери</h4>
+                        <div class="sc-messengers">
+                            <a href="#" class="msg-btn msg-viber">Viber</a>
+                            <a href="#" class="msg-btn msg-telegram">Telegram</a>
                         </div>
                     </div>
-                    <div class="info-card">
-                        <h4>&#128205; Як дістатись</h4>
-                        <p>Карпати, біля Нанашкової Хати. Детальну карту та інструкції надсилаємо після бронювання.</p>
+                    <div class="sidebar-card glass-light" data-hover>
+                        <div class="sc-icon">&#128205;</div>
+                        <h4>Локація</h4>
+                        <p>Карпати, біля Нанашкової Хати. Карту надсилаємо після бронювання.</p>
                     </div>
-                    <div class="info-card urgency">
-                        <h4>&#128293; Поспішайте!</h4>
-                        <p>На березень-квітень залишилось лише <strong>декілька вільних дат</strong>. Бронюйте зараз!</p>
+                    <div class="sidebar-card urgency-card">
+                        <div class="urgency-pulse"></div>
+                        <h4>Поспішайте!</h4>
+                        <p>На березень-квітень залишилось лише <strong>декілька вільних дат</strong></p>
                     </div>
                 </div>
             </div>
@@ -533,29 +638,31 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-grid">
+            <div class="footer-top">
                 <div class="footer-brand">
-                    <span class="logo-icon">&#9978;</span>
-                    <span class="logo-text">Нанашкова Хата</span>
-                    <p>Комфортний глемпінг у серці Карпат. Відпочинок, який запам'ятається назавжди.</p>
+                    <div class="logo">
+                        <div class="logo-mark">NH</div>
+                        <span class="logo-text">Нанашкова<br>Хата</span>
+                    </div>
+                    <p>Комфортний глемпінг у серці Карпат.<br>Відпочинок, який запам'ятається.</p>
                 </div>
-                <div class="footer-links">
+                <div class="footer-nav">
                     <h4>Навігація</h4>
                     <a href="#about">Про нас</a>
                     <a href="#accommodations">Проживання</a>
-                    <a href="#food">Харчування</a>
-                    <a href="#pricing">Ціни</a>
+                    <a href="#food">Кухня</a>
+                    <a href="#pricing">Тарифи</a>
                     <a href="#booking">Бронювання</a>
                 </div>
                 <div class="footer-contact">
                     <h4>Контакти</h4>
-                    <p>&#128222; +380 XX XXX XX XX</p>
-                    <p>&#128231; info@nanashkova-hata.ua</p>
-                    <p>&#128205; Карпати, Україна</p>
+                    <p>+380 XX XXX XX XX</p>
+                    <p>info@nanashkova-hata.ua</p>
+                    <p>Карпати, Україна</p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 Глемпінг біля Нанашкової Хати. Всі права захищені.</p>
+                <p>&copy; 2026 Нанашкова Хата. Всі права захищені.</p>
             </div>
         </div>
     </footer>

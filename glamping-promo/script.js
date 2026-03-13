@@ -1,122 +1,132 @@
-// ===== NAVBAR SCROLL EFFECT =====
+// ===== CURSOR GLOW =====
+const cursorGlow = document.getElementById('cursorGlow');
+let mouseX = 0, mouseY = 0, glowX = 0, glowY = 0;
+
+if (window.matchMedia('(hover: hover)').matches) {
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        cursorGlow.classList.add('active');
+    });
+
+    function animateGlow() {
+        glowX += (mouseX - glowX) * 0.08;
+        glowY += (mouseY - glowY) * 0.08;
+        cursorGlow.style.left = glowX + 'px';
+        cursorGlow.style.top = glowY + 'px';
+        requestAnimationFrame(animateGlow);
+    }
+    animateGlow();
+}
+
+// ===== NAVBAR =====
 const navbar = document.getElementById('navbar');
+let lastScroll = 0;
 
 window.addEventListener('scroll', () => {
-    if (window.scrollY > 60) {
-        navbar.classList.add('scrolled');
-    } else {
-        navbar.classList.remove('scrolled');
-    }
-});
+    const current = window.scrollY;
+    navbar.classList.toggle('scrolled', current > 50);
+    lastScroll = current;
+}, { passive: true });
 
-// ===== MOBILE NAV TOGGLE =====
+// ===== MOBILE NAV =====
 const navToggle = document.getElementById('navToggle');
 const navLinks = document.getElementById('navLinks');
 
 navToggle.addEventListener('click', () => {
     navLinks.classList.toggle('active');
-    navToggle.classList.toggle('active');
 });
 
-// Close nav on link click
 navLinks.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-        navLinks.classList.remove('active');
-        navToggle.classList.remove('active');
+    link.addEventListener('click', () => navLinks.classList.remove('active'));
+});
+
+// ===== SMOOTH SCROLL =====
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     });
 });
 
-// ===== HERO PARTICLES =====
-const particlesContainer = document.getElementById('particles');
-
-function createParticles() {
-    for (let i = 0; i < 20; i++) {
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDuration = (Math.random() * 10 + 8) + 's';
-        particle.style.animationDelay = Math.random() * 10 + 's';
-        particle.style.width = (Math.random() * 4 + 2) + 'px';
-        particle.style.height = particle.style.width;
-        particlesContainer.appendChild(particle);
-    }
-}
-
-createParticles();
-
-// ===== SCROLL ANIMATIONS =====
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
+// ===== SCROLL REVEAL =====
+const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.classList.add('visible');
         }
     });
-}, observerOptions);
+}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
 
-// Add fade-in class to animated elements
-document.querySelectorAll('.feature-card, .acc-card, .spring-card, .pricing-card, .testimonial-card, .gallery-item, .meal, .info-card').forEach(el => {
-    el.classList.add('fade-in');
-    observer.observe(el);
+// Add reveal to section headers
+document.querySelectorAll('.section-header').forEach(el => {
+    el.classList.add('reveal');
+    revealObserver.observe(el);
 });
 
-// ===== SMOOTH SCROLL FOR ANCHOR LINKS =====
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            const offset = 80;
-            const position = target.getBoundingClientRect().top + window.scrollY - offset;
-            window.scrollTo({ top: position, behavior: 'smooth' });
-        }
+// Add stagger reveal to grids
+document.querySelectorAll('.features-grid, .acc-grid, .spring-bento, .pricing-grid, .testimonials-slider, .gallery-masonry').forEach(el => {
+    el.classList.add('reveal-stagger');
+    revealObserver.observe(el);
+});
+
+// Add reveal to other elements
+document.querySelectorAll('.food-layout, .promo-banner, .booking-layout, .food-timeline, .food-visual').forEach(el => {
+    el.classList.add('reveal');
+    revealObserver.observe(el);
+});
+
+// ===== MAGNETIC HOVER FOR CARDS =====
+document.querySelectorAll('[data-hover]').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -3;
+        const rotateY = ((x - centerX) / centerX) * 3;
+
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = '';
     });
 });
 
 // ===== BOOKING FORM =====
 const bookingForm = document.getElementById('bookingForm');
 
-bookingForm.addEventListener('submit', function (e) {
+bookingForm.addEventListener('submit', function(e) {
     e.preventDefault();
 
     const formData = new FormData(this);
     const data = Object.fromEntries(formData.entries());
 
-    // Simple validation
-    if (!data.name || !data.phone || !data.checkin || !data.checkout) {
-        return;
-    }
+    if (!data.name || !data.phone || !data.checkin || !data.checkout) return;
 
-    // Show success message
-    const successHTML = `
+    const accNames = {
+        cabin: "Будиночок",
+        glamping: "Глемпінг Люкс",
+        cottage: "Сімейний котедж"
+    };
+
+    this.innerHTML = `
         <div class="form-success show">
             <h3>&#10004; Дякуємо, ${data.name}!</h3>
-            <p>Вашу заявку на бронювання отримано.<br>
-            Ми зв'яжемось з вами протягом години за номером ${data.phone}.</p>
-            <p style="margin-top: 16px; font-size: 0.9rem; color: #6b6b6b;">
-                Заїзд: ${data.checkin} | Виїзд: ${data.checkout}<br>
-                Гості: ${data.guests} | Тип: ${getAccName(data.accommodation)}
+            <p>Вашу заявку отримано. Ми зв'яжемось протягом години за номером <strong>${data.phone}</strong>.</p>
+            <p style="margin-top: 16px; font-size: 0.85rem; color: var(--c-text-3);">
+                ${data.checkin} &rarr; ${data.checkout} &middot; ${data.guests} гост. &middot; ${accNames[data.accommodation] || data.accommodation}
             </p>
         </div>
     `;
-
-    this.innerHTML = successHTML;
 });
 
-function getAccName(value) {
-    const names = {
-        cabin: 'Дерев\'яний будиночок',
-        glamping: 'Глемпінг-намет Люкс',
-        cottage: 'Сімейний котедж'
-    };
-    return names[value] || value;
-}
-
-// ===== SET MIN DATES FOR BOOKING =====
+// ===== SET DATE CONSTRAINTS =====
 const checkinInput = document.getElementById('checkin');
 const checkoutInput = document.getElementById('checkout');
 
@@ -127,23 +137,20 @@ if (checkinInput && checkoutInput) {
     checkinInput.addEventListener('change', () => {
         const nextDay = new Date(checkinInput.value);
         nextDay.setDate(nextDay.getDate() + 1);
-        checkoutInput.min = nextDay.toISOString().split('T')[0];
+        const minCheckout = nextDay.toISOString().split('T')[0];
+        checkoutInput.min = minCheckout;
 
         if (checkoutInput.value && checkoutInput.value <= checkinInput.value) {
-            checkoutInput.value = nextDay.toISOString().split('T')[0];
+            checkoutInput.value = minCheckout;
         }
     });
 }
 
-// ===== COUNTER ANIMATION =====
-function animateCounters() {
-    document.querySelectorAll('.stat-number').forEach(counter => {
-        const text = counter.textContent;
-        if (text.includes('+') || text.includes('%') || text.includes('x')) {
-            return; // Keep static text for these
-        }
+// ===== PARALLAX ORBS =====
+window.addEventListener('scroll', () => {
+    const scrolled = window.scrollY;
+    document.querySelectorAll('.orb').forEach((orb, i) => {
+        const speed = (i + 1) * 0.03;
+        orb.style.transform = `translateY(${scrolled * speed}px)`;
     });
-}
-
-// Run on load
-animateCounters();
+}, { passive: true });

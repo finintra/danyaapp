@@ -324,7 +324,11 @@ body.quiz-page .choice img {
   min-height: 0;
   min-width: 0;
 }
-body.quiz-page .feedback { margin-top: 14px; }
+body.quiz-page .feedback {
+  margin-top: 14px;
+  max-height: 22vh;
+  overflow-y: auto;
+}
 body.quiz-page .actions  { margin-top: 12px; }
 body.quiz-page #screen-start,
 body.quiz-page #screen-finish { margin: auto 0; }

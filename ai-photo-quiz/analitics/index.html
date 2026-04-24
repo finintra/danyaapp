@@ -12,7 +12,7 @@
     <header class="top">
       <div>
         <h1>Статистика тесту</h1>
-        <div class="sub">Загальні результати всіх проходжень на цьому пристрої</div>
+        <div id="data-source" class="sub">—</div>
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <a class="link" href="../">← До тесту</a>
@@ -72,6 +72,8 @@
     </div>
   </div>
 
+  <script src="../firebase-config.js"></script>
+  <script type="module" src="../firebase.js"></script>
   <script src="../data/questions.js"></script>
   <script src="../admin.js"></script>
 </body>

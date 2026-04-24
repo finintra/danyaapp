@@ -144,19 +144,34 @@
     saveSession();
   }
 
-  function saveSession() {
+  async function saveSession() {
+    const session = {
+      ts: Date.now(),
+      score: state.correct,
+      total: TOTAL,
+      answers: state.answers,
+    };
+
+    // 1) Локальний fallback — пишемо завжди, навіть якщо Firebase є.
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const data = raw ? JSON.parse(raw) : { sessions: [] };
-      data.sessions.push({
-        ts: Date.now(),
-        score: state.correct,
-        total: TOTAL,
-        answers: state.answers,
-      });
+      data.sessions.push(session);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (e) {
-      console.warn("Не вдалося зберегти сесію:", e);
+      console.warn("Локально зберегти не вдалося:", e);
+    }
+
+    // 2) Спільна статистика у Firestore (якщо налаштована).
+    if (window.QuizDBReady) {
+      try {
+        await window.QuizDBReady;
+        if (window.QuizDB && window.QuizDB.enabled) {
+          await window.QuizDB.saveSession(session);
+        }
+      } catch (e) {
+        console.warn("У Firebase зберегти не вдалося:", e);
+      }
     }
   }
 

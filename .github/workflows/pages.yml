@@ -1,12 +1,12 @@
-name: Deploy Glamping Promo to GitHub Pages
+name: Deploy AI Photo Quiz to GitHub Pages
 
 on:
   push:
     branches:
-      - claude/glamping-promo-website-VscUZ
+      - claude/ai-photo-detection-quiz-3P9dK
       - master
     paths:
-      - 'glamping-promo/**'
+      - 'ai-photo-quiz/**'
       - '.github/workflows/pages.yml'
 
   workflow_dispatch:
@@ -38,7 +38,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './glamping-promo'
+          path: './ai-photo-quiz'
 
       - name: Deploy to GitHub Pages
         id: deployment

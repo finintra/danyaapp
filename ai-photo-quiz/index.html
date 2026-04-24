@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI чи реальне? — Тест</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div>
+        <h1>AI чи реальне?</h1>
+        <div class="sub">Обери, яке з двох фото згенерував штучний інтелект</div>
+      </div>
+      <a class="link" href="admin.html">Статистика →</a>
+    </header>
+
+    <!-- Стартовий екран -->
+    <section id="screen-start" class="screen">
+      <h2>Готовий(-ва) перевірити себе?</h2>
+      <p>
+        Тобі покажуть <b>10 пар зображень</b>. У кожній парі — одне реальне фото,
+        а інше згенероване штучним інтелектом. Твоя задача — вгадати, яке саме.
+      </p>
+      <p>Завдання йдуть <b>від найлегших до найскладніших</b>. Клавіатура: <b>1</b> — ліве, <b>2</b> — праве, <b>Enter</b> — далі.</p>
+      <div style="margin-top:18px;">
+        <button id="start-btn" class="btn">Почати тест</button>
+      </div>
+    </section>
+
+    <!-- Екран тесту -->
+    <section id="screen-quiz" style="display:none;">
+      <div class="meta">
+        <div id="q-counter">Питання 1 з 10</div>
+        <div>Рівень складності:</div>
+      </div>
+      <div class="levels" id="level-indicator"></div>
+      <div class="progress"><div id="progress-bar"></div></div>
+
+      <h2 class="question-text">Яке з цих фото згенероване AI?</h2>
+
+      <div class="grid">
+        <button class="choice" id="choice-left" aria-label="Варіант 1">
+          <img id="img-left" alt="" />
+          <span class="badge"></span>
+        </button>
+        <button class="choice" id="choice-right" aria-label="Варіант 2">
+          <img id="img-right" alt="" />
+          <span class="badge"></span>
+        </button>
+      </div>
+
+      <div id="feedback" class="feedback"></div>
+
+      <div class="actions">
+        <button id="next-btn" class="btn" style="display:none;">Далі →</button>
+      </div>
+    </section>
+
+    <!-- Фінальний екран -->
+    <section id="screen-finish" class="screen" style="display:none;">
+      <h2>Твій результат</h2>
+      <div id="score-big" class="score-big">0 / 10</div>
+      <div id="score-sub" class="score-row">—</div>
+      <p id="score-message">—</p>
+      <div style="margin-top:18px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+        <button id="restart-btn" class="btn">Спробувати ще раз</button>
+        <a class="link" href="admin.html">Подивитись статистику</a>
+      </div>
+    </section>
+  </div>
+
+  <script src="data/questions.js"></script>
+  <script src="quiz.js"></script>
+</body>
+</html>

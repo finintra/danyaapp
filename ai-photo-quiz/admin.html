@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI чи реальне? — Статистика</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div>
+        <h1>Статистика тесту</h1>
+        <div class="sub">Загальні результати всіх проходжень на цьому пристрої</div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="link" href="index.html">← До тесту</a>
+        <button id="export-btn" class="btn ghost">Експорт JSON</button>
+        <button id="reset-btn" class="btn danger">Скинути статистику</button>
+      </div>
+    </header>
+
+    <div id="empty" class="empty" style="display:none;">
+      Поки ніхто не проходив тест. Запусти його з головної сторінки.
+    </div>
+
+    <div id="content" style="display:none;">
+      <div class="stats">
+        <div class="stat">
+          <div class="label">Всього проходжень</div>
+          <div id="stat-total" class="value">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Середній результат</div>
+          <div id="stat-avg" class="value">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Найкращий результат</div>
+          <div id="stat-best" class="value">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Останнє проходження</div>
+          <div id="stat-last" class="value" style="font-size:18px;">—</div>
+        </div>
+      </div>
+
+      <h3 class="section-title">Складність по питаннях</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>№ питання</th>
+            <th>Рівень</th>
+            <th>Правильних</th>
+            <th>% вгаданих</th>
+          </tr>
+        </thead>
+        <tbody id="per-question"></tbody>
+      </table>
+
+      <h3 class="section-title">Історія проходжень</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Результат</th>
+            <th>%</th>
+          </tr>
+        </thead>
+        <tbody id="sessions"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="data/questions.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

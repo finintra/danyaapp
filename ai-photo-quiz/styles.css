@@ -311,11 +311,18 @@ body.quiz-page .grid {
   flex: 1;
   min-height: 0;
   margin-top: 10px;
+  grid-auto-rows: 1fr;
 }
 body.quiz-page .choice {
   aspect-ratio: auto;
   height: 100%;
+  width: 100%;
   min-height: 0;
+  min-width: 0;
+}
+body.quiz-page .choice img {
+  min-height: 0;
+  min-width: 0;
 }
 body.quiz-page .feedback { margin-top: 14px; }
 body.quiz-page .actions  { margin-top: 12px; }

@@ -107,9 +107,32 @@ npx serve .
      appId: "...",
    };
    ```
-5. Відкрий `ai-photo-quiz/firebase-config.js` і підстав значення у
-   `window.FIREBASE_CONFIG` замість `REPLACE_ME`.
-6. Закомміть і запушиш — GitHub Pages автоматично переcobере сайт.
+5. **Додай конфіг у GitHub Secrets** (щоб ключ не потрапив у git):
+   - GitHub → репо → Settings → Secrets and variables → Actions → **New repository secret**.
+   - Name: `FIREBASE_CONFIG_JSON`
+   - Value: одним JSON-рядком, без коментарів, наприклад:
+     ```json
+     {"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}
+     ```
+6. Натисни **Actions → Deploy AI Photo Quiz to GitHub Pages → Run workflow**
+   (або зроби будь-який пуш у master/claude-гілку). Під час деплою воркфлоу
+   автоматично підставить значення з секрета у `firebase-config.js` і
+   задеплоїть їх тільки на Pages — у git ключа не буде.
+
+### Безпека Firebase key (важливо)
+
+Firebase web apiKey технічно **не є секретом** — вона ідентифікує проект і
+завжди потрапляє у браузер користувача. Захист дають правила Firestore,
+а не таємність ключа. Але:
+
+- GitHub Secret Scanner все одно сканує репо і кидає алерт, якщо бачить
+  Google API key у коді — тому ми тримаємо ключ у репо-секретах.
+- Додатково варто в Google Cloud Console → APIs & Services → Credentials
+  знайти API key і поставити **Application restrictions → HTTP referrers**:
+  `https://finintra.github.io/*` — тоді ключ не спрацює на чужих сайтах.
+- Якщо ключ колись потрапив у публічний git (історія), рекомендую його
+  **ротувати** (Regenerate key у Google Cloud Console) — старий стає
+  невалідним, і алерт GitHub закривається.
 
 Перевірка: відкрий `/analitics/` — угорі має бути зелений значок
 «Спільна статистика (Firebase)». Якщо бачиш «Локальна статистика

@@ -1,18 +1,25 @@
 // Firebase config для спільного збору статистики.
 //
-// Як заповнити: Firebase Console → Project settings → General →
-// Your apps → Web app → «Firebase SDK snippet» → Config.
-// Заміни всі значення REPLACE_ME на свої.
+// === ДЛЯ PRODUCTION (GitHub Pages) ===
+// Цей файл містить плейсхолдери. Під час деплою GitHub Actions перезаписує
+// його значеннями з repository secret FIREBASE_CONFIG_JSON (див. workflow
+// .github/workflows/pages.yml). Тобто у git ключа немає — він живе тільки
+// у секретах GitHub.
 //
-// Поки тут стоять REPLACE_ME — додаток мовчки падає у режим локального
+// === ДЛЯ ЛОКАЛЬНОЇ РОЗРОБКИ ===
+// Поки тут стоять REPLACE_ME — додаток працює в режимі локального
 // localStorage (як раніше). Нічого не ламається.
+//
+// Якщо хочеш локально тестувати зі справжнім Firebase — постав свої значення
+// у цей файл, АЛЕ перед git commit верни плейсхолдери або виконай:
+//     git update-index --skip-worktree ai-photo-quiz/firebase-config.js
+// щоб git ігнорував твої локальні зміни.
 
 window.FIREBASE_CONFIG = {
- apiKey: "AIzaSyAz20_-1uLOlmUWPEZlKzmbZGIEB1hwaUI",
-  authDomain: "ai-photo-quiz.firebaseapp.com",
-  projectId: "ai-photo-quiz",
-  storageBucket: "ai-photo-quiz.firebasestorage.app",
-  messagingSenderId: "623749489824",
-  appId: "1:623749489824:web:9dbe77eed996a6b12ed5c5",
-  measurementId: "G-0GKC64KQPZ"
+  apiKey:            "REPLACE_ME",
+  authDomain:        "REPLACE_ME.firebaseapp.com",
+  projectId:         "REPLACE_ME",
+  storageBucket:     "REPLACE_ME.appspot.com",
+  messagingSenderId: "REPLACE_ME",
+  appId:             "REPLACE_ME",
 };

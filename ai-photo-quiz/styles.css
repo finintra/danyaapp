@@ -286,70 +286,93 @@ button.btn:disabled { opacity: 0.4; cursor: not-allowed; }
   border-radius: var(--radius);
 }
 
+/* --- Quiz page: fit everything on a single screen (all viewports) --- */
+body.quiz-page {
+  height: 100dvh;
+  overflow: hidden;
+}
+body.quiz-page .app {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding-top: 22px;
+  padding-bottom: 22px;
+}
+body.quiz-page header.top { margin-bottom: 14px; }
+body.quiz-page .progress  { margin: 8px 0 14px; }
+body.quiz-page #screen-quiz {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+body.quiz-page .question-text { margin: 0 0 10px; }
+body.quiz-page .grid {
+  flex: 1;
+  min-height: 0;
+  margin-top: 10px;
+}
+body.quiz-page .choice {
+  aspect-ratio: auto;
+  height: 100%;
+  min-height: 0;
+}
+body.quiz-page .feedback { margin-top: 14px; }
+body.quiz-page .actions  { margin-top: 12px; }
+body.quiz-page #screen-start,
+body.quiz-page #screen-finish { margin: auto 0; }
+
 /* --- Mobile: fit the quiz on a single screen --- */
 @media (max-width: 680px) {
-  html, body { height: 100%; overflow: hidden; }
   body { min-height: 100dvh; }
 
   .app {
     max-width: 100%;
     padding: 10px 12px 12px;
-    min-height: 100dvh;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
+  }
+  body.quiz-page .app {
+    padding: 10px 12px 12px;
   }
 
   header.top {
     margin-bottom: 8px;
     gap: 8px;
   }
+  body.quiz-page header.top { margin-bottom: 8px; }
   header.top h1 { font-size: 17px; }
   header.top .sub { display: none; }
   .link { padding: 6px 10px; font-size: 12px; }
-
-  #screen-quiz {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-  }
 
   .meta { font-size: 11px; margin-bottom: 4px; }
   .levels { margin-bottom: 4px; gap: 4px; }
   .levels span { width: 20px; height: 5px; }
   .progress { height: 6px; margin: 4px 0 8px; }
+  body.quiz-page .progress { margin: 4px 0 8px; }
 
   .question-text { font-size: 14px; margin: 0 0 8px; text-align: center; }
+  body.quiz-page .question-text { margin: 0 0 8px; }
 
   .grid {
     grid-template-columns: 1fr 1fr;
     gap: 8px;
     margin-top: 0;
-    flex: 1;
-    min-height: 0;
   }
-  .choice { aspect-ratio: auto; height: 100%; }
+  body.quiz-page .grid { margin-top: 0; }
   .choice .badge {
     top: 6px; left: 6px;
     padding: 3px 7px;
     font-size: 10px;
   }
 
-  .feedback {
-    margin-top: 8px;
-    padding: 8px 10px;
-  }
+  .feedback { padding: 8px 10px; }
+  body.quiz-page .feedback { margin-top: 8px; }
   .feedback h3 { font-size: 14px; margin: 0 0 2px; }
   .feedback p  { font-size: 12px; line-height: 1.35; }
 
-  .actions { margin-top: 8px; }
+  body.quiz-page .actions { margin-top: 8px; }
   button.btn { padding: 10px 18px; font-size: 14px; }
 
   /* Start / Finish screens */
-  #screen-start, #screen-finish {
-    margin: auto 0;  /* center vertically in the remaining space */
-  }
   .screen { padding: 20px 18px; }
   .screen h2 { font-size: 22px; }
   .screen p  { font-size: 13px; margin: 8px 0; }
@@ -359,10 +382,12 @@ button.btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* --- Very short viewports (landscape phones): keep it tighter still --- */
 @media (max-height: 560px) and (max-width: 900px) {
-  .app { padding: 6px 10px 8px; height: 100dvh; }
+  body.quiz-page .app { padding: 6px 10px 8px; }
   header.top { margin-bottom: 4px; }
+  body.quiz-page header.top { margin-bottom: 4px; }
   header.top h1 { font-size: 15px; }
   .question-text { display: none; }
   .meta { margin-bottom: 2px; }
   .progress { margin: 2px 0 4px; }
+  body.quiz-page .progress { margin: 2px 0 4px; }
 }

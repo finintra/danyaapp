@@ -310,6 +310,7 @@ body.quiz-page .question-text { margin: 0 0 10px; }
 body.quiz-page .grid {
   flex: 1;
   min-height: 0;
+  max-height: 55dvh;
   margin-top: 10px;
   grid-auto-rows: 1fr;
 }
